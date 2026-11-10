@@ -191,6 +191,7 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
 {
     double *cluster_scores = NULL;
     double *cluster_compensation = NULL;
+    unsigned char *cluster_seen = NULL;
     double *meat = NULL;
     double *compensation = NULL;
     double *temporary = NULL;
@@ -199,6 +200,7 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
     size_t score_elements;
     size_t cluster_elements;
     size_t cluster_bytes;
+    size_t cluster_seen_bytes;
     size_t observation;
     size_t i;
     size_t j;
@@ -215,14 +217,16 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
             (double) (cluster_count - 1);
     }
     if (bread == NULL || scores == NULL || covariance == NULL ||
-        observations == 0 || parameters == 0)
+        observations == 0 || parameters == 0 || cluster_count > observations)
         return NUMELYX_COVARIANCE_INVALID_ARGUMENT;
     if (!numelyx_core_size_multiply(
             observations, parameters, &score_elements) ||
         !numelyx_core_size_multiply(
             cluster_count, parameters, &cluster_elements) ||
         !numelyx_core_size_multiply(
-            cluster_elements, sizeof(double), &cluster_bytes)) {
+            cluster_elements, sizeof(double), &cluster_bytes) ||
+        !numelyx_core_size_multiply(
+            cluster_count, sizeof(*cluster_seen), &cluster_seen_bytes)) {
         return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
     }
     status = allocate_workspaces(parameters, &meat, &compensation,
@@ -230,7 +234,9 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
     if (status != NUMELYX_COVARIANCE_SUCCESS) goto cleanup;
     cluster_scores = (double *) calloc(1, cluster_bytes);
     cluster_compensation = (double *) calloc(1, cluster_bytes);
-    if (cluster_scores == NULL || cluster_compensation == NULL) {
+    cluster_seen = (unsigned char *) calloc(1, cluster_seen_bytes);
+    if (cluster_scores == NULL || cluster_compensation == NULL ||
+        cluster_seen == NULL) {
         status = NUMELYX_COVARIANCE_OUT_OF_MEMORY;
         goto cleanup;
     }
@@ -246,6 +252,7 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
             status = NUMELYX_COVARIANCE_DOMAIN_ERROR;
             goto cleanup;
         }
+        cluster_seen[cluster] = 1;
         for (i = 0; i < parameters; i++) {
             size_t index = cluster * parameters + i;
             kahan_add(&cluster_scores[index], &cluster_compensation[index],
@@ -257,7 +264,12 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
         }
     }
     for (i = 0; i < cluster_count; i++) {
-        const double *score = cluster_scores + i * parameters;
+        const double *score;
+        if (cluster_seen[i] == 0) {
+            status = NUMELYX_COVARIANCE_DOMAIN_ERROR;
+            goto cleanup;
+        }
+        score = cluster_scores + i * parameters;
         for (j = 0; j < parameters; j++) {
             size_t k;
             for (k = 0; k < parameters; k++) {
@@ -277,6 +289,7 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
 cleanup:
     free(cluster_scores);
     free(cluster_compensation);
+    free(cluster_seen);
     free_workspaces(meat, compensation, temporary, candidate);
     return status;
 }
