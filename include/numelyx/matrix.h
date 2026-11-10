@@ -437,6 +437,69 @@ NUMELYX_API numelyx_status numelyx_matrix_trace(
     const numelyx_matrix *matrix, double *trace
 );
 
+/** Numerical classification of solutions to A X = B. */
+typedef enum {
+    NUMELYX_MATRIX_SOLUTION_UNIQUE = 0,
+    NUMELYX_MATRIX_SOLUTION_INFINITE,
+    NUMELYX_MATRIX_SOLUTION_INCONSISTENT
+} numelyx_matrix_solution_kind;
+
+/** Symmetric eigendecomposition; eigenvalues are descending, eigenvectors are columns. */
+NUMELYX_API numelyx_status numelyx_matrix_symmetric_eigen(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **eigenvalues,
+    numelyx_matrix **eigenvectors
+);
+
+/** Unpivoted LDL^T factorization of a symmetric matrix. */
+NUMELYX_API numelyx_status numelyx_matrix_ldlt_decompose(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **lower,
+    numelyx_matrix **diagonal
+);
+
+/** Spectral norm and 1-norm condition estimate. */
+NUMELYX_API numelyx_status numelyx_matrix_spectral_norm(
+    const numelyx_matrix *matrix, double *norm
+);
+NUMELYX_API numelyx_status numelyx_matrix_condition_estimate_one(
+    const numelyx_matrix *matrix, double *condition_estimate
+);
+
+/** Classify positive definiteness and semidefiniteness; outputs must differ. */
+NUMELYX_API numelyx_status numelyx_matrix_classify_definiteness(
+    const numelyx_matrix *matrix,
+    int *positive_definite,
+    int *positive_semidefinite
+);
+
+/** Classify the solution set of A X = B, including multiple RHS columns. */
+NUMELYX_API numelyx_status numelyx_matrix_classify_system(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    numelyx_matrix_solution_kind *classification
+);
+
+/** Basic reductions. Variance uses sample=0 for population and sample=1 for sample variance. */
+NUMELYX_API numelyx_status numelyx_matrix_sum(
+    const numelyx_matrix *matrix, double *sum
+);
+NUMELYX_API numelyx_status numelyx_matrix_mean(
+    const numelyx_matrix *matrix, double *mean
+);
+NUMELYX_API numelyx_status numelyx_matrix_variance(
+    const numelyx_matrix *matrix, int sample, double *variance
+);
+NUMELYX_API numelyx_status numelyx_matrix_standard_deviation(
+    const numelyx_matrix *matrix, int sample, double *standard_deviation
+);
+NUMELYX_API numelyx_status numelyx_matrix_min(
+    const numelyx_matrix *matrix, double *minimum
+);
+NUMELYX_API numelyx_status numelyx_matrix_max(
+    const numelyx_matrix *matrix, double *maximum
+);
+
 /** Retain one additional owned reference; the caller must already own one. */
 NUMELYX_API numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix);
 
