@@ -113,6 +113,11 @@ if(NUMELYX_BUILD_TESTS)
         get_filename_component(test_name "${test_source}" NAME_WE)
 
         # Matrix and Storage allocation injection uses GNU ld --wrap.
+        if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS AND NUMELYX_BUILD_SHARED)
+            message(STATUS "Skipping ${test_name}: GNU ld --wrap cannot inject allocations into a shared library")
+            continue()
+        endif()
+
         if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS
            AND NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND UNIX AND NOT APPLE))
             message(STATUS "Skipping ${test_name}: GNU ld --wrap is required")
