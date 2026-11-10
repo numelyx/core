@@ -145,6 +145,30 @@ static void test_inverse_regularized_beta_round_trips(void)
     }
 }
 
+
+static void test_inverse_special_function_closed_forms(void)
+{
+    const double probabilities[] = {1e-8, 0.1, 0.5, 0.9, 1.0 - 1e-8};
+    size_t i;
+    for (i = 0; i < sizeof(probabilities) / sizeof(probabilities[0]); i++) {
+        double value;
+        double expected_p = -log1p(-probabilities[i]);
+        double expected_q = -log(probabilities[i]);
+
+        assert(numelyx_core_inverse_regularized_gamma_p(
+            1.0, probabilities[i], &value) == NUMERUS_NUMERIC_SUCCESS);
+        close_to(value, expected_p, 2e-13 * fmax(1.0, expected_p));
+
+        assert(numelyx_core_inverse_regularized_gamma_q(
+            1.0, probabilities[i], &value) == NUMERUS_NUMERIC_SUCCESS);
+        close_to(value, expected_q, 2e-13 * fmax(1.0, expected_q));
+
+        assert(numelyx_core_inverse_regularized_beta(
+            1.0, 1.0, probabilities[i], &value) == NUMERUS_NUMERIC_SUCCESS);
+        close_to(value, probabilities[i], 2e-14);
+    }
+}
+
 static void test_inverse_special_function_validation(void)
 {
     double value = 19.0;
@@ -175,6 +199,7 @@ int main(void)
     test_inverse_regularized_gamma_round_trips();
     test_inverse_regularized_beta_round_trips();
     test_inverse_special_function_validation();
+    test_inverse_special_function_closed_forms();
     puts("Special-function tests passed.");
     return 0;
 }
