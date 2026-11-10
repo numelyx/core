@@ -73,6 +73,22 @@ NUMELYX_API numelyx_status numelyx_matrix_create_lower_triangular(
 );
 
 /** Create symmetric storage from packed lower-triangular values. */
+/** One sparse override, addressed by row-major linear index. */
+typedef struct {
+    size_t index;
+    double value;
+} numelyx_sparse_entry;
+
+/** Create sparse storage with a default value and unique linear-index overrides. */
+NUMELYX_API numelyx_status numelyx_matrix_create_sparse(
+    size_t rows,
+    size_t columns,
+    double default_value,
+    const numelyx_sparse_entry *entries,
+    size_t count,
+    numelyx_matrix **matrix
+);
+
 NUMELYX_API numelyx_status numelyx_matrix_create_symmetric(
     size_t size,
     const double *packed_lower_values,
