@@ -298,6 +298,67 @@ static void test_f_distribution_validation_and_support(void)
     assert(value == 37.0);
 }
 
+
+static void test_poisson_distribution_reference_values(void)
+{
+    double value;
+    uint64_t quantile;
+    assert(numelyx_core_poisson_pmf(2, 3.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 4.5 * exp(-3.0), 2e-15);
+    assert(numelyx_core_poisson_cdf(2, 3.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 8.5 * exp(-3.0), 3e-14);
+    assert(numelyx_core_poisson_survival(2, 3.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0 - 8.5 * exp(-3.0), 3e-14);
+    assert(numelyx_core_poisson_quantile(0.5, 3.0, &quantile) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(quantile == 3);
+    assert(numelyx_core_poisson_pmf(0, 0.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 1.0);
+    assert(numelyx_core_poisson_pmf(1, 0.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+}
+
+static void test_binomial_distribution_reference_values(void)
+{
+    double value;
+    uint64_t quantile;
+    assert(numelyx_core_binomial_pmf(1, 2, 0.5, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 2e-15);
+    assert(numelyx_core_binomial_cdf(0, 2, 0.5, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.25, 3e-14);
+    assert(numelyx_core_binomial_survival(0, 2, 0.5, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.75, 3e-14);
+    assert(numelyx_core_binomial_quantile(0.5, 2, 0.5, &quantile) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(quantile == 1);
+    assert(numelyx_core_binomial_quantile(0.5, 10, 0.0, &quantile) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(quantile == 0);
+    assert(numelyx_core_binomial_quantile(1.0, 10, 0.3, &quantile) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(quantile == 10);
+}
+
+static void test_discrete_distribution_validation(void)
+{
+    double value = 53.0;
+    uint64_t quantile = 54;
+    assert(numelyx_core_poisson_pmf(0, -1.0, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 53.0);
+    assert(numelyx_core_binomial_pmf(3, 2, 0.5, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 53.0);
+    assert(numelyx_core_poisson_quantile(1.1, 2.0, &quantile) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(quantile == 54);
+}
+
 int main(void)
 {
     test_normal_distribution_reference_values();
@@ -312,6 +373,9 @@ int main(void)
     test_gamma_beta_distribution_support_and_validation();
     test_f_distribution_reference_values();
     test_f_distribution_validation_and_support();
+    test_poisson_distribution_reference_values();
+    test_binomial_distribution_reference_values();
+    test_discrete_distribution_validation();
     puts("Scalar distribution tests passed.");
     return 0;
 }

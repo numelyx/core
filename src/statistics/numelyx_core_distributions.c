@@ -1153,3 +1153,392 @@ numelyx_core_numeric_status numelyx_core_f_quantile(
     *result = exp(log_quantile);
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+#define NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT UINT64_C(9007199254740992)
+
+static numelyx_core_numeric_status validate_count_rate(
+    uint64_t count, double rate, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(rate)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (rate < 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (count > NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT ||
+        rate > (double) NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_log_pmf(
+    uint64_t count, double rate, double *result
+)
+{
+    double k = (double) count;
+    numelyx_core_numeric_status status = validate_count_rate(count, rate, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (rate == 0.0) {
+        *result = count == 0 ? 0.0 : -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    *result = k * log(rate) - rate - lgamma(k + 1.0);
+    return isnan(*result)
+        ? NUMERUS_NUMERIC_NUMERICAL_FAILURE
+        : NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_pmf(
+    uint64_t count, double rate, double *result
+)
+{
+    double log_probability;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_poisson_log_pmf(count, rate, &log_probability);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_probability);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status poisson_log_tails(
+    uint64_t count, double rate, double *log_cdf, double *log_survival
+)
+{
+    double shape;
+    numelyx_core_numeric_status status;
+    if (rate == 0.0) {
+        *log_cdf = 0.0;
+        *log_survival = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    shape = (double) count + 1.0;
+    status = numelyx_core_regularized_gamma_log_q(shape, rate, log_cdf);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    return numelyx_core_regularized_gamma_log_p(shape, rate, log_survival);
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_log_cdf(
+    uint64_t count, double rate, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status = validate_count_rate(count, rate, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = poisson_log_tails(count, rate, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_log_survival(
+    uint64_t count, double rate, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status = validate_count_rate(count, rate, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = poisson_log_tails(count, rate, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_cdf(
+    uint64_t count, double rate, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status = validate_count_rate(count, rate, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = poisson_log_tails(count, rate, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_survival(
+    uint64_t count, double rate, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status = validate_count_rate(count, rate, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = poisson_log_tails(count, rate, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static bool poisson_cdf_at_least(
+    uint64_t count, double rate, double probability, bool *at_least
+)
+{
+    double log_tail;
+    numelyx_core_numeric_status status;
+    if (probability <= 0.5) {
+        status = numelyx_core_poisson_log_cdf(count, rate, &log_tail);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return false;
+        *at_least = log_tail >= log(probability);
+    } else {
+        status = numelyx_core_poisson_log_survival(count, rate, &log_tail);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return false;
+        *at_least = log_tail <= log1p(-probability);
+    }
+    return true;
+}
+
+numelyx_core_numeric_status numelyx_core_poisson_quantile(
+    double probability, double rate, uint64_t *result
+)
+{
+    uint64_t lower = 0;
+    uint64_t upper;
+    bool reached;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(rate))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 || rate < 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (rate > (double) NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    if (rate == 0.0 || probability == 0.0) {
+        *result = 0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *result = UINT64_MAX;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    upper = rate < 1.0 ? 1 : (uint64_t) ceil(rate);
+    if (upper == 0) upper = 1;
+    if (!poisson_cdf_at_least(upper, rate, probability, &reached))
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    while (!reached) {
+        lower = upper + 1;
+        if (upper >= NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT / 2) {
+            upper = NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT;
+        } else {
+            upper = upper * 2 + 1;
+        }
+        if (!poisson_cdf_at_least(upper, rate, probability, &reached))
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        if (upper == NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT && !reached)
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    }
+
+    while (lower < upper) {
+        uint64_t midpoint = lower + (upper - lower) / 2;
+        if (!poisson_cdf_at_least(midpoint, rate, probability, &reached))
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        if (reached) upper = midpoint;
+        else lower = midpoint + 1;
+    }
+    *result = lower;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status validate_binomial(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 || successes > trials)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (trials > NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_log_pmf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    double n = (double) trials;
+    double k = (double) successes;
+    double value;
+    numelyx_core_numeric_status status =
+        validate_binomial(successes, trials, probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    if (probability == 0.0) {
+        value = successes == 0 ? 0.0 : -INFINITY;
+    } else if (probability == 1.0) {
+        value = successes == trials ? 0.0 : -INFINITY;
+    } else {
+        value = lgamma(n + 1.0) - lgamma(k + 1.0) -
+            lgamma(n - k + 1.0) + k * log(probability) +
+            (n - k) * log1p(-probability);
+    }
+    if (isnan(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_pmf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    double log_probability;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_binomial_log_pmf(
+        successes, trials, probability, &log_probability);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_probability);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status binomial_log_tails(
+    uint64_t successes, uint64_t trials, double probability,
+    double *log_cdf, double *log_survival
+)
+{
+    double a;
+    double b;
+    double x;
+    numelyx_core_numeric_status status;
+    if (successes >= trials || probability == 0.0) {
+        *log_cdf = 0.0;
+        *log_survival = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    a = (double) (trials - successes);
+    b = (double) successes + 1.0;
+    x = 1.0 - probability;
+    status = numelyx_core_regularized_beta_log_lower(a, b, x, log_cdf);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    return numelyx_core_regularized_beta_log_upper(a, b, x, log_survival);
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_log_cdf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_binomial(successes, trials, probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = binomial_log_tails(successes, trials, probability,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_log_survival(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_binomial(successes, trials, probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = binomial_log_tails(successes, trials, probability,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_cdf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_binomial(successes, trials, probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = binomial_log_tails(successes, trials, probability,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_survival(
+    uint64_t successes, uint64_t trials, double probability, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_binomial(successes, trials, probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = binomial_log_tails(successes, trials, probability,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static bool binomial_cdf_at_least(
+    uint64_t successes, uint64_t trials, double p, double target,
+    bool *at_least
+)
+{
+    double log_tail;
+    numelyx_core_numeric_status status;
+    if (target <= 0.5) {
+        status = numelyx_core_binomial_log_cdf(
+            successes, trials, p, &log_tail);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return false;
+        *at_least = log_tail >= log(target);
+    } else {
+        status = numelyx_core_binomial_log_survival(
+            successes, trials, p, &log_tail);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return false;
+        *at_least = log_tail <= log1p(-target);
+    }
+    return true;
+}
+
+numelyx_core_numeric_status numelyx_core_binomial_quantile(
+    double quantile_probability, uint64_t trials, double success_probability,
+    uint64_t *result
+)
+{
+    uint64_t lower = 0;
+    uint64_t upper = trials;
+    uint64_t midpoint;
+    bool reached;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(quantile_probability) || !isfinite(success_probability))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (quantile_probability < 0.0 || quantile_probability > 1.0 ||
+        success_probability < 0.0 || success_probability > 1.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (trials > NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    if (trials == 0 || quantile_probability == 0.0 ||
+        success_probability == 0.0) {
+        *result = 0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (quantile_probability == 1.0 || success_probability == 1.0) {
+        *result = trials;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    while (lower < upper) {
+        midpoint = lower + (upper - lower) / 2;
+        if (!binomial_cdf_at_least(
+                midpoint, trials, success_probability,
+                quantile_probability, &reached)) {
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        }
+        if (reached) upper = midpoint;
+        else lower = midpoint + 1;
+    }
+    *result = lower;
+    return NUMERUS_NUMERIC_SUCCESS;
+}

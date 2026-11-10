@@ -7,6 +7,7 @@
 
 #include "numelyx_core_numeric.h"
 #include "numelyx_core_rng.h"
+#include <stdint.h>
 
 /** Normal distribution with finite location and positive finite scale. */
 numelyx_core_numeric_status numelyx_core_normal_log_pdf(
@@ -157,6 +158,53 @@ numelyx_core_numeric_status numelyx_core_f_survival(
 numelyx_core_numeric_status numelyx_core_f_quantile(
     double probability, double numerator_df, double denominator_df,
     double *result
+);
+
+/** Discrete Poisson distribution; counts above 2^53 are not supported. */
+numelyx_core_numeric_status numelyx_core_poisson_log_pmf(
+    uint64_t count, double rate, double *result
+);
+numelyx_core_numeric_status numelyx_core_poisson_pmf(
+    uint64_t count, double rate, double *result
+);
+numelyx_core_numeric_status numelyx_core_poisson_log_cdf(
+    uint64_t count, double rate, double *result
+);
+numelyx_core_numeric_status numelyx_core_poisson_log_survival(
+    uint64_t count, double rate, double *result
+);
+numelyx_core_numeric_status numelyx_core_poisson_cdf(
+    uint64_t count, double rate, double *result
+);
+numelyx_core_numeric_status numelyx_core_poisson_survival(
+    uint64_t count, double rate, double *result
+);
+numelyx_core_numeric_status numelyx_core_poisson_quantile(
+    double probability, double rate, uint64_t *result
+);
+
+/** Binomial distribution; trial counts above 2^53 are not supported. */
+numelyx_core_numeric_status numelyx_core_binomial_log_pmf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+);
+numelyx_core_numeric_status numelyx_core_binomial_pmf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+);
+numelyx_core_numeric_status numelyx_core_binomial_log_cdf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+);
+numelyx_core_numeric_status numelyx_core_binomial_log_survival(
+    uint64_t successes, uint64_t trials, double probability, double *result
+);
+numelyx_core_numeric_status numelyx_core_binomial_cdf(
+    uint64_t successes, uint64_t trials, double probability, double *result
+);
+numelyx_core_numeric_status numelyx_core_binomial_survival(
+    uint64_t successes, uint64_t trials, double probability, double *result
+);
+numelyx_core_numeric_status numelyx_core_binomial_quantile(
+    double quantile_probability, uint64_t trials, double success_probability,
+    uint64_t *result
 );
 
 #endif
