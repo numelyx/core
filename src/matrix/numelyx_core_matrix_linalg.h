@@ -239,9 +239,10 @@ numelyx_core_matrix_status numelyx_core_matrix_qr_decompose(
 );
 
 /**
- * Estimate the 1-norm condition number ||A||₁ ||A⁻¹||₁.
- * This implementation uses the inverse-based estimate; singular/numerically
- * singular inputs can yield infinity. The scalar output is unchanged on failure.
+ * Estimate the 1-norm condition number ||A||₁ ||A⁻¹||₁ using a Hager-style
+ * iteration over solves with one reusable LU factorization. The inverse is
+ * never materialized. Singular/numerically singular inputs yield infinity;
+ * the scalar output is unchanged on failure.
  */
 numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
     const numelyx_core_matrix *matrix,
