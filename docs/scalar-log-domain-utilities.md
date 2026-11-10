@@ -10,7 +10,7 @@ Select five composable scalar functions:
 2. **Stable logit** (log(p)-log(1-p)).
 3. **Softplus** (log(1+e^x)).
 4. **Log-sigmoid** (log(sigma(x))=-operatorname{softplus}(-x)).
-5. **Log-sum-exp** (log(sum_i e^{x_i})) over a finite non-empty input array.
+5. **Log-sum-exp** (log(sum_i e^{x_i})) over a finite non-empty input array.\n6. **Log-one-minus-exp** for stable log(1-exp(x)) when x <= 0.\n7. **Log-difference-exp** for stable log(exp(a)-exp(b)) when a >= b.
 
 These support generic binary likelihoods, log-probability evaluation, and likelihood/posterior accumulation without requiring a distribution framework. The initial optimizer itself does not require a sigmoid or log-sum-exp; they are selected because they are broadly useful to multiple external statistical consumers and make stable likelihood composition possible.
 
@@ -83,6 +83,24 @@ The implemented functions use the focused `numelyx_core_numeric_status` declared
 - Log-sum-exp for a singleton, equal values, values far below zero, large similar positive values, permutation, empty input, NULL input, non-finite elements, and output preservation.
 - Cross-check moderate inputs against direct high-precision/reference calculations and use tolerance-based comparisons, not bitwise assumptions about libm.
 - Strict-warning native tests; PHPT only if a later API-boundary decision explicitly exposes these helpers to PHP.
+
+### Log-one-minus-exp and log-difference-exp
+
+These helpers are implemented for probability-tail and likelihood subtraction.
+The input domain is finite x <= 0 for log-one-minus-exp and finite a >= b for
+log-difference-exp. At the exact zero-mass boundary (x == 0 or a == b), the
+mathematically correct result is negative infinity; this is a successful,
+documented endpoint rather than a failure sentinel. For interior values the
+implementation uses expm1 near zero and log1p away from zero to avoid
+catastrophic cancellation. Invalid domains and non-finite inputs preserve the
+output.
+
+### Additional native test coverage
+
+- log-one-minus-exp at zero, near zero, and in the far-tail branch.
+- log-difference-exp for large log values, equal inputs, invalid ordering, and
+  non-finite inputs.
+- Output preservation on every rejected input.
 
 ## Deferred
 
