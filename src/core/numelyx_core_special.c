@@ -96,6 +96,10 @@ static bool gamma_p_series(double a, double x, double *value)
 }
 
 /* Upper regularized gamma continued fraction, convergent for x >= a + 1. */
+static numelyx_core_numeric_status validate_gamma(
+    double a, double x, double *result
+);
+
 static bool gamma_q_fraction_log(double a, double x, double *log_value)
 {
     size_t iteration;
