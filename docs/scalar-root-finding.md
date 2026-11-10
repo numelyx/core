@@ -22,3 +22,7 @@ The midpoint calculation avoids overflow for intervals crossing zero. Convergenc
 ## Validation
 
 Native tests cover sqrt(2), endpoint roots, brackets spanning extreme finite values, no-bracket behavior, callback failure, non-finite callback values, iteration-limit reporting, and output preservation.
+
+## Safeguarded Newton
+
+The safeguarded Newton solver maintains the same sign-changing bracket while attempting a Newton step from the current iterate. A zero derivative, non-finite candidate, or candidate outside the open bracket falls back to the safe midpoint. Function and derivative callbacks are counted separately. Callback failures and non-finite derivatives are reported distinctly and leave the result structure unchanged.

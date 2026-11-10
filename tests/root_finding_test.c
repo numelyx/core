@@ -114,11 +114,87 @@ static void test_bisection_failure_contracts(void)
         NUMELYX_ROOT_INVALID_ARGUMENT);
 }
 
+
+static bool square_derivative(double x, const void *context, double *value)
+{
+    (void) context;
+    *value = 2.0 * x;
+    return true;
+}
+
+static bool zero_derivative(double x, const void *context, double *value)
+{
+    (void) x;
+    (void) context;
+    *value = 0.0;
+    return true;
+}
+
+static bool failing_derivative(double x, const void *context, double *value)
+{
+    (void) x;
+    (void) context;
+    (void) value;
+    return false;
+}
+
+static bool nonfinite_derivative(double x, const void *context, double *value)
+{
+    (void) x;
+    (void) context;
+    *value = NAN;
+    return true;
+}
+
+static void test_safeguarded_newton_and_bisection_fallback(void)
+{
+    numelyx_core_bisection_options options;
+    numelyx_core_root_result result;
+    assert(numelyx_core_bisection_default_options(&options) ==
+        NUMELYX_ROOT_SUCCESS);
+    assert(numelyx_core_safeguarded_newton(
+        square_minus_two, square_derivative, NULL,
+        0.0, 2.0, 1.0, &options, &result) == NUMELYX_ROOT_SUCCESS);
+    assert(fabs(result.root - sqrt(2.0)) < 2e-12);
+    assert(result.derivative_evaluations > 0);
+    assert(result.function_evaluations >= 3);
+
+    assert(numelyx_core_safeguarded_newton(
+        square_minus_two, zero_derivative, NULL,
+        0.0, 2.0, 1.0, &options, &result) == NUMELYX_ROOT_SUCCESS);
+    assert(fabs(result.root - sqrt(2.0)) < 2e-12);
+    assert(result.derivative_evaluations > 0);
+}
+
+static void test_safeguarded_newton_failure_contracts(void)
+{
+    numelyx_core_bisection_options options;
+    numelyx_core_root_result result = {1.0, 2.0, 3, 4, 5};
+    assert(numelyx_core_bisection_default_options(&options) ==
+        NUMELYX_ROOT_SUCCESS);
+    assert(numelyx_core_safeguarded_newton(
+        square_minus_two, failing_derivative, NULL,
+        0.0, 2.0, 1.0, &options, &result) ==
+        NUMELYX_ROOT_CALLBACK_FAILED);
+    assert(result.root == 1.0 && result.derivative_evaluations == 5);
+    assert(numelyx_core_safeguarded_newton(
+        square_minus_two, nonfinite_derivative, NULL,
+        0.0, 2.0, 1.0, &options, &result) ==
+        NUMELYX_ROOT_NON_FINITE_DERIVATIVE);
+    assert(result.root == 1.0);
+    assert(numelyx_core_safeguarded_newton(
+        square_minus_two, square_derivative, NULL,
+        0.0, 2.0, 3.0, &options, &result) ==
+        NUMELYX_ROOT_INVALID_ARGUMENT);
+}
+
 int main(void)
 {
     test_bisection_reference_and_diagnostics();
     test_endpoint_roots_and_extreme_brackets();
     test_bisection_failure_contracts();
+    test_safeguarded_newton_and_bisection_fallback();
+    test_safeguarded_newton_failure_contracts();
     puts("Root-finding tests passed.");
     return 0;
 }
