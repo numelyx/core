@@ -413,3 +413,97 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_divide(
     *result_upper = upper;
     return NUMELYX_FUZZY_SUCCESS;
 }
+
+
+static numelyx_core_fuzzy_status validate_sampled_fuzzy_set(
+    const double *x_values, const double *memberships,
+    size_t count, double *result, double *coordinate_scale
+)
+{
+    size_t index;
+    double scale = 0.0;
+    if (x_values == NULL || memberships == NULL || result == NULL || count == 0)
+        return NUMELYX_FUZZY_INVALID_ARGUMENT;
+    for (index = 0; index < count; index++) {
+        if (!isfinite(x_values[index]) || !isfinite(memberships[index]))
+            return NUMELYX_FUZZY_NON_FINITE_INPUT;
+        if (memberships[index] < 0.0 || memberships[index] > 1.0)
+            return NUMELYX_FUZZY_DOMAIN_ERROR;
+        if (fabs(x_values[index]) > scale) scale = fabs(x_values[index]);
+    }
+    *coordinate_scale = scale == 0.0 ? 1.0 : scale;
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_defuzzify_centroid(
+    const double *x_values, const double *memberships, size_t count,
+    double *result
+)
+{
+    size_t index;
+    double coordinate_scale;
+    double total_weight = 0.0;
+    double weighted_sum = 0.0;
+    double correction = 0.0;
+    numelyx_core_fuzzy_status status = validate_sampled_fuzzy_set(
+        x_values, memberships, count, result, &coordinate_scale);
+    if (status != NUMELYX_FUZZY_SUCCESS) return status;
+
+    for (index = 0; index < count; index++) {
+        double term;
+        double adjusted;
+        double next;
+        total_weight += memberships[index];
+        term = (x_values[index] / coordinate_scale) * memberships[index];
+        adjusted = term - correction;
+        next = weighted_sum + adjusted;
+        correction = (next - weighted_sum) - adjusted;
+        weighted_sum = next;
+    }
+    if (total_weight <= 0.0)
+        return NUMELYX_FUZZY_DOMAIN_ERROR;
+    {
+        double value = (weighted_sum / total_weight) * coordinate_scale;
+        if (!isfinite(value)) return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+        *result = value;
+    }
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_defuzzify_mean_of_maxima(
+    const double *x_values, const double *memberships, size_t count,
+    double *result
+)
+{
+    size_t index;
+    size_t maxima_count = 0;
+    double maximum = 0.0;
+    double coordinate_scale;
+    double scaled_sum = 0.0;
+    double correction = 0.0;
+    numelyx_core_fuzzy_status status = validate_sampled_fuzzy_set(
+        x_values, memberships, count, result, &coordinate_scale);
+    if (status != NUMELYX_FUZZY_SUCCESS) return status;
+
+    for (index = 0; index < count; index++) {
+        if (memberships[index] > maximum) maximum = memberships[index];
+    }
+    if (maximum <= 0.0) return NUMELYX_FUZZY_DOMAIN_ERROR;
+
+    for (index = 0; index < count; index++) {
+        if (memberships[index] == maximum) {
+            double term = x_values[index] / coordinate_scale;
+            double adjusted = term - correction;
+            double next = scaled_sum + adjusted;
+            correction = (next - scaled_sum) - adjusted;
+            scaled_sum = next;
+            maxima_count++;
+        }
+    }
+    {
+        double value = (scaled_sum / (double) maxima_count) * coordinate_scale;
+        if (!isfinite(value)) return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+        *result = value;
+    }
+    return NUMELYX_FUZZY_SUCCESS;
+}

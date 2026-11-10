@@ -5,6 +5,8 @@
 #ifndef NUMELYX_CORE_FUZZY_H
 #define NUMELYX_CORE_FUZZY_H
 
+#include <stddef.h>
+
 typedef enum {
     NUMELYX_FUZZY_SUCCESS = 0,
     NUMELYX_FUZZY_INVALID_ARGUMENT,
@@ -77,6 +79,16 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_divide(
     double numerator_lower, double numerator_upper,
     double denominator_lower, double denominator_upper,
     double *result_lower, double *result_upper
+);
+
+/** Discrete centroid and mean-of-maxima defuzzification for sampled sets. */
+numelyx_core_fuzzy_status numelyx_core_fuzzy_defuzzify_centroid(
+    const double *x_values, const double *memberships, size_t count,
+    double *result
+);
+numelyx_core_fuzzy_status numelyx_core_fuzzy_defuzzify_mean_of_maxima(
+    const double *x_values, const double *memberships, size_t count,
+    double *result
 );
 
 #endif

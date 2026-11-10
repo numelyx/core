@@ -76,7 +76,24 @@ static void test_fuzzy_interval_arithmetic(void){
  assert(lo==91&&hi==92);
 }
 
+
+static void test_fuzzy_defuzzification(void){
+ const double x[]={0,1,2,3,4};
+ const double mu[]={0,.5,1,.5,0};
+ const double plateau[]={0,.8,1,1,.8};
+ double value=77;
+ assert(numelyx_core_fuzzy_defuzzify_centroid(x,mu,5,&value)==NUMELYX_FUZZY_SUCCESS);
+ close_to(value,2,1e-15);
+ assert(numelyx_core_fuzzy_defuzzify_mean_of_maxima(x,plateau,5,&value)==NUMELYX_FUZZY_SUCCESS);
+ close_to(value,2.5,1e-15);
+ value=77;
+ {
+  const double zero[]={0,0,0,0,0};
+  assert(numelyx_core_fuzzy_defuzzify_centroid(x,zero,5,&value)==NUMELYX_FUZZY_DOMAIN_ERROR);
+  assert(value==77);
+ }
+}
 int main(void){
- test_membership_functions(); test_fuzzy_operators(); test_alpha_cuts_and_validation(); test_fuzzy_interval_arithmetic();
+ test_membership_functions(); test_fuzzy_operators(); test_alpha_cuts_and_validation(); test_fuzzy_interval_arithmetic(); test_fuzzy_defuzzification();
  puts("Fuzzy primitive tests passed."); return 0;
 }

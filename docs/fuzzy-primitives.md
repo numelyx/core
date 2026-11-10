@@ -10,14 +10,18 @@ The current layer provides triangular, trapezoidal, Gaussian, generalized-bell, 
 
 The layer provides complement, minimum/product/Lukasiewicz t-norms, and maximum/probabilistic-sum/bounded-sum s-norms. All operator inputs must be finite memberships in [0,1].
 
+## Defuzzification
+
+Sampled membership arrays support centroid and mean-of-maxima defuzzification. Coordinates are scaled before weighted accumulation to reduce overflow risk; an all-zero membership set is rejected as having no defined crisp representative.
+
 ## Alpha cuts
 
 Triangular and trapezoidal fuzzy-number alpha cuts are computed directly for alpha in [0,1]. The implementation allocates no memory and leaves outputs unchanged on validation failure.
 
 ## Deferred
 
-General membership inversion, Mamdani/Sugeno inference composition, defuzzification, fuzzy relations, and fuzzy optimization remain future work. Interval addition, subtraction, multiplication, and division are now available as the arithmetic kernel for alpha-cut extension operations.
+General membership inversion, Mamdani/Sugeno inference composition, fuzzy relations, and fuzzy optimization remain future work. Sampled-set centroid and mean-of-maxima defuzzification are available. Interval addition, subtraction, multiplication, and division are now available as the arithmetic kernel for alpha-cut extension operations.
 
 ## Validation
 
-Native tests cover membership reference values, operator identities, alpha-cut endpoints/interiors, interval arithmetic across sign combinations, zero-crossing division rejection, overflow handling, invalid parameters, non-finite inputs, and output preservation.
+Native tests cover membership reference values, operator identities, alpha-cut endpoints/interiors, interval arithmetic across sign combinations, zero-crossing division rejection, overflow handling, centroid/mean-of-maxima defuzzification, invalid parameters, non-finite inputs, and output preservation.
