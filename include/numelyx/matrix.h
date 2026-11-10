@@ -73,6 +73,48 @@ NUMELYX_API numelyx_status numelyx_matrix_slice(
     numelyx_matrix **view
 );
 
+/** Create a lazy view with rows in reverse order. */
+NUMELYX_API numelyx_status numelyx_matrix_flip_rows(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+);
+
+/** Create a lazy view with columns in reverse order. */
+NUMELYX_API numelyx_status numelyx_matrix_flip_columns(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+);
+
+/** Select rows by copied zero-based indices; repeated indices are allowed. */
+NUMELYX_API numelyx_status numelyx_matrix_select_rows(
+    numelyx_matrix *parent,
+    const size_t *indices,
+    size_t count,
+    numelyx_matrix **view
+);
+
+/** Select columns by copied zero-based indices; repeated indices are allowed. */
+NUMELYX_API numelyx_status numelyx_matrix_select_columns(
+    numelyx_matrix *parent,
+    const size_t *indices,
+    size_t count,
+    numelyx_matrix **view
+);
+
+/** Create a lazy row-major reshape with the same element count. */
+NUMELYX_API numelyx_status numelyx_matrix_reshape(
+    numelyx_matrix *parent,
+    size_t rows,
+    size_t columns,
+    numelyx_matrix **view
+);
+
+/** Create a lazy 1 × N row-vector view of all parent values in row-major order. */
+NUMELYX_API numelyx_status numelyx_matrix_flatten(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+);
+
 /** Create a lazy element-wise sum; the result retains both parents. */
 NUMELYX_API numelyx_status numelyx_matrix_add(
     numelyx_matrix *left,
