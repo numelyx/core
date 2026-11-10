@@ -1,12 +1,12 @@
 # Numelyx Core
 
-Numelyx Core is a standalone C numerical-computing library migrated from the
-native computational layer of [Numerus](https://github.com/ephpicman/Numerus).
+Numelyx Core is a standalone, language-independent C numerical and computational
+engine.
 
 The repository contains the language-independent numerical implementation:
 immutable matrix storage, composable Matrix primitives and views, numerical
-linear algebra, random-number generation, probability distributions, and
-optimization primitives. PHP extension glue, Zend-specific public APIs,
+linear algebra, random-number generation, probability primitives, and
+optimization foundations. PHP extension glue, Zend-specific public APIs,
 PHPT tests, and PHP build configuration are intentionally excluded.
 
 ## Build
@@ -109,5 +109,3 @@ cmake --build build --target matrix_benchmark
 - `tests`: native C regression tests.
 - `docs`: numerical, subsystem, thread-safety, lifetime, and public ABI contracts.
 
-The C symbols retain their upstream `numelyx_core_*` names during the extraction;
-renaming the ABI is a separate compatibility decision.
