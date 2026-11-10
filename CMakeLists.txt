@@ -17,6 +17,7 @@ file(GLOB_RECURSE NUMELYX_CORE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/storage/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/optimization/*.c"
 )
 
 if(NUMELYX_BUILD_SHARED)
@@ -109,6 +110,7 @@ target_include_directories(numelyx_core
         "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/optimization"
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -200,6 +202,7 @@ if(NUMELYX_BUILD_TESTS)
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/optimization"
                 "${CMAKE_CURRENT_SOURCE_DIR}/include"
                 "${NUMELYX_GENERATED_INCLUDE_DIR}"
         )
@@ -259,6 +262,7 @@ if(NUMELYX_BUILD_TESTS)
             "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
             "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
             "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/optimization"
         )
 
         if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS)
@@ -305,6 +309,7 @@ if(NUMELYX_BUILD_BENCHMARKS)
         "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/optimization"
     )
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND UNIX AND NOT APPLE)
         target_link_options(matrix_benchmark PRIVATE
