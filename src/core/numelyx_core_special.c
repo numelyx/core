@@ -186,7 +186,6 @@ numelyx_core_numeric_status numelyx_core_regularized_beta(
 )
 {
     double log_front;
-    double front;
     double value;
     double fraction;
 
