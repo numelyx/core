@@ -39,6 +39,16 @@ set_target_properties(numelyx_core PROPERTIES
 
 find_package(Threads REQUIRED)
 target_link_libraries(numelyx_core PUBLIC Threads::Threads)
+target_compile_definitions(numelyx_core
+    PRIVATE
+        NUMELYX_BUILDING_LIBRARY
+        NUMELYX_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+        NUMELYX_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+        NUMELYX_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+)
+if(NUMELYX_BUILD_SHARED)
+    target_compile_definitions(numelyx_core PUBLIC NUMELYX_SHARED)
+endif()
 
 if(NUMELYX_ENABLE_TSAN)
     if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -89,10 +99,12 @@ include(GNUInstallDirs)
 target_include_directories(numelyx_core
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/core>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/storage>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/matrix>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/statistics>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/core>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/storage>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/matrix>
@@ -140,6 +152,9 @@ foreach(subsystem IN ITEMS core storage matrix statistics)
     )
 endforeach()
 
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
 install(FILES "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx/numelyx.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/numelyx"
 )
