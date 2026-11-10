@@ -58,8 +58,9 @@ The first supported surface should be intentionally small:
 - Core semantic version and ABI-stability introspection.
 - A public status-code namespace.
 - Dense, identity, zero, constant, and diagonal Matrix creation, retain/release,
-  dimensions, and element access through an opaque handle. Structured
-  constructors preserve implicit storage rather than materializing dense data.
+  dimensions, element access, and lazy transpose/slice views through opaque
+  handles. Structured constructors preserve implicit storage rather than
+  materializing dense data; views retain their parent dependencies.
 - Additional storage constructors, views, and numerical operations in later
   API increments.
 - RNG creation, deterministic state operations, sampling, and release.
