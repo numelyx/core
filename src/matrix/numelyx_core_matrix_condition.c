@@ -16,9 +16,71 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+static numelyx_core_matrix_status condition_scaled_one_norm(
+    const numelyx_core_matrix *matrix,
+    size_t size,
+    double *matrix_scale,
+    double *scaled_norm
+)
+{
+    size_t row;
+    size_t column;
+    double scale = 0.0;
+    double norm = 0.0;
+
+    for (row = 0; row < size; row++) {
+        for (column = 0; column < size; column++) {
+            double value;
+            numelyx_core_matrix_status status = numelyx_core_matrix_get(
+                matrix, row, column, &value
+            );
+
+            if (status != NUMERUS_MATRIX_SUCCESS) {
+                return status;
+            }
+            if (!isfinite(value)) {
+                return NUMERUS_MATRIX_NON_FINITE;
+            }
+            if (fabs(value) > scale) {
+                scale = fabs(value);
+            }
+        }
+    }
+
+    if (scale == 0.0) {
+        return NUMERUS_MATRIX_SINGULAR;
+    }
+
+    for (column = 0; column < size; column++) {
+        double column_sum = 0.0;
+
+        for (row = 0; row < size; row++) {
+            double value;
+            numelyx_core_matrix_status status = numelyx_core_matrix_get(
+                matrix, row, column, &value
+            );
+
+            if (status != NUMERUS_MATRIX_SUCCESS) {
+                return status;
+            }
+
+            column_sum += fabs(value / scale);
+        }
+
+        if (column_sum > norm) {
+            norm = column_sum;
+        }
+    }
+
+    *matrix_scale = scale;
+    *scaled_norm = norm;
+    return NUMERUS_MATRIX_SUCCESS;
+}
+
 static numelyx_core_matrix_status condition_solve(
     const numelyx_core_matrix_lu_factorization *factorization,
     size_t size,
+    double matrix_scale,
     const double *right_hand_side,
     double *solution,
     double *work
@@ -43,7 +105,7 @@ static numelyx_core_matrix_status condition_solve(
             }
         }
 
-        value = right_hand_side[source_row];
+        value = matrix_scale * right_hand_side[source_row];
         if (!isfinite(value)) {
             return NUMERUS_MATRIX_NON_FINITE;
         }
@@ -122,6 +184,7 @@ static numelyx_core_matrix_status condition_solve(
 static numelyx_core_matrix_status condition_solve_transpose(
     const numelyx_core_matrix_lu_factorization *factorization,
     size_t size,
+    double matrix_scale,
     const double *right_hand_side,
     double *solution,
     double *work
@@ -132,7 +195,7 @@ static numelyx_core_matrix_status condition_solve_transpose(
     /* Forward substitution: U^T y = b. */
     for (row = 0; row < size; row++) {
         size_t column;
-        double value = right_hand_side[row];
+        double value = matrix_scale * right_hand_side[row];
         double diagonal;
         numelyx_core_matrix_status status;
 
@@ -249,7 +312,8 @@ numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
     size_t index;
     size_t iteration;
     size_t last_index = SIZE_MAX;
-    double matrix_norm;
+    double matrix_scale;
+    double scaled_matrix_norm;
     double inverse_norm = 0.0;
     double *workspace = NULL;
     double *x;
@@ -310,13 +374,26 @@ numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
         goto cleanup;
     }
 
-    status = numelyx_core_matrix_norm_one(matrix, &matrix_norm);
+    status = condition_scaled_one_norm(
+        matrix, size, &matrix_scale, &scaled_matrix_norm
+    );
     if (status != NUMERUS_MATRIX_SUCCESS) {
         goto cleanup;
     }
 
-    for (index = 0; index < size; index++) {
-        x[index] = 1.0 / (double) size;
+    {
+        double initial_component = 1.0 / (double) size;
+
+        if (matrix_scale * initial_component == 0.0) {
+            for (index = 0; index < size; index++) {
+                x[index] = 0.0;
+            }
+            x[0] = 1.0;
+        } else {
+            for (index = 0; index < size; index++) {
+                x[index] = initial_component;
+            }
+        }
     }
 
     /*
@@ -332,7 +409,7 @@ numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
         size_t maximum_index = 0;
 
         status = condition_solve(
-            factorization, size, x, y, work
+            factorization, size, matrix_scale, x, y, work
         );
         if (status != NUMERUS_MATRIX_SUCCESS) {
             goto cleanup;
@@ -351,7 +428,7 @@ numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
         }
 
         status = condition_solve_transpose(
-            factorization, size, signs, z, work
+            factorization, size, matrix_scale, signs, z, work
         );
         if (status != NUMERUS_MATRIX_SUCCESS) {
             goto cleanup;
@@ -381,7 +458,7 @@ numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
         last_index = maximum_index;
     }
 
-    *condition_estimate = matrix_norm * inverse_norm;
+    *condition_estimate = scaled_matrix_norm * inverse_norm;
     status = NUMERUS_MATRIX_SUCCESS;
 
 cleanup:
