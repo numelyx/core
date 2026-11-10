@@ -37,6 +37,10 @@ The implementation uses erf(x)=sign(x) P(1/2,x²) and erfc(x)=Q(1/2,x²) for pos
 
 Inverse erf/erfc reduce to inverse regularized gamma P/Q at shape 1/2. Upper tails use Q directly; the normal quantile uses the erfc inverse and a two-sided tail probability, avoiding the loss of significance in forming 2p-1 near p=0 or p=1. Mathematical endpoint values are represented by signed infinities. A short small-argument expansion avoids squaring tiny erf inputs.
 
+## Log-domain incomplete beta tails
+
+The lower and upper regularized beta tails are evaluated directly in the region where each is small. The opposite log tail is formed with the stable log-one-minus-exp primitive. This preserves finite log probabilities even when the probability itself underflows to zero.
+
 ## Digamma and trigamma
 
 The positive-argument digamma and trigamma functions shift their arguments by recurrence to x >= 8, then evaluate asymptotic Bernoulli expansions. Restricting the current contract to x > 0 avoids reflection near non-positive poles. Non-finite intermediate results are reported as numerical failures and do not modify the output.
@@ -66,6 +70,7 @@ Native tests cover:
 - Gamma lower/upper tail complementarity.
 - Small-x and far-upper-tail gamma values.
 - Beta symmetry and exact endpoints.
+- Log-beta tails for central, lower-extreme, upper-extreme, and exact endpoint cases.
 - Round trips for inverse gamma P/Q and inverse beta over lower, central, and upper probabilities.
 - Inverse probability-domain validation and output preservation.
 - Digamma/trigamma closed-form references at 1, 1/2, and 8, recurrence identities, and invalid-input handling.

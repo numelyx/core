@@ -74,4 +74,14 @@ numelyx_core_numeric_status numelyx_core_regularized_gamma_log_q(
     double a, double x, double *result
 );
 
+/** Log of regularized lower incomplete beta I_x(a,b), retaining tiny tails. */
+numelyx_core_numeric_status numelyx_core_regularized_beta_log_lower(
+    double a, double b, double x, double *result
+);
+
+/** Log of complementary regularized beta tail 1-I_x(a,b), retaining tiny tails. */
+numelyx_core_numeric_status numelyx_core_regularized_beta_log_upper(
+    double a, double b, double x, double *result
+);
+
 #endif

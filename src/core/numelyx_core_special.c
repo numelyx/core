@@ -655,3 +655,86 @@ numelyx_core_numeric_status numelyx_core_normal_quantile(
     *result = quantile;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+static numelyx_core_numeric_status beta_log_tails(
+    double a, double b, double x, double *log_lower, double *log_upper
+)
+{
+    double log_front;
+    double fraction;
+    double direct_log_tail;
+    numelyx_core_numeric_status status;
+
+    if (log_lower == NULL || log_upper == NULL)
+        return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(a) || !isfinite(b) || !isfinite(x))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (a <= 0.0 || b <= 0.0 || x < 0.0 || x > 1.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (x == 0.0) {
+        *log_lower = -INFINITY;
+        *log_upper = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (x == 1.0) {
+        *log_lower = 0.0;
+        *log_upper = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    log_front = lgamma(a + b) - lgamma(a) - lgamma(b) +
+        a * log(x) + b * log1p(-x);
+    if (!isfinite(log_front))
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+
+    if (x < (a + 1.0) / (a + b + 2.0)) {
+        if (!beta_continued_fraction(a, b, x, &fraction) ||
+            fraction <= 0.0)
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        direct_log_tail = log_front + log(fraction) - log(a);
+        if (isnan(direct_log_tail) || direct_log_tail > 0.0)
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        status = numelyx_core_numeric_log1mexp(direct_log_tail, log_upper);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        *log_lower = direct_log_tail;
+    } else {
+        if (!beta_continued_fraction(b, a, 1.0 - x, &fraction) ||
+            fraction <= 0.0)
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        direct_log_tail = log_front + log(fraction) - log(b);
+        if (isnan(direct_log_tail) || direct_log_tail > 0.0)
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        status = numelyx_core_numeric_log1mexp(direct_log_tail, log_lower);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        *log_upper = direct_log_tail;
+    }
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_regularized_beta_log_lower(
+    double a, double b, double x, double *result
+)
+{
+    double log_lower;
+    double log_upper;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = beta_log_tails(a, b, x, &log_lower, &log_upper);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_lower;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_regularized_beta_log_upper(
+    double a, double b, double x, double *result
+)
+{
+    double log_lower;
+    double log_upper;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = beta_log_tails(a, b, x, &log_lower, &log_upper);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_upper;
+    return NUMERUS_NUMERIC_SUCCESS;
+}

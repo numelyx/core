@@ -429,6 +429,30 @@ static void test_inverse_error_function_validation(void)
     assert(value == INFINITY);
 }
 
+
+static void test_regularized_beta_log_tails(void)
+{
+    double value;
+    assert(numelyx_core_regularized_beta_log_lower(
+        2.0, 3.0, 0.2, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, log(0.1808), 3e-14);
+
+    assert(numelyx_core_regularized_beta_log_lower(
+        0.5, 0.5, 1e-20, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -23.477, 1e-3);
+
+    assert(numelyx_core_regularized_beta_log_upper(
+        0.5, 0.5, 1.0 - 1e-12, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(isfinite(value) && value < -20.0);
+
+    assert(numelyx_core_regularized_beta_log_lower(
+        2.0, 3.0, 0.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == -INFINITY);
+    assert(numelyx_core_regularized_beta_log_upper(
+        2.0, 3.0, 1.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == -INFINITY);
+}
+
 int main(void)
 {
     test_regularized_gamma_reference_values();
@@ -440,6 +464,7 @@ int main(void)
     test_inverse_regularized_beta_round_trips();
     test_inverse_special_function_validation();
     test_inverse_special_function_closed_forms();
+    test_regularized_beta_log_tails();
     test_digamma_and_trigamma_reference_values();
     test_digamma_trigamma_validation_and_identities();
     test_high_precision_gamma_reference_vectors();
