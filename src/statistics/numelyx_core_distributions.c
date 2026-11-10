@@ -4,6 +4,7 @@
  */
 #include "numelyx_core_distributions.h"
 #include "numelyx_core_special.h"
+#include "numelyx_core_rng.h"
 
 #include <float.h>
 #include <math.h>
@@ -595,4 +596,57 @@ numelyx_core_numeric_status numelyx_core_chi_square_quantile(
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
     *result = 2.0 * gamma_quantile;
     return NUMERUS_NUMERIC_SUCCESS;
+}
+
+
+numelyx_core_numeric_status numelyx_core_normal_sample(
+    numelyx_core_rng *rng, double location, double scale, double *result
+)
+{
+    numelyx_core_rng *working_rng = NULL;
+    numelyx_core_rng_status rng_status;
+    double standard_normal;
+    double sample;
+    size_t draw;
+    numelyx_core_numeric_status status = NUMERUS_NUMERIC_SUCCESS;
+
+    if (rng == NULL || result == NULL)
+        return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(location) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (scale <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+
+    rng_status = numelyx_core_rng_clone(rng, &working_rng);
+    if (rng_status != NUMERUS_RNG_SUCCESS)
+        return rng_status == NUMERUS_RNG_INVALID_ARGUMENT
+            ? NUMERUS_NUMERIC_INVALID_ARGUMENT
+            : NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+
+    rng_status = numelyx_core_rng_normal(working_rng, &standard_normal);
+    if (rng_status != NUMERUS_RNG_SUCCESS) {
+        status = NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        goto cleanup;
+    }
+
+    sample = location + scale * standard_normal;
+    if (!isfinite(sample)) {
+        status = NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        goto cleanup;
+    }
+
+    /* Commit exactly the raw draw count used by the cloned Box-Muller call. */
+    for (draw = 0; draw < 4; draw++) {
+        uint32_t ignored;
+        rng_status = numelyx_core_rng_next_u32(rng, &ignored);
+        if (rng_status != NUMERUS_RNG_SUCCESS) {
+            status = NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+            goto cleanup;
+        }
+    }
+
+    *result = sample;
+
+cleanup:
+    numelyx_core_rng_destroy(working_rng);
+    return status;
 }

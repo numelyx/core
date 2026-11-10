@@ -1,4 +1,5 @@
 #include "../src/statistics/numelyx_core_distributions.h"
+#include "../src/statistics/numelyx_core_rng.h"
 
 #include <assert.h>
 #include <float.h>
@@ -137,6 +138,42 @@ static void test_student_t_and_chi_square_validation(void)
     assert(value == 17.0);
 }
 
+
+static void test_normal_sampling_reproducibility_and_failure_atomicity(void)
+{
+    numelyx_core_rng *rng_a = NULL;
+    numelyx_core_rng *rng_b = NULL;
+    double sample;
+    double standard_normal;
+    uint32_t next_a;
+    uint32_t next_b;
+    double untouched = 41.0;
+
+    assert(numelyx_core_rng_create(UINT64_C(12345), UINT64_C(7), &rng_a) ==
+        NUMERUS_RNG_SUCCESS);
+    assert(numelyx_core_rng_clone(rng_a, &rng_b) == NUMERUS_RNG_SUCCESS);
+
+    assert(numelyx_core_normal_sample(
+        rng_a, 3.0, 2.0, &sample) == NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_rng_normal(rng_b, &standard_normal) ==
+        NUMERUS_RNG_SUCCESS);
+    close_to(sample, 3.0 + 2.0 * standard_normal, 2e-15);
+
+    assert(numelyx_core_rng_next_u32(rng_a, &next_a) == NUMERUS_RNG_SUCCESS);
+    assert(numelyx_core_rng_next_u32(rng_b, &next_b) == NUMERUS_RNG_SUCCESS);
+    assert(next_a == next_b);
+
+    assert(numelyx_core_normal_sample(
+        rng_a, 0.0, 0.0, &untouched) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(untouched == 41.0);
+    assert(numelyx_core_rng_next_u32(rng_a, &next_a) == NUMERUS_RNG_SUCCESS);
+    assert(numelyx_core_rng_next_u32(rng_b, &next_b) == NUMERUS_RNG_SUCCESS);
+    assert(next_a == next_b);
+
+    numelyx_core_rng_destroy(rng_b);
+    numelyx_core_rng_destroy(rng_a);
+}
+
 int main(void)
 {
     test_normal_distribution_reference_values();
@@ -145,6 +182,7 @@ int main(void)
     test_student_t_distribution_reference_values();
     test_chi_square_distribution_reference_values();
     test_student_t_and_chi_square_validation();
+    test_normal_sampling_reproducibility_and_failure_atomicity();
     puts("Scalar distribution tests passed.");
     return 0;
 }

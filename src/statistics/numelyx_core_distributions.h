@@ -6,6 +6,7 @@
 #define NUMELYX_CORE_DISTRIBUTIONS_H
 
 #include "numelyx_core_numeric.h"
+#include "numelyx_core_rng.h"
 
 /** Normal distribution with finite location and positive finite scale. */
 numelyx_core_numeric_status numelyx_core_normal_log_pdf(
@@ -81,6 +82,11 @@ numelyx_core_numeric_status numelyx_core_chi_square_survival(
 );
 numelyx_core_numeric_status numelyx_core_chi_square_quantile(
     double probability, double degrees_of_freedom, double *result
+);
+
+/** Draw a normal variate from an explicit RNG; output and RNG are unchanged on failure. */
+numelyx_core_numeric_status numelyx_core_normal_sample(
+    numelyx_core_rng *rng, double location, double scale, double *result
 );
 
 #endif
