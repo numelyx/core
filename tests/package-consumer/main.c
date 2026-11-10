@@ -7,9 +7,9 @@ int main(void)
     numelyx_matrix *matrix = NULL;
     numelyx_rng *rng = NULL;
 
-    if (numelyx_core_version_major() != UINT32_C(0)
-        || numelyx_core_version_minor() != UINT32_C(1)
-        || numelyx_core_version_patch() != UINT32_C(0)
+    if (numelyx_core_version_major() != (uint32_t) NUMELYX_EXPECTED_VERSION_MAJOR
+        || numelyx_core_version_minor() != (uint32_t) NUMELYX_EXPECTED_VERSION_MINOR
+        || numelyx_core_version_patch() != (uint32_t) NUMELYX_EXPECTED_VERSION_PATCH
         || numelyx_core_abi_version() != UINT32_C(0)) {
         return 1;
     }
