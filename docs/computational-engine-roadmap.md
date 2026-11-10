@@ -34,19 +34,19 @@ The current public probability API is not a general distribution library. The cu
 
 ## Implementation status on this branch
 
-The following first-stage numerical primitives have been added internally:
-- Stable log-one-minus-exp and log-difference-exp operations, including exact zero-mass endpoints and extreme finite operand handling.
-- Regularized lower/upper incomplete gamma functions using a series and a modified continued fraction.
-- Regularized incomplete beta using a modified continued fraction with symmetry selection and log-domain prefactors.
-- Inverse regularized gamma P/Q and beta using bracketed monotone solves.
-- Positive-argument digamma and trigamma using recurrence and Bernoulli asymptotics.
-- erf/erfc using regularized gamma tails, including direct upper-tail evaluation and small-negative-input handling.
-- Inverse erf/erfc and standard normal quantile using direct gamma-tail inverses.
-- Allocation-free bracketed scalar bisection and safeguarded Newton with sign-safe bracketing, overflow-safe midpoints, derivative fallback, and explicit termination diagnostics.
-- Internal scalar Normal, Student-t, chi-square, Gamma, Beta, and F distributions with density/log-density, CDF/survival, log tails, and quantiles. Normal sampling is backed by an atomic affine Box-Muller draw on the caller-owned RNG.
-- Bracketed inverse regularized gamma P/Q and inverse regularized beta functions, with direct upper-tail evaluation for inverse gamma Q and symmetry handling for upper-tail beta probabilities.
+The following reusable internal primitives have been added. They are not yet a complete public numerical API:
+- Stable log-domain scalar operations, including log1mexp and log-difference-exp.
+- Regularized incomplete gamma P/Q, their log tails, regularized incomplete beta and its log tails, plus bracketed inverse gamma/beta functions.
+- Positive-argument digamma/trigamma and erf/erfc/inverse-erf/normal-quantile support.
+- Scalar Normal, Student-t, chi-square, Gamma, Beta, and F distributions with density/log-density, CDF/survival, log tails, and quantiles.
+- Discrete Poisson and Binomial distributions with PMF/log-PMF, CDF/survival, log tails, and integer quantiles. Counts are capped at 2^53−1 where exact conversion to the double-precision special-function layer is required.
+- Atomic affine Box-Muller sampling against a caller-owned RNG stream.
+- Dense BFGS and O(nm)-memory L-BFGS, plus safeguarded scalar bisection/Newton root solvers.
+- Dense two-phase simplex for max cᵀx subject to Ax ≤ b and x ≥ 0, with Phase-I feasibility and Bland anti-cycling selection.
+- Box-constrained convex QP using PSD validation and projected FISTA. General linear constraints and recession-cone unboundedness detection are not yet implemented.
+- Fuzzy membership functions, t-norms/s-norms, complement, alpha cuts, interval arithmetic, sampled-set defuzzification, and Mamdani/Sugeno aggregation.
 
-Native regression tests and focused numerical-contract documentation cover these functions. They remain internal and are not part of the installed public API. The scalar distribution layer currently includes Normal, Student-t, and chi-square families; it is not yet a complete distribution library. The initial special-function implementation passed the complete CI matrix on commit 7c189a1, including Linux, macOS, Windows, ASan/UBSan, and ThreadSanitizer. The inverse-function additions and their round-trip tests are awaiting the current CI run; broad independent high-precision sweeps remain outstanding.
+Native regression tests and focused subsystem documentation have been added. Each subsystem remains internal pending broader independent reference sweeps, stress testing, performance work, and public API review. CI status must be checked against the latest branch commit; earlier successful runs do not validate later changes.
 
 ## Capability domains
 

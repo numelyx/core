@@ -1,6 +1,6 @@
-# Scalar Distributions: Normal, Student-t, and Chi-square
+# Scalar Continuous and Discrete Distributions
 
-Status: internal normal, Student-t, and chi-square scalar distribution primitives added; validation is ongoing.
+Status: internal Normal, Student-t, chi-square, Gamma, Beta, F, Poisson, and Binomial scalar distribution primitives added; validation is ongoing.
 
 ## Contract
 

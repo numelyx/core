@@ -1,6 +1,6 @@
 # Fuzzy Membership and Algebraic Primitives
 
-Status: initial internal scalar fuzzy primitives added; validation is ongoing.
+Status: internal fuzzy membership, algebraic, alpha-cut, inference-aggregation, and sampled defuzzification primitives added; validation is ongoing.
 
 ## Membership functions
 
@@ -24,7 +24,7 @@ Triangular and trapezoidal fuzzy-number alpha cuts are computed directly for alp
 
 ## Deferred
 
-General membership inversion, fuzzy relations, and fuzzy optimization remain future work. Sampled-set centroid and mean-of-maxima defuzzification are available, along with Mamdani implication/aggregation and weighted-average Sugeno rule aggregation. Interval addition, subtraction, multiplication, and division are now available as the arithmetic kernel for alpha-cut extension operations.
+General membership inversion, fuzzy relations, fuzzy optimization, and full rule-base orchestration remain future work. Sampled-set centroid and mean-of-maxima defuzzification are available, along with Mamdani implication/aggregation and weighted-average Sugeno rule aggregation. Interval addition, subtraction, multiplication, and division are now available as the arithmetic kernel for alpha-cut extension operations.
 
 ## Validation
 
