@@ -116,7 +116,7 @@ numelyx_status numelyx_optimizer_minimize(
     *result = NULL;
 
     if (options == NULL
-        || options->struct_size < sizeof(*options)
+        || options->struct_size < (uint32_t) sizeof(*options)
         || options->version != NUMELYX_OPTIMIZER_OPTIONS_VERSION_1) {
         return NUMELYX_INVALID_ARGUMENT;
     }
