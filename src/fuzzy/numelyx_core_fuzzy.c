@@ -5,6 +5,7 @@
 #include "numelyx_core_fuzzy.h"
 
 #include <float.h>
+#include <stddef.h>
 #include <math.h>
 
 static numelyx_core_fuzzy_status validate_membership_input(
