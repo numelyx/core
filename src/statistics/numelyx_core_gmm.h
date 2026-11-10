@@ -24,4 +24,12 @@ numelyx_core_inference_status numelyx_core_gmm_evaluate(
     double *gauss_newton_hessian
 );
 
+/** Hansen J overidentification p-value in log form, df = moments - parameters. */
+numelyx_core_inference_status numelyx_core_gmm_overidentification_log_p_value(
+    double j_statistic,
+    size_t moment_count,
+    size_t parameter_count,
+    double *log_p_value
+);
+
 #endif

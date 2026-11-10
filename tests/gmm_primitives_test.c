@@ -43,8 +43,19 @@ static void test_gmm_multivariate_and_output_preservation(void){
   assert(one_objective==17&&one_gradient==18&&one_hessian==19);
  }
 }
+
+static void test_gmm_overidentification_test(void){
+ double logp=99;
+ assert(numelyx_core_gmm_overidentification_log_p_value(
+  2.0,3,1,&logp)==NUMELYX_INFERENCE_SUCCESS);
+ close_to(logp,-1.0,2e-14);
+ logp=99;
+ assert(numelyx_core_gmm_overidentification_log_p_value(
+  2.0,2,2,&logp)==NUMELYX_INFERENCE_INVALID_ARGUMENT);
+ assert(logp==99);
+}
 int main(void){
  test_gmm_objective_gradient_and_curvature();
- test_gmm_multivariate_and_output_preservation();
+ test_gmm_multivariate_and_output_preservation(); test_gmm_overidentification_test();
  puts("GMM primitive tests passed.");return 0;
 }

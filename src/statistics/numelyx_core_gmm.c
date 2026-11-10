@@ -212,3 +212,27 @@ cleanup:
     free(hessian_candidate);
     return status;
 }
+
+
+numelyx_core_inference_status numelyx_core_gmm_overidentification_log_p_value(
+    double j_statistic,
+    size_t moment_count,
+    size_t parameter_count,
+    double *log_p_value
+)
+{
+    double value;
+    numelyx_core_numeric_status status;
+    if (log_p_value == NULL || moment_count == 0 || parameter_count == 0)
+        return NUMELYX_INFERENCE_INVALID_ARGUMENT;
+    if (!isfinite(j_statistic))
+        return NUMELYX_INFERENCE_NON_FINITE_INPUT;
+    if (j_statistic < 0.0 || moment_count <= parameter_count)
+        return NUMELYX_INFERENCE_INVALID_ARGUMENT;
+    status = numelyx_core_chi_square_log_survival(
+        j_statistic, (double) (moment_count - parameter_count), &value);
+    if (status != NUMERUS_NUMERIC_SUCCESS)
+        return NUMELYX_INFERENCE_NUMERICAL_FAILURE;
+    *log_p_value = value;
+    return NUMELYX_INFERENCE_SUCCESS;
+}

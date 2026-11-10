@@ -6,4 +6,4 @@ Given a moment vector g(θ), symmetric weighting matrix W, and caller-supplied m
 
 The weighting matrix must be symmetric. Positive semidefiniteness is expected from the caller; materially negative objective values are rejected. Outputs are committed only after all requested quantities have been computed and checked for finiteness. Accumulations use compensated summation and dimensions are checked before allocation.
 
-Native tests cover hand-computable objective, gradient, curvature, multivariate weighting, symmetry validation, and output preservation.
+The layer also provides the Hansen J overidentification log-p-value using chi-square degrees of freedom equal to moment count minus parameter count. Native tests cover hand-computable objective, gradient, curvature, multivariate weighting, symmetry validation, overidentification inference, and output preservation.
