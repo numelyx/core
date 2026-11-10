@@ -74,6 +74,45 @@ int main(void)
         || !close_to(scalar, 2.0))
         goto fail;
 
+    if (numelyx_matrix_symmetric_eigen(
+            a, &u, &vt) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(u) != 2
+        || numelyx_matrix_columns(u) != 1
+        || numelyx_matrix_rows(vt) != 2
+        || numelyx_matrix_columns(vt) != 2)
+        goto fail;
+    numelyx_matrix_release(u); u = NULL;
+    numelyx_matrix_release(vt); vt = NULL;
+    if (numelyx_matrix_ldlt_decompose(
+            a, &u, &vt) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(u) != 2
+        || numelyx_matrix_rows(vt) != 2)
+        goto fail;
+    numelyx_matrix_release(u); u = NULL;
+    numelyx_matrix_release(vt); vt = NULL;
+    if (numelyx_matrix_spectral_norm(a, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 2.0)
+        || numelyx_matrix_condition_estimate_one(a, &scalar)
+            != NUMELYX_SUCCESS || !close_to(scalar, 2.0))
+        goto fail;
+    {
+        int positive_definite = 0, positive_semidefinite = 0;
+        if (numelyx_matrix_classify_definiteness(
+                a, &positive_definite, &positive_semidefinite)
+                != NUMELYX_SUCCESS
+            || !positive_definite || !positive_semidefinite)
+            goto fail;
+    }
+    if (numelyx_matrix_sum(a, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 5.0)
+        || numelyx_matrix_mean(a, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 1.25)
+        || numelyx_matrix_variance(a, 0, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 1.1875)
+        || numelyx_matrix_variance(a, 2, &scalar)
+            != NUMELYX_INVALID_ARGUMENT)
+        goto fail;
+
     numelyx_matrix_release(a); a = NULL;
     numelyx_matrix_release(b); b = NULL;
     if (numelyx_matrix_create_dense(3, 2, design, &a) != NUMELYX_SUCCESS
