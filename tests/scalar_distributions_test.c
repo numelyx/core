@@ -144,6 +144,7 @@ static void test_normal_sampling_reproducibility_and_failure_atomicity(void)
     numelyx_core_rng *rng_a = NULL;
     numelyx_core_rng *rng_b = NULL;
     numelyx_core_rng *rng_c = NULL;
+    numelyx_core_rng *rng_d = NULL;
     double sample;
     double standard_normal;
     uint32_t next_a;
@@ -172,7 +173,8 @@ static void test_normal_sampling_reproducibility_and_failure_atomicity(void)
     assert(next_a == next_b);
 
     assert(numelyx_core_rng_clone(rng_a, &rng_c) == NUMERUS_RNG_SUCCESS);
-    assert(numelyx_core_rng_normal(rng_c, &standard_normal) ==
+    assert(numelyx_core_rng_clone(rng_a, &rng_d) == NUMERUS_RNG_SUCCESS);
+    assert(numelyx_core_rng_normal(rng_d, &standard_normal) ==
         NUMERUS_RNG_SUCCESS);
     untouched = 41.0;
     assert(numelyx_core_normal_sample(
@@ -186,6 +188,7 @@ static void test_normal_sampling_reproducibility_and_failure_atomicity(void)
     assert(numelyx_core_rng_next_u32(rng_c, &next_b) == NUMERUS_RNG_SUCCESS);
     assert(next_a == next_b);
 
+    numelyx_core_rng_destroy(rng_d);
     numelyx_core_rng_destroy(rng_c);
     numelyx_core_rng_destroy(rng_b);
     numelyx_core_rng_destroy(rng_a);
