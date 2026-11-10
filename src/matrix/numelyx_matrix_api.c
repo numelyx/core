@@ -1057,6 +1057,106 @@ numelyx_status numelyx_matrix_trace(
 }
 
 
+
+numelyx_status numelyx_matrix_column_space_basis(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **basis,
+    size_t *dimension
+)
+{
+    if (basis == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *basis = NULL;
+    return map_matrix_status(numelyx_core_matrix_column_space_basis(
+        matrix, basis, dimension));
+}
+
+numelyx_status numelyx_matrix_row_space_basis(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **basis,
+    size_t *dimension
+)
+{
+    if (basis == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *basis = NULL;
+    return map_matrix_status(numelyx_core_matrix_row_space_basis(
+        matrix, basis, dimension));
+}
+
+numelyx_status numelyx_matrix_null_space(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **basis,
+    size_t *nullity
+)
+{
+    if (basis == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *basis = NULL;
+    return map_matrix_status(numelyx_core_matrix_null_space(
+        matrix, basis, nullity));
+}
+
+numelyx_status numelyx_matrix_has_nan(
+    const numelyx_matrix *matrix,
+    int *has_nan
+)
+{
+    bool result;
+    numelyx_core_matrix_status status;
+
+    if (has_nan == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    status = numelyx_core_matrix_has_nan(matrix, &result);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+    *has_nan = result ? 1 : 0;
+    return NUMELYX_SUCCESS;
+}
+
+numelyx_status numelyx_matrix_has_infinity(
+    const numelyx_matrix *matrix,
+    int *has_infinity
+)
+{
+    bool result;
+    numelyx_core_matrix_status status;
+
+    if (has_infinity == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    status = numelyx_core_matrix_has_infinity(matrix, &result);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+    *has_infinity = result ? 1 : 0;
+    return NUMELYX_SUCCESS;
+}
+
+numelyx_status numelyx_matrix_is_finite(
+    const numelyx_matrix *matrix,
+    int *is_finite
+)
+{
+    bool result;
+    numelyx_core_matrix_status status;
+
+    if (is_finite == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    status = numelyx_core_matrix_is_finite(matrix, &result);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+    *is_finite = result ? 1 : 0;
+    return NUMELYX_SUCCESS;
+}
+
 numelyx_status numelyx_matrix_symmetric_eigen(
     const numelyx_matrix *matrix,
     numelyx_matrix **eigenvalues,
