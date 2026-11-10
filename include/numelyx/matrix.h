@@ -327,6 +327,80 @@ NUMELYX_API numelyx_status numelyx_matrix_solve(
     numelyx_matrix **solution
 );
 
+/** Compute signed log(|det(A)|) without forming the determinant product. */
+NUMELYX_API numelyx_status numelyx_matrix_log_determinant(
+    const numelyx_matrix *matrix, int *sign, double *log_abs_determinant
+);
+
+/** Reduced Householder QR decomposition A = Q R. */
+NUMELYX_API numelyx_status numelyx_matrix_qr_decompose(
+    const numelyx_matrix *matrix, numelyx_matrix **q, numelyx_matrix **r
+);
+
+/** Reduced SVD A = U Sigma V^T; singular values are descending. */
+NUMELYX_API numelyx_status numelyx_matrix_svd(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **u,
+    numelyx_matrix **singular_values,
+    numelyx_matrix **vt
+);
+
+/** Moore-Penrose pseudoinverse computed from the reduced SVD. */
+NUMELYX_API numelyx_status numelyx_matrix_pseudoinverse(
+    const numelyx_matrix *matrix, numelyx_matrix **pseudoinverse
+);
+
+/** Cholesky factor L for symmetric positive-definite A = L L^T. */
+NUMELYX_API numelyx_status numelyx_matrix_cholesky(
+    const numelyx_matrix *matrix, numelyx_matrix **lower
+);
+
+/** Solve min ||A X - B||_2 using column-pivoted QR. */
+NUMELYX_API numelyx_status numelyx_matrix_least_squares(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    numelyx_matrix **solution
+);
+
+/** Solve weighted least squares using nonnegative row weights. */
+NUMELYX_API numelyx_status numelyx_matrix_weighted_least_squares(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    const double *weights,
+    size_t weights_count,
+    numelyx_matrix **solution
+);
+
+/** Estimate numerical rank using scale-aware complete pivoting. */
+NUMELYX_API numelyx_status numelyx_matrix_rank(
+    const numelyx_matrix *matrix, size_t *rank
+);
+
+/** Solve T X = B or T^T X = B by triangular substitution. */
+NUMELYX_API numelyx_status numelyx_matrix_solve_triangular(
+    const numelyx_matrix *triangular,
+    const numelyx_matrix *right_hand_side,
+    int lower,
+    int transpose,
+    numelyx_matrix **solution
+);
+
+/** Compute the Frobenius, induced 1-, or induced infinity-norm. */
+NUMELYX_API numelyx_status numelyx_matrix_norm_frobenius(
+    const numelyx_matrix *matrix, double *norm
+);
+NUMELYX_API numelyx_status numelyx_matrix_norm_one(
+    const numelyx_matrix *matrix, double *norm
+);
+NUMELYX_API numelyx_status numelyx_matrix_norm_infinity(
+    const numelyx_matrix *matrix, double *norm
+);
+
+/** Compute the trace of a square matrix. */
+NUMELYX_API numelyx_status numelyx_matrix_trace(
+    const numelyx_matrix *matrix, double *trace
+);
+
 /** Retain one additional owned reference; the caller must already own one. */
 NUMELYX_API numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix);
 
