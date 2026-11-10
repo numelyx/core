@@ -2,7 +2,7 @@ name: C Core
 
 on:
   push:
-    branches: [main, migration, refactor/public-build-packaging]
+    branches: [main, migration, refactor/public-build-packaging, 'feature/**']
   pull_request:
   workflow_dispatch:
 

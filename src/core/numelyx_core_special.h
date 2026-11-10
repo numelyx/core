@@ -1,0 +1,92 @@
+/**
+ * @file numelyx_core_special.h
+ * @brief Stable special-function primitives used by probability algorithms.
+ */
+#ifndef NUMELYX_CORE_SPECIAL_H
+#define NUMELYX_CORE_SPECIAL_H
+
+#include "numelyx_core_numeric.h"
+
+/** Regularized lower incomplete gamma P(a,x), finite a > 0 and x >= 0. */
+numelyx_core_numeric_status numelyx_core_regularized_gamma_p(
+    double a, double x, double *result
+);
+
+/** Regularized upper incomplete gamma Q(a,x), finite a > 0 and x >= 0. */
+numelyx_core_numeric_status numelyx_core_regularized_gamma_q(
+    double a, double x, double *result
+);
+
+/** Regularized incomplete beta I_x(a,b), finite a,b > 0 and x in [0,1]. */
+numelyx_core_numeric_status numelyx_core_regularized_beta(
+    double a, double b, double x, double *result
+);
+
+/**
+ * Inverse of P(a,x). Requires finite a > 0 and probability in (0,1).
+ * Uses a bracketed monotone solve; output is unchanged on failure.
+ */
+numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_p(
+    double a, double probability, double *result
+);
+
+/**
+ * Inverse of Q(a,x). Requires finite a > 0 and probability in (0,1).
+ * Evaluates the upper tail directly during inversion.
+ */
+numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_q(
+    double a, double probability, double *result
+);
+
+/**
+ * Inverse of I_x(a,b). Requires finite a,b > 0 and probability in (0,1).
+ * Uses beta symmetry for upper-tail probabilities.
+ */
+numelyx_core_numeric_status numelyx_core_inverse_regularized_beta(
+    double a, double b, double probability, double *result
+);
+
+/** Digamma psi(x), for finite x > 0. */
+numelyx_core_numeric_status numelyx_core_digamma(double x, double *result);
+
+/** Trigamma psi_1(x), for finite x > 0. */
+numelyx_core_numeric_status numelyx_core_trigamma(double x, double *result);
+
+/** Error function erf(x), for finite real x. */
+numelyx_core_numeric_status numelyx_core_erf(double x, double *result);
+
+/** Complementary error function erfc(x), for finite real x. */
+numelyx_core_numeric_status numelyx_core_erfc(double x, double *result);
+
+/** Inverse error function; accepts finite y in [-1,1]. */
+numelyx_core_numeric_status numelyx_core_inverse_erf(double y, double *result);
+
+/** Inverse complementary error function; accepts finite y in [0,2]. */
+numelyx_core_numeric_status numelyx_core_inverse_erfc(double y, double *result);
+
+/** Standard normal quantile; accepts finite probability p in [0,1]. */
+numelyx_core_numeric_status numelyx_core_normal_quantile(
+    double probability, double *result
+);
+
+/** Log of regularized upper incomplete gamma Q(a,x), retaining underflowed tails. */
+numelyx_core_numeric_status numelyx_core_regularized_gamma_log_q(
+    double a, double x, double *result
+);
+
+/** Log of regularized lower incomplete beta I_x(a,b), retaining tiny tails. */
+numelyx_core_numeric_status numelyx_core_regularized_beta_log_lower(
+    double a, double b, double x, double *result
+);
+
+/** Log of complementary regularized beta tail 1-I_x(a,b), retaining tiny tails. */
+numelyx_core_numeric_status numelyx_core_regularized_beta_log_upper(
+    double a, double b, double x, double *result
+);
+
+/** Log of regularized lower incomplete gamma P(a,x), retaining tiny tails. */
+numelyx_core_numeric_status numelyx_core_regularized_gamma_log_p(
+    double a, double x, double *result
+);
+
+#endif

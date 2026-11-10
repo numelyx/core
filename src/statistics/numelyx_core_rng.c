@@ -212,37 +212,39 @@ numelyx_core_rng_status numelyx_core_rng_uniform(
     return NUMERUS_RNG_SUCCESS;
 }
 
-numelyx_core_rng_status numelyx_core_rng_normal(
+numelyx_core_rng_status numelyx_core_rng_normal_affine(
     numelyx_core_rng *rng,
+    double location,
+    double scale,
     double *value
 )
 {
     const double two_pi = 6.2831853071795864769252867665590057683943387987502;
+    uint64_t original_state;
     uint64_t radial_bits;
     uint64_t angular_bits;
     double u1;
     double u2;
+    double standard_normal;
     double result;
 
-    if (rng == NULL || value == NULL) {
+    if (rng == NULL || value == NULL || !isfinite(location) ||
+        !isfinite(scale) || scale <= 0.0) {
         return NUMERUS_RNG_INVALID_ARGUMENT;
     }
+    if (!numelyx_core_mutex_lock(&rng->mutex))
+        return NUMERUS_RNG_INVALID_ARGUMENT;
 
-    if (!numelyx_core_mutex_lock(&rng->mutex)) {
-        return NUMERUS_RNG_INVALID_ARGUMENT;
-    }
+    original_state = rng->state;
     radial_bits = numelyx_core_rng_next_53_bits(rng);
     angular_bits = numelyx_core_rng_next_53_bits(rng);
-
-    /*
-     * Add one before scaling to obtain u1 in (0, 1]. This prevents log(0)
-     * while keeping consumption fixed at four raw outputs per normal value.
-     */
     u1 = (double) (radial_bits + 1u) / 9007199254740992.0;
     u2 = (double) angular_bits / 9007199254740992.0;
-    result = sqrt(-2.0 * log(u1)) * cos(two_pi * u2);
+    standard_normal = sqrt(-2.0 * log(u1)) * cos(two_pi * u2);
+    result = location + scale * standard_normal;
 
-    if (!isfinite(result)) {
+    if (!isfinite(standard_normal) || !isfinite(result)) {
+        rng->state = original_state;
         (void) numelyx_core_mutex_unlock(&rng->mutex);
         return NUMERUS_RNG_NUMERICAL_FAILURE;
     }
@@ -250,6 +252,14 @@ numelyx_core_rng_status numelyx_core_rng_normal(
     *value = result;
     (void) numelyx_core_mutex_unlock(&rng->mutex);
     return NUMERUS_RNG_SUCCESS;
+}
+
+numelyx_core_rng_status numelyx_core_rng_normal(
+    numelyx_core_rng *rng,
+    double *value
+)
+{
+    return numelyx_core_rng_normal_affine(rng, 0.0, 1.0, value);
 }
 
 int numelyx_core_rng_lock_internal(numelyx_core_rng *rng)

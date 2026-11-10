@@ -160,12 +160,73 @@ static void test_log_sum_exp_stability_and_validation(void)
     ) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
 }
 
+
+static void test_log1mexp_stability_and_domain(void)
+{
+    const double near_zero = -1e-16;
+    const double moderate = -1.0;
+    double value = 91.0;
+
+    assert(numelyx_core_numeric_log1mexp(0.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == -INFINITY);
+
+    assert(numelyx_core_numeric_log1mexp(near_zero, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert_close(value, log(-expm1(near_zero)), 1e-15);
+
+    assert(numelyx_core_numeric_log1mexp(moderate, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert_close(value, log1p(-exp(moderate)), 1e-15);
+
+    value = 91.0;
+    assert(numelyx_core_numeric_log1mexp(0.1, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 91.0);
+    assert(numelyx_core_numeric_log1mexp(NAN, &value) ==
+        NUMERUS_NUMERIC_NON_FINITE);
+    assert(value == 91.0);
+    assert(numelyx_core_numeric_log1mexp(-1.0, NULL) ==
+        NUMERUS_NUMERIC_INVALID_ARGUMENT);
+}
+
+static void test_log_diff_exp_stability_and_domain(void)
+{
+    const double a = 1000.0;
+    const double b = 999.0;
+    double value = 73.0;
+
+    assert(numelyx_core_numeric_log_diff_exp(a, b, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert_close(value, a + log1p(-exp(b - a)), 1e-12);
+
+    assert(numelyx_core_numeric_log_diff_exp(-2.0, -2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == -INFINITY);
+
+    assert(numelyx_core_numeric_log_diff_exp(DBL_MAX, -DBL_MAX, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == DBL_MAX);
+
+    value = 73.0;
+    assert(numelyx_core_numeric_log_diff_exp(1.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 73.0);
+    assert(numelyx_core_numeric_log_diff_exp(INFINITY, 0.0, &value) ==
+        NUMERUS_NUMERIC_NON_FINITE);
+    assert(value == 73.0);
+    assert(numelyx_core_numeric_log_diff_exp(1.0, 0.0, NULL) ==
+        NUMERUS_NUMERIC_INVALID_ARGUMENT);
+}
+
 int main(void)
 {
     test_sigmoid_stability();
     test_logit_domain_and_endpoints();
     test_softplus_and_log_sigmoid_extremes();
     test_log_sum_exp_stability_and_validation();
+    test_log1mexp_stability_and_domain();
+    test_log_diff_exp_stability_and_domain();
     puts("Stable scalar numerical tests passed.");
     return 0;
 }

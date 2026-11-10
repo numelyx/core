@@ -74,10 +74,18 @@ numelyx_core_rng_status numelyx_core_rng_uniform(
 );
 
 /**
+ * Draw an affine-transformed normal variate atomically under the RNG lock.
+ * Exactly four raw outputs are consumed on success; state and output are
+ * unchanged on validation or numerical failure.
+ */
+numelyx_core_rng_status numelyx_core_rng_normal_affine(
+    numelyx_core_rng *rng, double location, double scale, double *value
+);
+
+/**
  * Return one standard normal variate using Box-Muller without caching.
- * Exactly four raw PCG32 outputs are consumed for a valid call. The output
- * remains unchanged on failure; the state may already have advanced if a
- * platform math failure is detected after consuming those outputs.
+ * Exactly four raw PCG32 outputs are consumed on success. The state and
+ * output are both restored/unchanged if the generated variate is non-finite.
  */
 numelyx_core_rng_status numelyx_core_rng_normal(
     numelyx_core_rng *rng,

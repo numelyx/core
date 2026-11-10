@@ -140,4 +140,25 @@ numelyx_core_numeric_status numelyx_core_numeric_log_sum_exp(
 );
 
 
+/**
+ * Compute log(1 - exp(x)) for finite x <= 0.
+ * The exact endpoint x == 0 returns -INFINITY, representing log(0).
+ * Output is unchanged on failure.
+ */
+numelyx_core_numeric_status numelyx_core_numeric_log1mexp(
+    double input,
+    double *result
+);
+
+/**
+ * Compute log(exp(a) - exp(b)) for finite a >= b.
+ * Equal inputs return -INFINITY, representing log(0).
+ * Output is unchanged on failure.
+ */
+numelyx_core_numeric_status numelyx_core_numeric_log_diff_exp(
+    double a,
+    double b,
+    double *result
+);
+
 #endif
