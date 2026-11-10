@@ -1155,7 +1155,7 @@ numelyx_core_numeric_status numelyx_core_f_quantile(
 }
 
 
-#define NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT UINT64_C(9007199254740992)
+#define NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT UINT64_C(9007199254740991)
 
 static numelyx_core_numeric_status validate_count_rate(
     uint64_t count, double rate, double *result
@@ -1416,7 +1416,8 @@ static numelyx_core_numeric_status binomial_log_tails(
     x = 1.0 - probability;
     status = numelyx_core_regularized_beta_log_lower(a, b, x, log_cdf);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
-    return numelyx_core_regularized_beta_log_upper(a, b, x, log_survival);
+    return numelyx_core_regularized_beta_log_lower(
+        b, a, probability, log_survival);
 }
 
 numelyx_core_numeric_status numelyx_core_binomial_log_cdf(

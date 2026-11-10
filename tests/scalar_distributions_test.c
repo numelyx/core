@@ -318,6 +318,9 @@ static void test_poisson_distribution_reference_values(void)
     assert(numelyx_core_poisson_pmf(1, 0.0, &value) ==
         NUMERUS_NUMERIC_SUCCESS);
     assert(value == 0.0);
+    assert(numelyx_core_poisson_log_survival(0, 1e-20, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, log(1e-20), 2e-12);
 }
 
 static void test_binomial_distribution_reference_values(void)
@@ -342,6 +345,9 @@ static void test_binomial_distribution_reference_values(void)
     assert(numelyx_core_binomial_quantile(1.0, 10, 0.3, &quantile) ==
         NUMERUS_NUMERIC_SUCCESS);
     assert(quantile == 10);
+    assert(numelyx_core_binomial_log_survival(0, 2, 1e-20, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, log(2e-20), 2e-12);
 }
 
 static void test_discrete_distribution_validation(void)
