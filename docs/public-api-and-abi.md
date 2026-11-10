@@ -67,8 +67,9 @@ The first supported surface should be intentionally small:
   API increments.
 - RNG creation, exact-state cloning, retain/release, deterministic raw output,
   uniform/normal sampling, and index sampling with an explicit Core deallocator.
-- BFGS optimizer options, objective/gradient callbacks, minimization, immutable
-  result ownership, and result inspection through an opaque handle.
+- BFGS optimizer options with explicit structure-size/version fields,
+  objective/gradient callbacks, minimization, immutable result ownership, and
+  result inspection through an opaque handle.
 - Multivariate Gaussian log density and sampling using the existing Matrix and
   RNG handles; density uses Cholesky/log-determinant operations rather than
   explicit covariance inversion.
