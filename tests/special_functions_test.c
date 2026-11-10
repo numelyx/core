@@ -189,6 +189,52 @@ static void test_inverse_special_function_validation(void)
         2.0, 3.0, 0.5, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
 }
 
+
+static void test_digamma_and_trigamma_reference_values(void)
+{
+    double value;
+    /* psi(1) = -EulerGamma; psi(1/2) = -gamma - 2 log(2). */
+    assert(numelyx_core_digamma(1.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -0.5772156649015328606, 3e-14);
+    assert(numelyx_core_digamma(0.5, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -0.5772156649015328606 - 2.0 * log(2.0), 4e-14);
+    assert(numelyx_core_digamma(8.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 2.0156414779556099965, 4e-14);
+
+    /* psi_1(1) = pi^2/6; psi_1(1/2) = pi^2/2. */
+    assert(numelyx_core_trigamma(1.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.6449340668482264365, 4e-14);
+    assert(numelyx_core_trigamma(0.5, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 4.9348022005446793094, 8e-14);
+    assert(numelyx_core_trigamma(8.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.1331370146940314251, 4e-14);
+}
+
+static void test_digamma_trigamma_validation_and_identities(void)
+{
+    double psi_x;
+    double psi_next;
+    double tri_x;
+    double tri_next;
+    double output = 23.0;
+
+    assert(numelyx_core_digamma(2.25, &psi_x) == NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_digamma(3.25, &psi_next) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(psi_next - psi_x, 1.0 / 2.25, 2e-14);
+
+    assert(numelyx_core_trigamma(2.25, &tri_x) == NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_trigamma(3.25, &tri_next) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(tri_x - tri_next, 1.0 / (2.25 * 2.25), 2e-14);
+
+    assert(numelyx_core_digamma(0.0, &output) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(output == 23.0);
+    assert(numelyx_core_trigamma(-1.0, &output) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(output == 23.0);
+    assert(numelyx_core_digamma(INFINITY, &output) == NUMERUS_NUMERIC_NON_FINITE);
+    assert(output == 23.0);
+    assert(numelyx_core_trigamma(1.0, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
+}
+
 int main(void)
 {
     test_regularized_gamma_reference_values();
@@ -200,6 +246,8 @@ int main(void)
     test_inverse_regularized_beta_round_trips();
     test_inverse_special_function_validation();
     test_inverse_special_function_closed_forms();
+    test_digamma_and_trigamma_reference_values();
+    test_digamma_trigamma_validation_and_identities();
     puts("Special-function tests passed.");
     return 0;
 }
