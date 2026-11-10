@@ -567,7 +567,7 @@ numelyx_core_numeric_status numelyx_core_inverse_erfc(double y, double *result)
             0.5, y, &gamma_argument);
         magnitude = 1.0;
     } else {
-        status = numelyx_core_inverse_regularized_gamma_p(
+        status = numelyx_core_inverse_regularized_gamma_q(
             0.5, 2.0 - y, &gamma_argument);
         magnitude = -1.0;
     }

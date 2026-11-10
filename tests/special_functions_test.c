@@ -378,6 +378,8 @@ static void test_inverse_erf_erfc_reference_values(void)
     assert(numelyx_core_inverse_erfc(1.84270079294971486934, &value) ==
         NUMERUS_NUMERIC_SUCCESS);
     close_to(value, -1.0, 3e-13);
+    assert(numelyx_core_inverse_erfc(1.5, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -0.47693627620446987338, 3e-13);
     assert(numelyx_core_inverse_erf(1e-10, &value) == NUMERUS_NUMERIC_SUCCESS);
     close_to(value, 8.8622692545275801365e-11, 2e-20);
 }
