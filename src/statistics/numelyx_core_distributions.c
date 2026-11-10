@@ -1567,7 +1567,18 @@ numelyx_core_numeric_status numelyx_core_uniform_log_pdf(
     numelyx_core_numeric_status status =
         validate_interval_distribution(x, lower, upper, result);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
-    *result = x < lower || x > upper ? -INFINITY : -log(upper - lower);
+    if (x < lower || x > upper) {
+        *result = -INFINITY;
+    } else {
+        double width = upper - lower;
+        double log_width;
+        if (isfinite(width)) {
+            log_width = log(width);
+        } else {
+            log_width = log(upper * 0.5 - lower * 0.5) + log(2.0);
+        }
+        *result = -log_width;
+    }
     return NUMERUS_NUMERIC_SUCCESS;
 }
 
@@ -1596,10 +1607,15 @@ static void uniform_log_tails(
         *log_cdf = 0.0;
         *log_survival = -INFINITY;
     } else {
-        double cdf = (x - lower) / (upper - lower);
-        double survival = (upper - x) / (upper - lower);
-        *log_cdf = log(cdf);
-        *log_survival = log(survival);
+        double coordinate_scale = fmax(fabs(lower), fabs(upper));
+        double scaled_lower = lower / coordinate_scale;
+        double scaled_upper = upper / coordinate_scale;
+        double scaled_x = x / coordinate_scale;
+        double width = scaled_upper - scaled_lower;
+        double cdf = (scaled_x - scaled_lower) / width;
+        double survival = (scaled_upper - scaled_x) / width;
+        *log_cdf = log(fmin(1.0, fmax(0.0, cdf)));
+        *log_survival = log(fmin(1.0, fmax(0.0, survival)));
     }
 }
 
@@ -1630,7 +1646,7 @@ numelyx_core_numeric_status numelyx_core_uniform_quantile(
         return NUMERUS_NUMERIC_NON_FINITE;
     if (probability < 0.0 || probability > 1.0 || lower >= upper)
         return NUMERUS_NUMERIC_DOMAIN_ERROR;
-    *result = lower + probability * (upper - lower);
+    *result = (1.0 - probability) * lower + probability * upper;
     return NUMERUS_NUMERIC_SUCCESS;
 }
 
@@ -1970,7 +1986,7 @@ static numelyx_core_numeric_status lognormal_log_tails(
         *log_survival = 0.0;
         return NUMERUS_NUMERIC_SUCCESS;
     }
-    return numelyx_core_normal_log_tails(
+    return normal_log_tails(
         log(x), log_location, log_scale, log_cdf, log_survival);
 }
 
