@@ -3,15 +3,25 @@
 #include <numelyx/version.h>
 #include <numelyx/status.h>
 
+#ifndef NUMELYX_EXPECTED_VERSION_MAJOR
+#    define NUMELYX_EXPECTED_VERSION_MAJOR 0
+#endif
+#ifndef NUMELYX_EXPECTED_VERSION_MINOR
+#    define NUMELYX_EXPECTED_VERSION_MINOR 1
+#endif
+#ifndef NUMELYX_EXPECTED_VERSION_PATCH
+#    define NUMELYX_EXPECTED_VERSION_PATCH 0
+#endif
+
 int main(void)
 {
-    if (numelyx_core_version_major() != UINT32_C(0)) {
+    if (numelyx_core_version_major() != UINT32_C(NUMELYX_EXPECTED_VERSION_MAJOR)) {
         return 1;
     }
-    if (numelyx_core_version_minor() != UINT32_C(1)) {
+    if (numelyx_core_version_minor() != UINT32_C(NUMELYX_EXPECTED_VERSION_MINOR)) {
         return 2;
     }
-    if (numelyx_core_version_patch() != UINT32_C(0)) {
+    if (numelyx_core_version_patch() != UINT32_C(NUMELYX_EXPECTED_VERSION_PATCH)) {
         return 3;
     }
     if (numelyx_core_abi_version() != UINT32_C(0)) {
