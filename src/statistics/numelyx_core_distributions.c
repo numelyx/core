@@ -40,9 +40,9 @@ static numelyx_core_numeric_status normal_log_tails(
 )
 {
     double z = standardized_difference(x, location, scale);
-    double q;
     double log_q;
     double gamma_argument;
+    double log_small_tail;
     numelyx_core_numeric_status status;
 
     if (isinf(z)) {
@@ -56,23 +56,23 @@ static numelyx_core_numeric_status normal_log_tails(
         return NUMERUS_NUMERIC_SUCCESS;
     }
 
-    if (fabs(z) > sqrt(DBL_MAX) * sqrt(2.0)) {
-        q = 0.0;
+    if (fabs(z) > sqrt(DBL_MAX) * sqrt(2.0) * sqrt(2.0)) {
+        log_q = -INFINITY;
     } else {
         gamma_argument = 0.5 * z * z;
-        status = numelyx_core_regularized_gamma_q(
-            0.5, gamma_argument, &q
+        status = numelyx_core_regularized_gamma_log_q(
+            0.5, gamma_argument, &log_q
         );
         if (status != NUMERUS_NUMERIC_SUCCESS) return status;
     }
 
-    log_q = q == 0.0 ? -INFINITY : log(q);
+    log_small_tail = NUMELYX_LOG_HALF + log_q;
     if (z < 0.0) {
-        *log_cdf = NUMELYX_LOG_HALF + log_q;
-        *log_survival = log1p(-0.5 * q);
+        *log_cdf = log_small_tail;
+        *log_survival = log1p(-exp(log_small_tail));
     } else {
-        *log_cdf = log1p(-0.5 * q);
-        *log_survival = NUMELYX_LOG_HALF + log_q;
+        *log_cdf = log1p(-exp(log_small_tail));
+        *log_survival = log_small_tail;
     }
     return NUMERUS_NUMERIC_SUCCESS;
 }

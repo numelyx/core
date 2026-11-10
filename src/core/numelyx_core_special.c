@@ -96,7 +96,7 @@ static bool gamma_p_series(double a, double x, double *value)
 }
 
 /* Upper regularized gamma continued fraction, convergent for x >= a + 1. */
-static bool gamma_q_fraction(double a, double x, double *value)
+static bool gamma_q_fraction_log(double a, double x, double *log_value)
 {
     size_t iteration;
     double b = x + 1.0 - a;
@@ -104,9 +104,9 @@ static bool gamma_q_fraction(double a, double x, double *value)
     double d = 1.0 / (fabs(b) < NUMELYX_SPECIAL_FPMIN
         ? copysign(NUMELYX_SPECIAL_FPMIN, b == 0.0 ? 1.0 : b) : b);
     double h = d;
-    double scale = exp(a * log(x) - x - lgamma(a));
+    double log_scale = a * log(x) - x - lgamma(a);
 
-    if (!isfinite(scale)) return false;
+    if (!isfinite(log_scale)) return false;
     for (iteration = 1; iteration <= NUMELYX_SPECIAL_MAX_ITERATIONS; iteration++) {
         double i = (double) iteration;
         double an = -i * (i - a);
@@ -122,11 +122,48 @@ static bool gamma_q_fraction(double a, double x, double *value)
         h *= delta;
         if (!isfinite(h) || !isfinite(delta)) return false;
         if (fabs(delta - 1.0) <= NUMELYX_SPECIAL_EPSILON) {
-            *value = clamp_probability(scale * h);
-            return isfinite(*value) && *value >= 0.0 && *value <= 1.0;
+            if (h <= 0.0) return false;
+            *log_value = log_scale + log(h);
+            if (isnan(*log_value)) return false;
+            if (*log_value > 0.0 && *log_value <= 32.0 * DBL_EPSILON)
+                *log_value = 0.0;
+            return *log_value <= 0.0;
         }
     }
     return false;
+}
+
+static bool gamma_q_fraction(double a, double x, double *value)
+{
+    double log_value;
+    if (!gamma_q_fraction_log(a, x, &log_value)) return false;
+    *value = clamp_probability(exp(log_value));
+    return isfinite(*value) && *value >= 0.0 && *value <= 1.0;
+}
+
+numelyx_core_numeric_status numelyx_core_regularized_gamma_log_q(
+    double a, double x, double *result
+)
+{
+    double log_value;
+    numelyx_core_numeric_status status = validate_gamma(a, x, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    if (x == 0.0) {
+        log_value = 0.0;
+    } else if (x < a + 1.0) {
+        double p;
+        if (!gamma_p_series(a, x, &p))
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        log_value = log1p(-p);
+    } else if (!gamma_q_fraction_log(a, x, &log_value)) {
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    }
+
+    if (isnan(log_value) || log_value > 0.0)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = log_value;
+    return NUMERUS_NUMERIC_SUCCESS;
 }
 
 static numelyx_core_numeric_status validate_gamma(

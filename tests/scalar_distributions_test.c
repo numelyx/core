@@ -51,7 +51,7 @@ static void test_normal_distribution_log_tails(void)
 
     assert(numelyx_core_normal_log_cdf(-40.0, 0.0, 1.0, &log_tail) ==
         NUMERUS_NUMERIC_SUCCESS);
-    assert(isfinite(log_tail) && log_tail < -800.0);
+    close_to(log_tail, -804.60844201375378817, 3e-12);
 }
 
 static void test_normal_distribution_quantile_and_validation(void)

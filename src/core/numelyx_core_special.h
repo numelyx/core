@@ -69,4 +69,9 @@ numelyx_core_numeric_status numelyx_core_normal_quantile(
     double probability, double *result
 );
 
+/** Log of regularized upper incomplete gamma Q(a,x), retaining underflowed tails. */
+numelyx_core_numeric_status numelyx_core_regularized_gamma_log_q(
+    double a, double x, double *result
+);
+
 #endif
