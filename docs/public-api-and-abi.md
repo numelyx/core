@@ -58,7 +58,8 @@ The first supported surface should be intentionally small:
 
 - Core semantic version and ABI-stability introspection.
 - A public status-code namespace with static status-description strings.
-- Dense, identity, zero, constant, scaled-identity, diagonal, packed triangular, symmetric, and default-value sparse Matrix creation, retain/release,
+- Dense, identity, zero, constant, scaled-identity, diagonal, packed triangular, symmetric, default-value sparse, and fixed-bandwidth Matrix
+  creation, retain/release,
   dimensions, element access, lazy transpose/slice/selection/flip/reshape/flatten views,
   lazy element-wise addition,
   subtraction, Hadamard product and scalar scaling, eager matrix multiplication, determinant, LU-based inverse and solve, and
