@@ -32,6 +32,15 @@ The current public surface includes:
 
 The current public probability API is not a general distribution library. The current optimizer is not a general constrained or mathematical-programming solver. The capabilities below remain roadmap items until implemented and tested.
 
+## Implementation status on this branch
+
+The following first-stage numerical primitives have now been added internally:
+- Stable log-one-minus-exp and log-difference-exp operations, including exact zero-mass endpoints and extreme finite operand handling.
+- Regularized lower/upper incomplete gamma functions using a series and a modified continued fraction.
+- Regularized incomplete beta using a modified continued fraction with symmetry selection and log-domain prefactors.
+
+Native regression tests and focused numerical-contract documentation have been added for these functions. They remain internal and are not part of the installed public API. Build, test, sanitizer, high-precision sweep, and cross-platform results are not yet verified for this branch; do not treat this workstream as complete.
+
 ## Capability domains
 
 ### 1. Numerical foundations and special functions
