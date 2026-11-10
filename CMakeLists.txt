@@ -4,6 +4,7 @@ project(NumelyxCore VERSION 0.1.0 LANGUAGES C)
 
 option(NUMELYX_BUILD_TESTS "Build native C tests" ON)
 option(NUMELYX_BUILD_BENCHMARKS "Build diagnostic benchmarks" OFF)
+option(NUMELYX_BUILD_SHARED "Build Numelyx Core as a shared library" OFF)
 option(NUMELYX_ENABLE_TSAN "Enable ThreadSanitizer (Linux, GCC/Clang)" OFF)
 option(NUMELYX_ENABLE_ASAN_UBSAN "Enable AddressSanitizer and UndefinedBehaviorSanitizer (Linux, GCC/Clang)" OFF)
 
@@ -18,11 +19,42 @@ file(GLOB_RECURSE NUMELYX_CORE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/*.c"
 )
 
-add_library(numelyx_core STATIC ${NUMELYX_CORE_SOURCES})
+if(NUMELYX_BUILD_SHARED)
+    set(NUMELYX_LIBRARY_KIND SHARED)
+else()
+    set(NUMELYX_LIBRARY_KIND STATIC)
+endif()
+
+add_library(numelyx_core ${NUMELYX_LIBRARY_KIND} ${NUMELYX_CORE_SOURCES})
 add_library(Numelyx::Core ALIAS numelyx_core)
+
+# The shared library exports only declarations explicitly marked NUMELYX_API.
+# Native tests that need private Core symbols link a separate static support
+# target below; private implementation symbols never become part of the ABI.
+set_target_properties(numelyx_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+)
+if(NUMELYX_BUILD_SHARED)
+    set_target_properties(numelyx_core PROPERTIES
+        C_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN YES
+    )
+endif()
 
 find_package(Threads REQUIRED)
 target_link_libraries(numelyx_core PUBLIC Threads::Threads)
+target_compile_definitions(numelyx_core
+    PRIVATE
+        NUMELYX_BUILDING_LIBRARY
+        NUMELYX_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+        NUMELYX_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+        NUMELYX_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+)
+if(NUMELYX_BUILD_SHARED)
+    target_compile_definitions(numelyx_core PUBLIC NUMELYX_SHARED)
+endif()
 
 if(NUMELYX_ENABLE_TSAN)
     if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -68,15 +100,80 @@ if(MSVC)
     target_compile_options(numelyx_core PUBLIC /experimental:c11atomics)
 endif()
 
+include(GNUInstallDirs)
+
 target_include_directories(numelyx_core
-    PUBLIC
+    PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+set_target_properties(numelyx_core PROPERTIES EXPORT_NAME Core)
+
+# Only curated public headers are exported to consumers. Internal src/ headers
+# remain private to the library and native regression tests.
+set(NUMELYX_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
+file(MAKE_DIRECTORY "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx")
+set(NUMELYX_UMBRELLA_HEADER
+    "/* Supported public API umbrella header. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n#include <numelyx/version.h>\n#include <numelyx/status.h>\n#include <numelyx/matrix.h>\n#include <numelyx/rng.h>\n#include <numelyx/optimizer.h>\n#include <numelyx/probability.h>\n#endif /* NUMELYX_NUMELYX_H */\n"
+)
+file(WRITE "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx/numelyx.h" "${NUMELYX_UMBRELLA_HEADER}")
+
+target_include_directories(numelyx_core
+    PUBLIC
+        $<BUILD_INTERFACE:${NUMELYX_GENERATED_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+install(TARGETS numelyx_core
+    EXPORT NumelyxCoreTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+install(FILES "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx/numelyx.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/numelyx"
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/NumelyxCoreConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/NumelyxCore"
+)
+if(PROJECT_VERSION_MAJOR EQUAL 0)
+    # In pre-1.0 releases, minor-version changes may be breaking.
+    set(NUMELYX_PACKAGE_COMPATIBILITY SameMinorVersion)
+else()
+    set(NUMELYX_PACKAGE_COMPATIBILITY SameMajorVersion)
+endif()
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY ${NUMELYX_PACKAGE_COMPATIBILITY}
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/NumelyxCore"
+)
+install(EXPORT NumelyxCoreTargets
+    FILE NumelyxCoreTargets.cmake
+    NAMESPACE Numelyx::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/NumelyxCore"
+)
 
 if(UNIX)
     target_link_libraries(numelyx_core PUBLIC m)
@@ -88,16 +185,66 @@ if(NUMELYX_BUILD_TESTS)
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/*_test.c"
     )
 
+    # Internal regression tests intentionally exercise private Core contracts.
+    # In shared builds they link this non-installed static target, while the
+    # package-consumer test continues to validate the actual shared artifact.
+    if(NUMELYX_BUILD_SHARED)
+        add_library(numelyx_core_test_support STATIC ${NUMELYX_CORE_SOURCES})
+        set_target_properties(numelyx_core_test_support PROPERTIES
+            POSITION_INDEPENDENT_CODE ON
+        )
+        target_include_directories(numelyx_core_test_support
+            PUBLIC
+                "${CMAKE_CURRENT_SOURCE_DIR}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+                "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                "${NUMELYX_GENERATED_INCLUDE_DIR}"
+        )
+        target_compile_definitions(numelyx_core_test_support PRIVATE
+            NUMELYX_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+            NUMELYX_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+            NUMELYX_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+        )
+        if(MSVC)
+            target_compile_options(numelyx_core_test_support PUBLIC /experimental:c11atomics)
+        endif()
+        target_link_libraries(numelyx_core_test_support PUBLIC Threads::Threads)
+        if(UNIX)
+            target_link_libraries(numelyx_core_test_support PUBLIC m)
+        endif()
+        set(NUMELYX_TEST_LIBRARY numelyx_core_test_support)
+    else()
+        set(NUMELYX_TEST_LIBRARY Numelyx::Core)
+    endif()
+
     set(NUMELYX_ALLOC_WRAP_TESTS
         matrix_allocation_failure_test
         matrix_concurrent_allocation_failure_test
         storage_allocation_failure_test
     )
 
+    if(NUMELYX_BUILD_SHARED AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_test(
+            NAME shared_symbol_visibility
+            COMMAND ${CMAKE_COMMAND}
+                -DNM=${CMAKE_NM}
+                -DLIBRARY=$<TARGET_FILE:numelyx_core>
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check-shared-symbols.cmake
+        )
+    endif()
+
     foreach(test_source IN LISTS NUMELYX_TEST_SOURCES)
         get_filename_component(test_name "${test_source}" NAME_WE)
 
         # Matrix and Storage allocation injection uses GNU ld --wrap.
+        if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS AND NUMELYX_BUILD_SHARED)
+            message(STATUS "Skipping ${test_name}: GNU ld --wrap cannot inject allocations into a shared library")
+            continue()
+        endif()
+
         if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS
            AND NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND UNIX AND NOT APPLE))
             message(STATUS "Skipping ${test_name}: GNU ld --wrap is required")
@@ -105,7 +252,14 @@ if(NUMELYX_BUILD_TESTS)
         endif()
 
         add_executable(${test_name} "${test_source}")
-        target_link_libraries(${test_name} PRIVATE Numelyx::Core)
+        target_link_libraries(${test_name} PRIVATE ${NUMELYX_TEST_LIBRARY})
+        target_include_directories(${test_name} PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+        )
 
         if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS)
             target_link_options(${test_name} PRIVATE
@@ -127,7 +281,13 @@ if(NUMELYX_BUILD_TESTS)
             target_compile_definitions(${test_name} PRIVATE NUMERUS_RNG_TEST_ALLOCATOR)
         endif()
 
-        if(test_name STREQUAL "lifetime_test")
+        if(test_name STREQUAL "version_api_test")
+            target_compile_definitions(${test_name} PRIVATE
+                NUMELYX_EXPECTED_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+                NUMELYX_EXPECTED_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+                NUMELYX_EXPECTED_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+            )
+        elseif(test_name STREQUAL "lifetime_test")
             target_link_libraries(${test_name} PRIVATE Threads::Threads)
         endif()
 
@@ -139,6 +299,13 @@ endif()
 if(NUMELYX_BUILD_BENCHMARKS)
     add_executable(matrix_benchmark benchmarks/matrix_benchmark.c)
     target_link_libraries(matrix_benchmark PRIVATE Numelyx::Core)
+    target_include_directories(matrix_benchmark PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+    )
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND UNIX AND NOT APPLE)
         target_link_options(matrix_benchmark PRIVATE
             "-Wl,--wrap=malloc"

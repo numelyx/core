@@ -1,0 +1,25 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+
+include("${CMAKE_CURRENT_LIST_DIR}/NumelyxCoreTargets.cmake")
+
+# A single-configuration installation exports one concrete configuration.
+# Map every consumer configuration, including an empty CMAKE_BUILD_TYPE
+# (NOCONFIG), to that installed configuration.
+get_target_property(_numelyx_imported_configs Numelyx::Core IMPORTED_CONFIGURATIONS)
+if(_numelyx_imported_configs)
+    list(GET _numelyx_imported_configs 0 _numelyx_available_config)
+    foreach(_numelyx_consumer_config NOCONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+        set_property(TARGET Numelyx::Core PROPERTY
+            MAP_IMPORTED_CONFIG_${_numelyx_consumer_config}
+            "${_numelyx_available_config}"
+        )
+    endforeach()
+endif()
+
+unset(_numelyx_imported_configs)
+unset(_numelyx_available_config)
+
+check_required_components(NumelyxCore)
