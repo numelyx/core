@@ -221,10 +221,15 @@ int main(void)
         numelyx_matrix *parent = NULL;
         numelyx_matrix *rotated = NULL;
         numelyx_matrix *rotated_180 = NULL;
+        numelyx_matrix *rotated_ccw = NULL;
         numelyx_matrix *removed = NULL;
         numelyx_matrix *swapped = NULL;
+        numelyx_matrix *swapped_rows = NULL;
+        numelyx_matrix *permuted_columns = NULL;
         numelyx_matrix *joined = NULL;
+        numelyx_matrix *joined_vertical = NULL;
         numelyx_matrix *padded = NULL;
+        numelyx_matrix *zero_extended = NULL;
         numelyx_matrix *repeated = NULL;
         numelyx_matrix *block_diagonal = NULL;
         numelyx_matrix *grid_blocks[] = {NULL, NULL};
@@ -240,13 +245,23 @@ int main(void)
                 != NUMELYX_SUCCESS
             || numelyx_matrix_rotate_180(parent, &rotated_180)
                 != NUMELYX_SUCCESS
+            || numelyx_matrix_rotate_90_counterclockwise(parent, &rotated_ccw)
+                != NUMELYX_SUCCESS
             || numelyx_matrix_remove_row(parent, 0, &removed)
                 != NUMELYX_SUCCESS
             || numelyx_matrix_swap_columns(parent, 0, 1, &swapped)
                 != NUMELYX_SUCCESS
+            || numelyx_matrix_swap_rows(parent, 0, 1, &swapped_rows)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_permute_columns(parent, permutation, 2, &permuted_columns)
+                != NUMELYX_SUCCESS
             || numelyx_matrix_join_horizontal(parent, parent, &joined)
                 != NUMELYX_SUCCESS
+            || numelyx_matrix_join_vertical(parent, parent, &joined_vertical)
+                != NUMELYX_SUCCESS
             || numelyx_matrix_pad(parent, 1, 0, 1, 0, -1.0, &padded)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_zero_extend(parent, 1, 0, 1, 0, &zero_extended)
                 != NUMELYX_SUCCESS
             || numelyx_matrix_repeat(parent, 2, 2, &repeated)
                 != NUMELYX_SUCCESS
@@ -266,10 +281,15 @@ int main(void)
             numelyx_matrix_release(diagonal);
             numelyx_matrix_release(block_diagonal);
             numelyx_matrix_release(repeated);
+            numelyx_matrix_release(zero_extended);
             numelyx_matrix_release(padded);
+            numelyx_matrix_release(joined_vertical);
             numelyx_matrix_release(joined);
+            numelyx_matrix_release(permuted_columns);
+            numelyx_matrix_release(swapped_rows);
             numelyx_matrix_release(swapped);
             numelyx_matrix_release(removed);
+            numelyx_matrix_release(rotated_ccw);
             numelyx_matrix_release(rotated_180);
             numelyx_matrix_release(rotated);
             numelyx_matrix_release(parent);
@@ -286,10 +306,15 @@ int main(void)
             numelyx_matrix_release(diagonal);
             numelyx_matrix_release(block_diagonal);
             numelyx_matrix_release(repeated);
+            numelyx_matrix_release(zero_extended);
             numelyx_matrix_release(padded);
+            numelyx_matrix_release(joined_vertical);
             numelyx_matrix_release(joined);
+            numelyx_matrix_release(permuted_columns);
+            numelyx_matrix_release(swapped_rows);
             numelyx_matrix_release(swapped);
             numelyx_matrix_release(removed);
+            numelyx_matrix_release(rotated_ccw);
             numelyx_matrix_release(rotated_180);
             numelyx_matrix_release(rotated);
             numelyx_matrix_release(parent);
@@ -302,14 +327,27 @@ int main(void)
                 || value != 3.0
             || numelyx_matrix_get(rotated_180, 0, 0, &value) != NUMELYX_SUCCESS
                 || value != 4.0
+            || numelyx_matrix_get(rotated_ccw, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 2.0
             || numelyx_matrix_get(removed, 0, 0, &value) != NUMELYX_SUCCESS
                 || value != 3.0
             || numelyx_matrix_get(swapped, 0, 0, &value) != NUMELYX_SUCCESS
                 || value != 2.0
+            || numelyx_matrix_get(swapped_rows, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 3.0
+            || numelyx_matrix_get(permuted_columns, 0, 0, &value)
+                != NUMELYX_SUCCESS
+            || value != 2.0
             || numelyx_matrix_get(joined, 0, 2, &value) != NUMELYX_SUCCESS
                 || value != 1.0
+            || numelyx_matrix_get(joined_vertical, 2, 1, &value)
+                != NUMELYX_SUCCESS
+            || value != 2.0
             || numelyx_matrix_get(padded, 0, 0, &value) != NUMELYX_SUCCESS
                 || value != -1.0
+            || numelyx_matrix_get(zero_extended, 0, 0, &value)
+                != NUMELYX_SUCCESS
+            || value != 0.0
             || numelyx_matrix_get(repeated, 2, 2, &value) != NUMELYX_SUCCESS
                 || value != 1.0
             || numelyx_matrix_get(block_diagonal, 2, 2, &value)
@@ -330,10 +368,15 @@ int main(void)
             numelyx_matrix_release(grid);
             numelyx_matrix_release(block_diagonal);
             numelyx_matrix_release(repeated);
+            numelyx_matrix_release(zero_extended);
             numelyx_matrix_release(padded);
+            numelyx_matrix_release(joined_vertical);
             numelyx_matrix_release(joined);
+            numelyx_matrix_release(permuted_columns);
+            numelyx_matrix_release(swapped_rows);
             numelyx_matrix_release(swapped);
             numelyx_matrix_release(removed);
+            numelyx_matrix_release(rotated_ccw);
             numelyx_matrix_release(rotated_180);
             numelyx_matrix_release(rotated);
             return 30;
