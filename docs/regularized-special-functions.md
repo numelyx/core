@@ -10,6 +10,7 @@ The internal special-function layer currently provides:
 - Regularized incomplete beta, I_x(a,b).
 - Inverses of P(a,x), Q(a,x), and I_x(a,b), solved with monotone bracketing and bisection.
 - Digamma and trigamma for positive finite real arguments, using recurrence and asymptotic Bernoulli expansions.
+- Error function erf and complementary error function erfc, derived from regularized gamma tails.
 
 These are internal numerical primitives. They are not yet part of the installed public C ABI or language-binding API.
 
@@ -26,6 +27,10 @@ This branch selection computes the small tail directly rather than subtracting i
 The regularized incomplete beta uses a modified Lentz continued fraction and the standard symmetry transformation around (a+1)/(a+b+2). The exponential prefactor is assembled in the log domain using lgamma, log, and log1p; it is not formed as a product of potentially underflowing intermediate factors.
 
 At x=0 and x=1, exact endpoint values are returned.
+
+## Error functions
+
+The implementation uses erf(x)=sign(x) P(1/2,x²) and erfc(x)=Q(1/2,x²) for positive x, with symmetry for negative x. The complementary function evaluates the upper gamma tail directly, avoiding cancellation for positive large arguments. Inputs whose square would overflow use their limiting values.
 
 ## Digamma and trigamma
 
@@ -59,6 +64,7 @@ Native tests cover:
 - Round trips for inverse gamma P/Q and inverse beta over lower, central, and upper probabilities.
 - Inverse probability-domain validation and output preservation.
 - Digamma/trigamma closed-form references at 1, 1/2, and 8, recurrence identities, and invalid-input handling.
+- erf/erfc reference values, symmetry, upper-tail behavior, and extreme finite inputs.
 - Invalid domains, non-finite inputs, and output preservation.
 
 These tests are regression coverage, not a substitute for broad high-precision reference sweeps. Before exposing these functions publicly, add independently generated high-precision vectors across logarithmically spaced shape and argument ranges, monotonicity tests, derivative identities, and stress tests for extreme finite parameters.
