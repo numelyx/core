@@ -1,6 +1,8 @@
 #include "numelyx_core_box_qp.h"
 #include "numelyx_core_size.h"
+#include <float.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -104,7 +106,7 @@ numelyx_core_qp_status numelyx_core_box_qp_default_options(
     options->max_iterations = 20000;
     options->projected_gradient_tolerance = 1e-8;
     options->positive_semidefinite_tolerance = 1e-10;
-    return NUMELYX_QP_CONVERGED;
+    return NUMELYX_QP_SUCCESS;
 }
 
 numelyx_core_qp_status numelyx_core_box_qp_solve(
