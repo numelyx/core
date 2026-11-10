@@ -2077,7 +2077,7 @@ numelyx_core_numeric_status numelyx_core_lognormal_quantile(
         *result = INFINITY;
         return NUMERUS_NUMERIC_SUCCESS;
     }
-    status = numelyx_core_normal_quantile(
+    status = numelyx_core_normal_distribution_quantile(
         probability, log_location, log_scale, &normal_quantile);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
     *result = exp(normal_quantile);
