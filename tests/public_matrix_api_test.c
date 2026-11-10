@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include <numelyx/matrix.h>
 
 int main(void)
@@ -145,6 +147,50 @@ int main(void)
         numelyx_matrix_release(sum);
         numelyx_matrix_release(right);
         numelyx_matrix_release(left);
+    }
+
+    {
+        const double coefficients[] = {4.0, 7.0, 2.0, 6.0};
+        const double rhs_values[] = {1.0, 0.0};
+        numelyx_matrix *coefficient_matrix = NULL;
+        numelyx_matrix *rhs = NULL;
+        numelyx_matrix *inverse = NULL;
+        numelyx_matrix *solution = NULL;
+        double determinant = 0.0;
+
+        if (numelyx_matrix_create_dense(2, 2, coefficients, &coefficient_matrix)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(2, 1, rhs_values, &rhs)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_determinant(coefficient_matrix, &determinant)
+                != NUMELYX_SUCCESS
+            || fabs(determinant - 10.0) > 1e-12
+            || numelyx_matrix_inverse(coefficient_matrix, &inverse)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_solve(coefficient_matrix, rhs, &solution)
+                != NUMELYX_SUCCESS) {
+            numelyx_matrix_release(solution);
+            numelyx_matrix_release(inverse);
+            numelyx_matrix_release(rhs);
+            numelyx_matrix_release(coefficient_matrix);
+            return 17;
+        }
+
+        if (numelyx_matrix_get(inverse, 0, 0, &value) != NUMELYX_SUCCESS
+                || fabs(value - 0.6) > 1e-12
+            || numelyx_matrix_get(solution, 1, 0, &value) != NUMELYX_SUCCESS
+                || fabs(value + 0.2) > 1e-12) {
+            numelyx_matrix_release(solution);
+            numelyx_matrix_release(inverse);
+            numelyx_matrix_release(rhs);
+            numelyx_matrix_release(coefficient_matrix);
+            return 18;
+        }
+
+        numelyx_matrix_release(solution);
+        numelyx_matrix_release(inverse);
+        numelyx_matrix_release(rhs);
+        numelyx_matrix_release(coefficient_matrix);
     }
 
     {
