@@ -5,6 +5,7 @@
 #include "../src/core/numelyx_core_special.h"
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -235,6 +236,86 @@ static void test_digamma_trigamma_validation_and_identities(void)
     assert(numelyx_core_trigamma(1.0, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
 }
 
+
+static void close_relative(double actual, double expected, double relative_tolerance)
+{
+    double scale = fabs(expected);
+    double tolerance;
+    if (scale < DBL_MIN) scale = DBL_MIN;
+    tolerance = relative_tolerance * scale;
+    assert(fabs(actual - expected) <= tolerance);
+}
+
+static void test_high_precision_gamma_reference_vectors(void)
+{
+    double value;
+    assert(numelyx_core_regularized_gamma_p(0.1, 0.01, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.66262125995447979172, 3e-14);
+    assert(numelyx_core_regularized_gamma_q(0.5, 0.2, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.52708925686553807367, 3e-14);
+    assert(numelyx_core_regularized_gamma_p(100.0, 120.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.97213626010947933852, 4e-13);
+    assert(numelyx_core_regularized_gamma_q(2.0, 50.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_relative(value, 9.8366242246159806934e-21, 2e-12);
+}
+
+static void test_high_precision_beta_reference_vectors(void)
+{
+    double value;
+    assert(numelyx_core_regularized_beta(0.5, 0.5, 0.01, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.06376856085851984858, 3e-14);
+    assert(numelyx_core_regularized_beta(2.5, 4.0, 0.3, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.35219758590676721388, 4e-14);
+    assert(numelyx_core_regularized_beta(100.0, 120.0, 0.45, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.44780123014770762084, 4e-13);
+}
+
+static void test_special_function_monotonicity_and_digamma_derivative(void)
+{
+    double previous;
+    double current;
+    double psi_left;
+    double psi_right;
+    double trigamma;
+    double x;
+    size_t i;
+
+    assert(numelyx_core_regularized_gamma_p(2.5, 0.1, &previous) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    for (i = 2; i <= 40; i++) {
+        x = (double) i / 10.0;
+        assert(numelyx_core_regularized_gamma_p(2.5, x, &current) ==
+            NUMERUS_NUMERIC_SUCCESS);
+        assert(current >= previous);
+        previous = current;
+    }
+
+    assert(numelyx_core_regularized_beta(2.5, 4.0, 0.01, &previous) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    for (i = 2; i <= 99; i++) {
+        x = (double) i / 100.0;
+        assert(numelyx_core_regularized_beta(2.5, 4.0, x, &current) ==
+            NUMERUS_NUMERIC_SUCCESS);
+        assert(current >= previous);
+        previous = current;
+    }
+
+    x = 2.375;
+    assert(numelyx_core_digamma(x - 1e-5, &psi_left) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_digamma(x + 1e-5, &psi_right) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_trigamma(x, &trigamma) == NUMERUS_NUMERIC_SUCCESS);
+    close_to((psi_right - psi_left) / 2e-5, trigamma, 2e-9);
+}
+
 int main(void)
 {
     test_regularized_gamma_reference_values();
@@ -248,6 +329,9 @@ int main(void)
     test_inverse_special_function_closed_forms();
     test_digamma_and_trigamma_reference_values();
     test_digamma_trigamma_validation_and_identities();
+    test_high_precision_gamma_reference_vectors();
+    test_high_precision_beta_reference_vectors();
+    test_special_function_monotonicity_and_digamma_derivative();
     puts("Special-function tests passed.");
     return 0;
 }
