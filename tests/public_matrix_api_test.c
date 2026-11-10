@@ -215,6 +215,145 @@ int main(void)
     }
 
     {
+        const double source_values[] = {1.0, 2.0, 3.0, 4.0};
+        const double vector_values[] = {5.0, 6.0};
+        const size_t permutation[] = {1, 0};
+        numelyx_matrix *parent = NULL;
+        numelyx_matrix *rotated = NULL;
+        numelyx_matrix *rotated_180 = NULL;
+        numelyx_matrix *removed = NULL;
+        numelyx_matrix *swapped = NULL;
+        numelyx_matrix *joined = NULL;
+        numelyx_matrix *padded = NULL;
+        numelyx_matrix *repeated = NULL;
+        numelyx_matrix *block_diagonal = NULL;
+        numelyx_matrix *grid_blocks[] = {NULL, NULL};
+        numelyx_matrix *grid = NULL;
+        numelyx_matrix *diagonal = NULL;
+        numelyx_matrix *diagonal_matrix = NULL;
+        numelyx_matrix *permuted = NULL;
+        numelyx_matrix *vector = NULL;
+
+        if (numelyx_matrix_create_dense(2, 2, source_values, &parent)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_rotate_90_clockwise(parent, &rotated)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_rotate_180(parent, &rotated_180)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_remove_row(parent, 0, &removed)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_swap_columns(parent, 0, 1, &swapped)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_join_horizontal(parent, parent, &joined)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_pad(parent, 1, 0, 1, 0, -1.0, &padded)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_repeat(parent, 2, 2, &repeated)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_block_diagonal(parent, 2, &block_diagonal)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_diagonal_extract(parent, 0, &diagonal)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_permute_rows(parent, permutation, 2, &permuted)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(1, 2, vector_values, &vector)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_diagonal_from_vector(vector, 1, &diagonal_matrix)
+                != NUMELYX_SUCCESS) {
+            numelyx_matrix_release(diagonal_matrix);
+            numelyx_matrix_release(vector);
+            numelyx_matrix_release(permuted);
+            numelyx_matrix_release(diagonal);
+            numelyx_matrix_release(block_diagonal);
+            numelyx_matrix_release(repeated);
+            numelyx_matrix_release(padded);
+            numelyx_matrix_release(joined);
+            numelyx_matrix_release(swapped);
+            numelyx_matrix_release(removed);
+            numelyx_matrix_release(rotated_180);
+            numelyx_matrix_release(rotated);
+            numelyx_matrix_release(parent);
+            return 28;
+        }
+
+        grid_blocks[0] = parent;
+        grid_blocks[1] = parent;
+        if (numelyx_matrix_block_grid(grid_blocks, 1, 2, &grid)
+                != NUMELYX_SUCCESS) {
+            numelyx_matrix_release(diagonal_matrix);
+            numelyx_matrix_release(vector);
+            numelyx_matrix_release(permuted);
+            numelyx_matrix_release(diagonal);
+            numelyx_matrix_release(block_diagonal);
+            numelyx_matrix_release(repeated);
+            numelyx_matrix_release(padded);
+            numelyx_matrix_release(joined);
+            numelyx_matrix_release(swapped);
+            numelyx_matrix_release(removed);
+            numelyx_matrix_release(rotated_180);
+            numelyx_matrix_release(rotated);
+            numelyx_matrix_release(parent);
+            return 29;
+        }
+
+        numelyx_matrix_release(parent);
+        numelyx_matrix_release(vector);
+        if (numelyx_matrix_get(rotated, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 3.0
+            || numelyx_matrix_get(rotated_180, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 4.0
+            || numelyx_matrix_get(removed, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 3.0
+            || numelyx_matrix_get(swapped, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 2.0
+            || numelyx_matrix_get(joined, 0, 2, &value) != NUMELYX_SUCCESS
+                || value != 1.0
+            || numelyx_matrix_get(padded, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != -1.0
+            || numelyx_matrix_get(repeated, 2, 2, &value) != NUMELYX_SUCCESS
+                || value != 1.0
+            || numelyx_matrix_get(block_diagonal, 2, 2, &value)
+                != NUMELYX_SUCCESS
+            || value != 1.0
+            || numelyx_matrix_get(grid, 1, 3, &value) != NUMELYX_SUCCESS
+            || value != 4.0
+            || numelyx_matrix_get(diagonal, 0, 1, &value) != NUMELYX_SUCCESS
+            || value != 4.0
+            || numelyx_matrix_get(diagonal_matrix, 0, 1, &value)
+                != NUMELYX_SUCCESS
+            || value != 5.0
+            || numelyx_matrix_get(permuted, 0, 0, &value) != NUMELYX_SUCCESS
+            || value != 3.0) {
+            numelyx_matrix_release(diagonal_matrix);
+            numelyx_matrix_release(permuted);
+            numelyx_matrix_release(diagonal);
+            numelyx_matrix_release(grid);
+            numelyx_matrix_release(block_diagonal);
+            numelyx_matrix_release(repeated);
+            numelyx_matrix_release(padded);
+            numelyx_matrix_release(joined);
+            numelyx_matrix_release(swapped);
+            numelyx_matrix_release(removed);
+            numelyx_matrix_release(rotated_180);
+            numelyx_matrix_release(rotated);
+            return 30;
+        }
+
+        numelyx_matrix_release(diagonal_matrix);
+        numelyx_matrix_release(permuted);
+        numelyx_matrix_release(diagonal);
+        numelyx_matrix_release(grid);
+        numelyx_matrix_release(block_diagonal);
+        numelyx_matrix_release(repeated);
+        numelyx_matrix_release(padded);
+        numelyx_matrix_release(joined);
+        numelyx_matrix_release(swapped);
+        numelyx_matrix_release(removed);
+        numelyx_matrix_release(rotated_180);
+        numelyx_matrix_release(rotated);
+    }
+
+    {
         const double coefficients[] = {4.0, 7.0, 2.0, 6.0};
         const double rhs_values[] = {1.0, 0.0};
         numelyx_matrix *coefficient_matrix = NULL;
