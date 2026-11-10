@@ -363,6 +363,12 @@ int main(void)
                 {0, 2.0}
             };
 
+            const double band_values[] = {
+                1.0, 2.0, 0.0,
+                3.0, 4.0, 5.0,
+                0.0, 6.0, 7.0
+            };
+
             if (numelyx_matrix_create_sparse(
                     3,
                     3,
@@ -379,6 +385,26 @@ int main(void)
                 || value != 0.0) {
                 numelyx_matrix_release(structured);
                 return 25;
+            }
+            numelyx_matrix_release(structured);
+            structured = NULL;
+
+            if (numelyx_matrix_create_banded(
+                    3,
+                    3,
+                    1,
+                    1,
+                    band_values,
+                    &structured
+                ) != NUMELYX_SUCCESS
+                || numelyx_matrix_get(structured, 1, 2, &value)
+                    != NUMELYX_SUCCESS
+                || value != 5.0
+                || numelyx_matrix_get(structured, 0, 2, &value)
+                    != NUMELYX_SUCCESS
+                || value != 0.0) {
+                numelyx_matrix_release(structured);
+                return 27;
             }
             numelyx_matrix_release(structured);
             structured = NULL;
