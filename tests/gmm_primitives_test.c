@@ -33,6 +33,15 @@ static void test_gmm_multivariate_and_output_preservation(void){
  assert(numelyx_core_gmm_evaluate(moments,nonsymmetric,jacobian,2,2,
   &objective,gradient,hessian)==NUMELYX_INFERENCE_INVALID_ARGUMENT);
  assert(objective==77&&gradient[0]==78&&gradient[1]==79);
+ {
+  const double one_moment[]={1};
+  const double negative_weight[]={-1};
+  const double one_jacobian[]={1};
+  double one_objective=17,one_gradient=18,one_hessian=19;
+  assert(numelyx_core_gmm_evaluate(one_moment,negative_weight,one_jacobian,1,1,
+   &one_objective,&one_gradient,&one_hessian)==NUMELYX_INFERENCE_NUMERICAL_FAILURE);
+  assert(one_objective==17&&one_gradient==18&&one_hessian==19);
+ }
 }
 int main(void){
  test_gmm_objective_gradient_and_curvature();
