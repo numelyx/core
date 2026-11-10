@@ -51,6 +51,28 @@ NUMELYX_API numelyx_status numelyx_matrix_create_diagonal(
     numelyx_matrix **matrix
 );
 
+/**
+ * Create a lazy transpose view. The view retains its parent and does not copy
+ * matrix values. Release the parent reference independently after creation.
+ */
+NUMELYX_API numelyx_status numelyx_matrix_transpose(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+);
+
+/**
+ * Create a lazy rectangular slice. Counts must be positive and the selected
+ * range must fit inside the parent. The view retains its parent.
+ */
+NUMELYX_API numelyx_status numelyx_matrix_slice(
+    numelyx_matrix *parent,
+    size_t row_start,
+    size_t row_count,
+    size_t column_start,
+    size_t column_count,
+    numelyx_matrix **view
+);
+
 /** Retain one additional owned reference; the caller must already own one. */
 NUMELYX_API numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix);
 
