@@ -320,9 +320,10 @@ numelyx_core_matrix_status numelyx_core_matrix_condition_estimate_one(
     }
 
     /*
-     * Hager's estimator alternates solves with A and A^T. Five iterations
-     * are sufficient for a practical estimate while keeping the work O(n^2)
-     * after the single O(n^3) factorization.
+     * Hager's estimator alternates solves with A and A^T. The iteration is
+     * capped at five passes to bound overhead; as a norm estimator, its result
+     * may be lower than the exact inverse 1-norm. Each pass costs O(n^2) after
+     * the cached LU factorization.
      */
     for (iteration = 0; iteration < 5; iteration++) {
         double estimate = 0.0;
