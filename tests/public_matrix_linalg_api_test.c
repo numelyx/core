@@ -145,6 +145,9 @@ int main(void)
 
     numelyx_matrix_release(u); u = NULL;
     numelyx_matrix_release(vt); vt = NULL;
+    if (numelyx_matrix_symmetric_eigen(a, &u, &u)
+            != NUMELYX_INVALID_ARGUMENT || u != NULL)
+        goto fail;
     if (numelyx_matrix_symmetric_eigen(
             a, &u, &vt) != NUMELYX_SUCCESS
         || numelyx_matrix_rows(u) != 2
@@ -158,6 +161,9 @@ int main(void)
         goto fail;
     numelyx_matrix_release(u); u = NULL;
     numelyx_matrix_release(vt); vt = NULL;
+    if (numelyx_matrix_ldlt_decompose(a, &u, &u)
+            != NUMELYX_INVALID_ARGUMENT || u != NULL)
+        goto fail;
     if (numelyx_matrix_ldlt_decompose(
             a, &u, &vt) != NUMELYX_SUCCESS
         || numelyx_matrix_rows(u) != 2
@@ -273,6 +279,36 @@ int main(void)
             a, b, &classification) != NUMELYX_SUCCESS
         || classification != NUMELYX_MATRIX_SOLUTION_UNIQUE)
         goto fail;
+    {
+        const double deficient_values[] = {1.0, 2.0, 2.0, 4.0};
+        const double consistent_values[] = {3.0, 6.0};
+        const double inconsistent_values[] = {3.0, 7.0};
+        numelyx_matrix *deficient = NULL;
+        numelyx_matrix *consistent = NULL;
+        numelyx_matrix *inconsistent = NULL;
+
+        if (numelyx_matrix_create_dense(2, 2, deficient_values, &deficient)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(2, 1, consistent_values, &consistent)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(2, 1, inconsistent_values, &inconsistent)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_classify_system(
+                deficient, consistent, &classification) != NUMELYX_SUCCESS
+            || classification != NUMELYX_MATRIX_SOLUTION_INFINITE
+            || numelyx_matrix_classify_system(
+                deficient, inconsistent, &classification) != NUMELYX_SUCCESS
+            || classification != NUMELYX_MATRIX_SOLUTION_INCONSISTENT) {
+            numelyx_matrix_release(inconsistent);
+            numelyx_matrix_release(consistent);
+            numelyx_matrix_release(deficient);
+            goto fail;
+        }
+
+        numelyx_matrix_release(inconsistent);
+        numelyx_matrix_release(consistent);
+        numelyx_matrix_release(deficient);
+    }
 
     numelyx_matrix_release(solution); solution = NULL;
     if (numelyx_matrix_weighted_least_squares(
