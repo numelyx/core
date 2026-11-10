@@ -6,11 +6,13 @@ int main(void)
 {
     const double zero[] = {0.0};
     const double variance[] = {1.0};
+    const double invalid_variance[] = {0.0};
     double log_density = 0.0;
     double sample_value = 0.0;
     numelyx_matrix *observation = NULL;
     numelyx_matrix *mean = NULL;
     numelyx_matrix *covariance = NULL;
+    numelyx_matrix *invalid_covariance = NULL;
     numelyx_matrix *sample = NULL;
     numelyx_rng *rng = NULL;
 
@@ -54,32 +56,7 @@ int main(void)
         || !isfinite(sample_value)
         || numelyx_matrix_rows(sample) != 1
         || numelyx_matrix_columns(sample) != 1) {
-        {
-        const double invalid_variance[] = {0.0};
-        numelyx_matrix *invalid_covariance = NULL;
-        log_density = 123.0;
-
-        if (numelyx_matrix_create_diagonal(1, invalid_variance, &invalid_covariance)
-                != NUMELYX_SUCCESS
-            || numelyx_multivariate_gaussian_log_density(
-                observation,
-                mean,
-                invalid_covariance,
-                &log_density
-            ) != NUMELYX_NOT_POSITIVE_DEFINITE
-            || log_density != 123.0) {
-            numelyx_matrix_release(invalid_covariance);
-            numelyx_matrix_release(sample);
-            numelyx_rng_release(rng);
-            numelyx_matrix_release(covariance);
-            numelyx_matrix_release(mean);
-            numelyx_matrix_release(observation);
-            return 4;
-        }
-        numelyx_matrix_release(invalid_covariance);
-    }
-
-    numelyx_matrix_release(sample);
+        numelyx_matrix_release(sample);
         numelyx_rng_release(rng);
         numelyx_matrix_release(covariance);
         numelyx_matrix_release(mean);
@@ -87,6 +64,37 @@ int main(void)
         return 3;
     }
 
+    if (numelyx_matrix_create_diagonal(
+            1,
+            invalid_variance,
+            &invalid_covariance
+        ) != NUMELYX_SUCCESS) {
+        numelyx_matrix_release(sample);
+        numelyx_rng_release(rng);
+        numelyx_matrix_release(covariance);
+        numelyx_matrix_release(mean);
+        numelyx_matrix_release(observation);
+        return 4;
+    }
+
+    log_density = 123.0;
+    if (numelyx_multivariate_gaussian_log_density(
+            observation,
+            mean,
+            invalid_covariance,
+            &log_density
+        ) != NUMELYX_NOT_POSITIVE_DEFINITE
+        || log_density != 123.0) {
+        numelyx_matrix_release(invalid_covariance);
+        numelyx_matrix_release(sample);
+        numelyx_rng_release(rng);
+        numelyx_matrix_release(covariance);
+        numelyx_matrix_release(mean);
+        numelyx_matrix_release(observation);
+        return 5;
+    }
+
+    numelyx_matrix_release(invalid_covariance);
     numelyx_matrix_release(sample);
     numelyx_rng_release(rng);
     numelyx_matrix_release(covariance);
