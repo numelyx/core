@@ -6,9 +6,9 @@ This document defines the boundary required before Numelyx Core is consumed as
 a supported dependency by independently released language SDKs. It does not
 declare the current `src/` headers or exported symbols stable.
 
-The currently installed headers under `numelyx/detail/` are transitional
-integration headers. They expose implementation-era declarations and may
-change without ABI compatibility guarantees.
+Internal headers remain under `src/` and are not installed or exported to
+consumers. They expose implementation-era declarations and may change without
+ABI compatibility guarantees.
 
 ## Public boundary
 
@@ -42,7 +42,8 @@ Before declaring the C ABI stable, the implementation must provide:
 ## Compatibility policy
 
 - Internal `src/` headers and symbols are not API.
-- The transitional umbrella header is not a compatibility promise.
+- The supported umbrella header groups only curated public headers, but it is
+  not yet a compatibility promise while the ABI version remains zero.
 - Public declarations are introduced deliberately; internal names are not
   mechanically renamed until their public replacements and migration path exist.
 - ABI-breaking changes require an ABI version change and an explicit release
