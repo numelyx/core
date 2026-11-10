@@ -106,7 +106,6 @@ target_include_directories(numelyx_core
         "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${NUMELYX_GENERATED_INCLUDE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
