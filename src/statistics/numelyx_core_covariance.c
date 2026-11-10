@@ -152,9 +152,6 @@ numelyx_core_covariance_status numelyx_core_sandwich_covariance(
     if (!numelyx_core_size_multiply(
             observations, parameters, &score_elements))
         return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
-    if (!numelyx_core_size_multiply(
-            observations, parameters, &score_elements))
-        return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
     status = allocate_workspaces(parameters, &meat, &compensation,
         &temporary, &candidate, &matrix_bytes);
     if (status != NUMELYX_COVARIANCE_SUCCESS) goto cleanup;
@@ -304,6 +301,9 @@ numelyx_core_covariance_status numelyx_core_hac_sandwich_covariance(
     if (bread == NULL || scores == NULL || covariance == NULL ||
         observations == 0 || parameters == 0)
         return NUMELYX_COVARIANCE_INVALID_ARGUMENT;
+    if (!numelyx_core_size_multiply(
+            observations, parameters, &score_elements))
+        return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
     status = allocate_workspaces(parameters, &meat, &compensation,
         &temporary, &candidate, &matrix_bytes);
     if (status != NUMELYX_COVARIANCE_SUCCESS) goto cleanup;
