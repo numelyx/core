@@ -75,9 +75,9 @@ static numelyx_core_covariance_status finish_sandwich(
     }
     for (i = 0; i < parameters; i++) {
         for (j = i; j < parameters; j++) {
-            double symmetric = 0.5 * (
-                candidate[i * parameters + j] +
-                candidate[j * parameters + i]);
+            double symmetric =
+                0.5 * candidate[i * parameters + j] +
+                0.5 * candidate[j * parameters + i];
             if (!isfinite(symmetric))
                 return NUMELYX_COVARIANCE_NUMERICAL_FAILURE;
             candidate[i * parameters + j] = symmetric;
