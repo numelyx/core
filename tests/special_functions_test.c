@@ -29,6 +29,26 @@ static void test_regularized_gamma_reference_values(void)
     close_to(value, erf(1.0), 2e-14);
 }
 
+static void test_regularized_gamma_tails_and_complementarity(void)
+{
+    double p;
+    double q;
+
+    assert(numelyx_core_regularized_gamma_p(1.0, 1e-8, &p) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(p, -expm1(-1e-8), 2e-15);
+
+    assert(numelyx_core_regularized_gamma_q(1.0, 100.0, &q) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(q, exp(-100.0), 1e-57);
+
+    assert(numelyx_core_regularized_gamma_p(2.5, 3.0, &p) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_regularized_gamma_q(2.5, 3.0, &q) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(p + q, 1.0, 3e-15);
+}
+
 static void test_regularized_gamma_boundaries_and_validation(void)
 {
     double value = 17.0;
@@ -91,6 +111,7 @@ static void test_regularized_beta_symmetry_and_boundaries(void)
 int main(void)
 {
     test_regularized_gamma_reference_values();
+    test_regularized_gamma_tails_and_complementarity();
     test_regularized_gamma_boundaries_and_validation();
     test_regularized_beta_reference_values();
     test_regularized_beta_symmetry_and_boundaries();
