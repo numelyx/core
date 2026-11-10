@@ -2,7 +2,10 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
-static void close_to(double a,double b,double t){assert(fabs(a-b)<=t);}
+static void close_to(double a,double b,double t){
+ if (!(fabs(a-b)<=t)) fprintf(stderr,"timeseries close_to actual=%.17g expected=%.17g tolerance=%.17g\\n",a,b,t);
+ assert(fabs(a-b)<=t);
+}
 static void test_autocovariance_and_acf(void){
  const double series[]={1,2,3,4};
  double value=99;
