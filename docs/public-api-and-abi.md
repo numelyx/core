@@ -57,8 +57,9 @@ The first supported surface should be intentionally small:
 
 - Core semantic version and ABI-stability introspection.
 - A public status-code namespace.
-- Dense Matrix creation, retain/release, dimensions, and element access through
-  an opaque handle. This is the first implemented Matrix API increment.
+- Dense, identity, zero, constant, and diagonal Matrix creation, retain/release,
+  dimensions, and element access through an opaque handle. Structured
+  constructors preserve implicit storage rather than materializing dense data.
 - Additional storage constructors, views, and numerical operations in later
   API increments.
 - RNG creation, deterministic state operations, sampling, and release.
