@@ -191,6 +191,71 @@ static void test_normal_sampling_reproducibility_and_failure_atomicity(void)
     numelyx_core_rng_destroy(rng_a);
 }
 
+
+static void test_gamma_distribution_reference_values(void)
+{
+    double value;
+    assert(numelyx_core_gamma_pdf(3.0, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, exp(-1.0) / 3.0, 3e-14);
+    assert(numelyx_core_gamma_cdf(3.0, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0 - 2.0 * exp(-1.0), 3e-14);
+    assert(numelyx_core_gamma_survival(3.0, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 2.0 * exp(-1.0), 3e-14);
+    assert(numelyx_core_gamma_quantile(0.5, 1.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 2.0 * log(2.0), 3e-12);
+    assert(numelyx_core_gamma_log_survival(1000.0, 2.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, log(1001.0) - 1000.0, 3e-12);
+}
+
+static void test_beta_distribution_reference_values(void)
+{
+    double value;
+    assert(numelyx_core_beta_pdf(0.2, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.536, 3e-14);
+    assert(numelyx_core_beta_cdf(0.2, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.1808, 3e-14);
+    assert(numelyx_core_beta_survival(0.2, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.8192, 3e-14);
+    assert(numelyx_core_beta_quantile(0.1808, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.2, 3e-12);
+    assert(numelyx_core_beta_log_survival(
+        1.0 - 1e-12, 0.5, 0.5, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(isfinite(value) && value < -14.0);
+}
+
+static void test_gamma_beta_distribution_support_and_validation(void)
+{
+    double value = 29.0;
+    assert(numelyx_core_gamma_pdf(-1.0, 2.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    assert(numelyx_core_gamma_cdf(-1.0, 2.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    assert(numelyx_core_beta_pdf(-0.1, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    assert(numelyx_core_beta_cdf(1.1, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 1.0);
+    value = 29.0;
+    assert(numelyx_core_gamma_pdf(1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 29.0);
+    assert(numelyx_core_beta_quantile(
+        0.5, 2.0, 0.0, &value) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 29.0);
+}
+
 int main(void)
 {
     test_normal_distribution_reference_values();
@@ -200,6 +265,9 @@ int main(void)
     test_chi_square_distribution_reference_values();
     test_student_t_and_chi_square_validation();
     test_normal_sampling_reproducibility_and_failure_atomicity();
+    test_gamma_distribution_reference_values();
+    test_beta_distribution_reference_values();
+    test_gamma_beta_distribution_support_and_validation();
     puts("Scalar distribution tests passed.");
     return 0;
 }

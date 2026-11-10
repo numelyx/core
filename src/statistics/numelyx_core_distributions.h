@@ -89,4 +89,50 @@ numelyx_core_numeric_status numelyx_core_normal_sample(
     numelyx_core_rng *rng, double location, double scale, double *result
 );
 
+/** Gamma distribution parameterized by positive shape and scale. */
+numelyx_core_numeric_status numelyx_core_gamma_log_pdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_gamma_pdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_gamma_log_cdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_gamma_log_survival(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_gamma_cdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_gamma_survival(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_gamma_quantile(
+    double probability, double shape, double scale, double *result
+);
+
+/** Beta distribution on [0,1] with positive alpha and beta parameters. */
+numelyx_core_numeric_status numelyx_core_beta_log_pdf(
+    double x, double alpha, double beta, double *result
+);
+numelyx_core_numeric_status numelyx_core_beta_pdf(
+    double x, double alpha, double beta, double *result
+);
+numelyx_core_numeric_status numelyx_core_beta_log_cdf(
+    double x, double alpha, double beta, double *result
+);
+numelyx_core_numeric_status numelyx_core_beta_log_survival(
+    double x, double alpha, double beta, double *result
+);
+numelyx_core_numeric_status numelyx_core_beta_cdf(
+    double x, double alpha, double beta, double *result
+);
+numelyx_core_numeric_status numelyx_core_beta_survival(
+    double x, double alpha, double beta, double *result
+);
+numelyx_core_numeric_status numelyx_core_beta_quantile(
+    double probability, double alpha, double beta, double *result
+);
+
 #endif
