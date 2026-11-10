@@ -2,6 +2,7 @@
 
 #include "numelyx_core_matrix_core.h"
 #include "numelyx_core_matrix_types.h"
+#include "numelyx_core_matrix_views.h"
 
 static numelyx_status map_matrix_status(numelyx_core_matrix_status status)
 {
@@ -118,6 +119,49 @@ numelyx_status numelyx_matrix_create_diagonal(
 
     data.values = diagonal;
     return create_matrix(NUMERUS_STORAGE_DIAGONAL, size, size, &data, matrix);
+}
+
+numelyx_status numelyx_matrix_transpose(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+)
+{
+    int status;
+
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+
+    status = numelyx_core_matrix_create_transpose(parent, view);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_slice(
+    numelyx_matrix *parent,
+    size_t row_start,
+    size_t row_count,
+    size_t column_start,
+    size_t column_count,
+    numelyx_matrix **view
+)
+{
+    int status;
+
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+
+    status = numelyx_core_matrix_create_slice(
+        parent,
+        row_start,
+        row_count,
+        column_start,
+        column_count,
+        view
+    );
+    return map_matrix_status((numelyx_core_matrix_status) status);
 }
 
 numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix)
