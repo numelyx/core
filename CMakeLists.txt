@@ -18,6 +18,7 @@ file(GLOB_RECURSE NUMELYX_CORE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/optimization/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/fuzzy/*.c"
 )
 
 if(NUMELYX_BUILD_SHARED)
