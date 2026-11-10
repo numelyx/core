@@ -238,6 +238,12 @@ numelyx_core_numeric_status numelyx_core_numeric_log_diff_exp(
     difference = b - a;
     if (difference == 0.0) {
         value = -INFINITY;
+    } else if (difference == -INFINITY) {
+        /* Finite operands can overflow their subtraction to -infinity.
+         * In that case exp(b) is negligible at double precision and the
+         * correctly rounded log-difference is a.
+         */
+        value = a;
     } else {
         status = numelyx_core_numeric_log1mexp(difference, &correction);
         if (status != NUMERUS_NUMERIC_SUCCESS) {
