@@ -439,3 +439,56 @@ numelyx_core_numeric_status numelyx_core_trigamma(double x, double *result)
     *result = value;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+numelyx_core_numeric_status numelyx_core_erf(double x, double *result)
+{
+    double gamma_value;
+    double square;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (x == 0.0) {
+        *result = x;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (fabs(x) > sqrt(DBL_MAX)) {
+        *result = copysign(1.0, x);
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    square = x * x;
+    status = numelyx_core_regularized_gamma_p(0.5, square, &gamma_value);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = copysign(gamma_value, x);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_erfc(double x, double *result)
+{
+    double gamma_value;
+    double square;
+    double value;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (x == 0.0) {
+        *result = 1.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (fabs(x) > sqrt(DBL_MAX)) {
+        *result = x > 0.0 ? 0.0 : 2.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    square = x * x;
+    status = numelyx_core_regularized_gamma_q(0.5, square, &gamma_value);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    value = x > 0.0 ? gamma_value : 2.0 - gamma_value;
+    if (!isfinite(value) || value < 0.0 || value > 2.0)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
