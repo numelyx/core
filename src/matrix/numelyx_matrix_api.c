@@ -176,6 +176,90 @@ numelyx_status numelyx_matrix_slice(
     return map_matrix_status((numelyx_core_matrix_status) status);
 }
 
+numelyx_status numelyx_matrix_flip_rows(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+)
+{
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+    return map_matrix_status((numelyx_core_matrix_status)
+        numelyx_core_matrix_create_flip_rows(parent, view));
+}
+
+numelyx_status numelyx_matrix_flip_columns(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+)
+{
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+    return map_matrix_status((numelyx_core_matrix_status)
+        numelyx_core_matrix_create_flip_columns(parent, view));
+}
+
+numelyx_status numelyx_matrix_select_rows(
+    numelyx_matrix *parent,
+    const size_t *indices,
+    size_t count,
+    numelyx_matrix **view
+)
+{
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+    return map_matrix_status((numelyx_core_matrix_status)
+        numelyx_core_matrix_create_select_rows(parent, indices, count, view));
+}
+
+numelyx_status numelyx_matrix_select_columns(
+    numelyx_matrix *parent,
+    const size_t *indices,
+    size_t count,
+    numelyx_matrix **view
+)
+{
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+    return map_matrix_status((numelyx_core_matrix_status)
+        numelyx_core_matrix_create_select_columns(parent, indices, count, view));
+}
+
+numelyx_status numelyx_matrix_reshape(
+    numelyx_matrix *parent,
+    size_t rows,
+    size_t columns,
+    numelyx_matrix **view
+)
+{
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+    return map_matrix_status((numelyx_core_matrix_status)
+        numelyx_core_matrix_create_reshape(parent, rows, columns, view));
+}
+
+numelyx_status numelyx_matrix_flatten(
+    numelyx_matrix *parent,
+    numelyx_matrix **view
+)
+{
+    if (view == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *view = NULL;
+    return map_matrix_status((numelyx_core_matrix_status)
+        numelyx_core_matrix_create_flatten(parent, view));
+}
+
 numelyx_status numelyx_matrix_add(
     numelyx_matrix *left,
     numelyx_matrix *right,
