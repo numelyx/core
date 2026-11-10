@@ -66,8 +66,7 @@ The first supported surface should be intentionally small:
   subtraction, Hadamard product and scalar scaling, eager matrix multiplication, determinant, LU-based inverse and solve, and
   explicit materialization through opaque handles. Structured constructors preserve implicit storage rather than
   materializing dense data; views retain their parent dependencies.
-- Additional storage constructors, views, and numerical operations in later
-  API increments.
+- Public Matrix factorization and analysis primitives: QR, reduced SVD, Moore–Penrose pseudoinverse, Cholesky, LU solve, triangular solve, ordinary and weighted least squares, numerical rank, signed log-determinant, trace, and Frobenius/induced norms. These are thin status/ownership adapters over the Core algorithms; they do not introduce model-specific workflows.
 - RNG creation, exact-state cloning, retain/release, deterministic raw output,
   uniform/normal sampling, and index sampling with an explicit Core deallocator.
 - BFGS optimizer options with explicit structure-size/version fields,
