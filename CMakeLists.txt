@@ -166,10 +166,17 @@ configure_package_config_file(
     "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfig.cmake"
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/NumelyxCore"
 )
+if(PROJECT_VERSION_MAJOR EQUAL 0)
+    # In pre-1.0 releases, minor-version changes may be breaking.
+    set(NUMELYX_PACKAGE_COMPATIBILITY SameMinorVersion)
+else()
+    set(NUMELYX_PACKAGE_COMPATIBILITY SameMajorVersion)
+endif()
+
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
+    COMPATIBILITY ${NUMELYX_PACKAGE_COMPATIBILITY}
 )
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/NumelyxCoreConfig.cmake"
