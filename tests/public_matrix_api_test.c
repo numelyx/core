@@ -52,6 +52,48 @@ int main(void)
         return 8;
     }
 
+    {
+        numelyx_matrix *structured = NULL;
+
+        if (numelyx_matrix_create_identity(3, &structured) != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 2, 2, &value) != NUMELYX_SUCCESS
+            || value != 1.0
+            || numelyx_matrix_get(structured, 0, 2, &value) != NUMELYX_SUCCESS
+            || value != 0.0) {
+            numelyx_matrix_release(structured);
+            return 9;
+        }
+        numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_zero(2, 3, &structured) != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 1, 2, &value) != NUMELYX_SUCCESS
+            || value != 0.0) {
+            numelyx_matrix_release(structured);
+            return 10;
+        }
+        numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_constant(2, 2, -2.5, &structured)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 1, 0, &value) != NUMELYX_SUCCESS
+            || value != -2.5) {
+            numelyx_matrix_release(structured);
+            return 11;
+        }
+        numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_diagonal(2, (const double[]){4.0, 5.0}, &structured)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 1, 1, &value) != NUMELYX_SUCCESS
+            || value != 5.0
+            || numelyx_matrix_get(structured, 1, 0, &value) != NUMELYX_SUCCESS
+            || value != 0.0) {
+            numelyx_matrix_release(structured);
+            return 12;
+        }
+        numelyx_matrix_release(structured);
+    }
+
     numelyx_matrix_release(NULL);
     return 0;
 }
