@@ -150,6 +150,71 @@ int main(void)
     }
 
     {
+        const double source_values[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        const size_t row_indices[] = {1, 0};
+        const size_t column_indices[] = {2, 0};
+        numelyx_matrix *parent = NULL;
+        numelyx_matrix *rows = NULL;
+        numelyx_matrix *columns = NULL;
+        numelyx_matrix *reshaped = NULL;
+        numelyx_matrix *flattened = NULL;
+        numelyx_matrix *flipped_rows = NULL;
+        numelyx_matrix *flipped_columns = NULL;
+
+        if (numelyx_matrix_create_dense(2, 3, source_values, &parent)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_select_rows(parent, row_indices, 2, &rows)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_select_columns(parent, column_indices, 2, &columns)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_reshape(parent, 3, 2, &reshaped)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_flatten(parent, &flattened) != NUMELYX_SUCCESS
+            || numelyx_matrix_flip_rows(parent, &flipped_rows) != NUMELYX_SUCCESS
+            || numelyx_matrix_flip_columns(parent, &flipped_columns)
+                != NUMELYX_SUCCESS) {
+            numelyx_matrix_release(flipped_columns);
+            numelyx_matrix_release(flipped_rows);
+            numelyx_matrix_release(flattened);
+            numelyx_matrix_release(reshaped);
+            numelyx_matrix_release(columns);
+            numelyx_matrix_release(rows);
+            numelyx_matrix_release(parent);
+            return 19;
+        }
+
+        numelyx_matrix_release(parent);
+        if (numelyx_matrix_get(rows, 0, 2, &value) != NUMELYX_SUCCESS
+                || value != 6.0
+            || numelyx_matrix_get(columns, 1, 1, &value) != NUMELYX_SUCCESS
+                || value != 4.0
+            || numelyx_matrix_get(reshaped, 1, 0, &value) != NUMELYX_SUCCESS
+                || value != 3.0
+            || numelyx_matrix_get(flattened, 0, 4, &value) != NUMELYX_SUCCESS
+                || value != 5.0
+            || numelyx_matrix_get(flipped_rows, 0, 0, &value) != NUMELYX_SUCCESS
+                || value != 4.0
+            || numelyx_matrix_get(flipped_columns, 0, 0, &value)
+                != NUMELYX_SUCCESS
+            || value != 3.0) {
+            numelyx_matrix_release(flipped_columns);
+            numelyx_matrix_release(flipped_rows);
+            numelyx_matrix_release(flattened);
+            numelyx_matrix_release(reshaped);
+            numelyx_matrix_release(columns);
+            numelyx_matrix_release(rows);
+            return 20;
+        }
+
+        numelyx_matrix_release(flipped_columns);
+        numelyx_matrix_release(flipped_rows);
+        numelyx_matrix_release(flattened);
+        numelyx_matrix_release(reshaped);
+        numelyx_matrix_release(columns);
+        numelyx_matrix_release(rows);
+    }
+
+    {
         const double coefficients[] = {4.0, 7.0, 2.0, 6.0};
         const double rhs_values[] = {1.0, 0.0};
         numelyx_matrix *coefficient_matrix = NULL;
