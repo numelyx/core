@@ -114,6 +114,25 @@ NUMELYX_API numelyx_status numelyx_matrix_materialize(
     numelyx_matrix **result
 );
 
+/** Compute the determinant of a square Matrix. */
+NUMELYX_API numelyx_status numelyx_matrix_determinant(
+    numelyx_matrix *matrix,
+    double *determinant
+);
+
+/** Compute an independent dense inverse using the Core LU-based path. */
+NUMELYX_API numelyx_status numelyx_matrix_inverse(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **inverse
+);
+
+/** Solve A X = B using one LU factorization for all right-hand sides. */
+NUMELYX_API numelyx_status numelyx_matrix_solve(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    numelyx_matrix **solution
+);
+
 /** Retain one additional owned reference; the caller must already own one. */
 NUMELYX_API numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix);
 
