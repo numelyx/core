@@ -838,6 +838,66 @@ numelyx_status numelyx_matrix_solve(
 }
 
 
+
+numelyx_status numelyx_matrix_get_storage_kind(
+    const numelyx_matrix *matrix,
+    numelyx_storage_kind *kind
+)
+{
+    numelyx_storage_kind mapped;
+
+    if (matrix == NULL || kind == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+
+    switch (numelyx_core_matrix_storage_kind(matrix)) {
+        case NUMERUS_STORAGE_DENSE: mapped = NUMELYX_STORAGE_DENSE; break;
+        case NUMERUS_STORAGE_UPPER_TRIANGULAR: mapped = NUMELYX_STORAGE_UPPER_TRIANGULAR; break;
+        case NUMERUS_STORAGE_LOWER_TRIANGULAR: mapped = NUMELYX_STORAGE_LOWER_TRIANGULAR; break;
+        case NUMERUS_STORAGE_DIAGONAL: mapped = NUMELYX_STORAGE_DIAGONAL; break;
+        case NUMERUS_STORAGE_IDENTITY: mapped = NUMELYX_STORAGE_IDENTITY; break;
+        case NUMERUS_STORAGE_CONSTANT: mapped = NUMELYX_STORAGE_CONSTANT; break;
+        case NUMERUS_STORAGE_ZERO: mapped = NUMELYX_STORAGE_ZERO; break;
+        case NUMERUS_STORAGE_SCALED_IDENTITY: mapped = NUMELYX_STORAGE_SCALED_IDENTITY; break;
+        case NUMERUS_STORAGE_SPARSE: mapped = NUMELYX_STORAGE_SPARSE; break;
+        case NUMERUS_STORAGE_SYMMETRIC: mapped = NUMELYX_STORAGE_SYMMETRIC; break;
+        case NUMERUS_STORAGE_BANDED: mapped = NUMELYX_STORAGE_BANDED; break;
+        default: return NUMELYX_NUMERICAL_ERROR;
+    }
+
+    *kind = mapped;
+    return NUMELYX_SUCCESS;
+}
+
+numelyx_status numelyx_matrix_get_flags(
+    numelyx_matrix *matrix,
+    numelyx_matrix_flags *flags
+)
+{
+    numelyx_core_matrix_flags core_flags;
+    numelyx_matrix_flags result;
+    numelyx_core_matrix_status status;
+
+    if (flags == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+
+    status = numelyx_core_matrix_get_flags(matrix, &core_flags);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+
+    result.square = core_flags.square ? 1 : 0;
+    result.zero = core_flags.zero ? 1 : 0;
+    result.diagonal = core_flags.diagonal ? 1 : 0;
+    result.upper_triangular = core_flags.upper_triangular ? 1 : 0;
+    result.lower_triangular = core_flags.lower_triangular ? 1 : 0;
+    result.symmetric = core_flags.symmetric ? 1 : 0;
+    result.identity = core_flags.identity ? 1 : 0;
+    *flags = result;
+    return NUMELYX_SUCCESS;
+}
+
 numelyx_status numelyx_matrix_log_determinant(
     const numelyx_matrix *matrix,
     int *sign,
