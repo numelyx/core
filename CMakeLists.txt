@@ -98,25 +98,22 @@ endif()
 include(GNUInstallDirs)
 
 target_include_directories(numelyx_core
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/core>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/storage>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/matrix>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/statistics>
+        $<BUILD_INTERFACE:${NUMELYX_GENERATED_INCLUDE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/core>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/storage>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/matrix>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/statistics>
 )
 
 set_target_properties(numelyx_core PROPERTIES EXPORT_NAME Core)
 
-# The current declarations are installed as explicitly unstable detail headers.
-# They are useful for in-repository and early SDK integration, but are not yet
-# the compatibility promise of a versioned public C API.
+# Only curated public headers are exported to consumers. Internal src/ headers
+# remain private to the library and native regression tests.
 set(NUMELYX_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
 file(MAKE_DIRECTORY "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx")
 set(NUMELYX_UMBRELLA_HEADER
@@ -137,13 +134,6 @@ install(TARGETS numelyx_core
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
-foreach(subsystem IN ITEMS core storage matrix statistics)
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/${subsystem}/"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/numelyx/detail/${subsystem}"
-        FILES_MATCHING PATTERN "*.h"
-    )
-endforeach()
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
@@ -214,6 +204,13 @@ if(NUMELYX_BUILD_TESTS)
 
         add_executable(${test_name} "${test_source}")
         target_link_libraries(${test_name} PRIVATE Numelyx::Core)
+        target_include_directories(${test_name} PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+        )
 
         if(test_name IN_LIST NUMELYX_ALLOC_WRAP_TESTS)
             target_link_options(${test_name} PRIVATE
@@ -247,6 +244,13 @@ endif()
 if(NUMELYX_BUILD_BENCHMARKS)
     add_executable(matrix_benchmark benchmarks/matrix_benchmark.c)
     target_link_libraries(matrix_benchmark PRIVATE Numelyx::Core)
+    target_include_directories(matrix_benchmark PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/storage"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
+    )
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND UNIX AND NOT APPLE)
         target_link_options(matrix_benchmark PRIVATE
             "-Wl,--wrap=malloc"
