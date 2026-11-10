@@ -45,6 +45,16 @@ static void test_inference_validation(void){
  assert(numelyx_core_delta_method_variance(gradient,covariance,2,&variance)
   ==NUMELYX_INFERENCE_NUMERICAL_FAILURE);
  assert(variance==9);
+ {
+  const double one_estimate[]={1};
+  const double two_nulls[]={0,0};
+  const double repeated_restrictions[]={1,2};
+  const double one_covariance[]={1};
+  statistic=7;logp=8;
+  assert(numelyx_core_wald_test(one_estimate,two_nulls,repeated_restrictions,
+   one_covariance,1,2,&statistic,&logp)==NUMELYX_INFERENCE_SINGULAR_COVARIANCE);
+  assert(statistic==7&&logp==8);
+ }
 }
 int main(void){
  test_delta_method();test_wald_scalar_and_joint();test_inference_validation();
