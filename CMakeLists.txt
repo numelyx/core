@@ -4,6 +4,7 @@ project(NumelyxCore VERSION 0.1.0 LANGUAGES C)
 
 option(NUMELYX_BUILD_TESTS "Build native C tests" ON)
 option(NUMELYX_BUILD_BENCHMARKS "Build diagnostic benchmarks" OFF)
+option(NUMELYX_BUILD_SHARED "Build Numelyx Core as a shared library" OFF)
 option(NUMELYX_ENABLE_TSAN "Enable ThreadSanitizer (Linux, GCC/Clang)" OFF)
 option(NUMELYX_ENABLE_ASAN_UBSAN "Enable AddressSanitizer and UndefinedBehaviorSanitizer (Linux, GCC/Clang)" OFF)
 
@@ -18,8 +19,23 @@ file(GLOB_RECURSE NUMELYX_CORE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/*.c"
 )
 
-add_library(numelyx_core STATIC ${NUMELYX_CORE_SOURCES})
+if(NUMELYX_BUILD_SHARED)
+    set(NUMELYX_LIBRARY_KIND SHARED)
+else()
+    set(NUMELYX_LIBRARY_KIND STATIC)
+endif()
+
+add_library(numelyx_core ${NUMELYX_LIBRARY_KIND} ${NUMELYX_CORE_SOURCES})
 add_library(Numelyx::Core ALIAS numelyx_core)
+
+# Shared builds must be usable by downstream language bindings. Keep symbols
+# visible for now; a curated public ABI/export header is a separate API task.
+set_target_properties(numelyx_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+)
 
 find_package(Threads REQUIRED)
 target_link_libraries(numelyx_core PUBLIC Threads::Threads)
@@ -76,7 +92,6 @@ target_include_directories(numelyx_core
         "${CMAKE_CURRENT_SOURCE_DIR}/src/matrix"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics"
 )
-
 
 if(UNIX)
     target_link_libraries(numelyx_core PUBLIC m)
