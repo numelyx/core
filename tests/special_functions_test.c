@@ -360,6 +360,69 @@ static void test_erf_erfc_validation_and_extremes(void)
     assert(value == 0.0);
 }
 
+
+static void test_inverse_erf_erfc_reference_values(void)
+{
+    double value;
+    assert(numelyx_core_inverse_erf(0.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    assert(numelyx_core_inverse_erf(0.84270079294971486934, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0, 3e-13);
+    assert(numelyx_core_inverse_erf(-0.84270079294971486934, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -1.0, 3e-13);
+    assert(numelyx_core_inverse_erfc(0.15729920705028513066, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0, 3e-13);
+    assert(numelyx_core_inverse_erfc(1.84270079294971486934, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -1.0, 3e-13);
+    assert(numelyx_core_inverse_erf(1e-10, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 8.8622692545275801365e-11, 2e-20);
+}
+
+static void test_normal_quantile_reference_values_and_round_trips(void)
+{
+    const double probabilities[] = {1e-10, 0.025, 0.5, 0.975, 1.0 - 1e-10};
+    const double expected[] = {
+        -6.361340902404056, -1.959963984540054,
+        0.0, 1.959963984540054, 6.361340902404056
+    };
+    size_t i;
+    for (i = 0; i < sizeof(probabilities) / sizeof(probabilities[0]); i++) {
+        double quantile;
+        double cdf;
+        assert(numelyx_core_normal_quantile(probabilities[i], &quantile) ==
+            NUMERUS_NUMERIC_SUCCESS);
+        close_to(quantile, expected[i], 2e-10);
+        assert(numelyx_core_erfc(fabs(quantile) / sqrt(2.0), &cdf) ==
+            NUMERUS_NUMERIC_SUCCESS);
+        cdf = quantile < 0.0 ? 0.5 * cdf : 1.0 - 0.5 * cdf;
+        close_to(cdf, probabilities[i], 3e-13);
+    }
+}
+
+static void test_inverse_error_function_validation(void)
+{
+    double value = 31.0;
+    assert(numelyx_core_inverse_erf(1.1, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 31.0);
+    assert(numelyx_core_inverse_erfc(-0.1, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 31.0);
+    assert(numelyx_core_normal_quantile(NAN, &value) ==
+        NUMERUS_NUMERIC_NON_FINITE);
+    assert(value == 31.0);
+    assert(numelyx_core_normal_quantile(0.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == -INFINITY);
+    assert(numelyx_core_normal_quantile(1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == INFINITY);
+}
+
 int main(void)
 {
     test_regularized_gamma_reference_values();
@@ -378,6 +441,9 @@ int main(void)
     test_special_function_monotonicity_and_digamma_derivative();
     test_erf_erfc_reference_values_and_symmetry();
     test_erf_erfc_validation_and_extremes();
+    test_inverse_erf_erfc_reference_values();
+    test_normal_quantile_reference_values_and_round_trips();
+    test_inverse_error_function_validation();
     puts("Special-function tests passed.");
     return 0;
 }

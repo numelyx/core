@@ -11,6 +11,7 @@ The internal special-function layer currently provides:
 - Inverses of P(a,x), Q(a,x), and I_x(a,b), solved with monotone bracketing and bisection.
 - Digamma and trigamma for positive finite real arguments, using recurrence and asymptotic Bernoulli expansions.
 - Error function erf and complementary error function erfc, derived from regularized gamma tails.
+- Inverse erf/erfc and the standard normal quantile, using direct regularized-gamma tail inverses.
 
 These are internal numerical primitives. They are not yet part of the installed public C ABI or language-binding API.
 
@@ -31,6 +32,10 @@ At x=0 and x=1, exact endpoint values are returned.
 ## Error functions
 
 The implementation uses erf(x)=sign(x) P(1/2,x²) and erfc(x)=Q(1/2,x²) for positive x, with symmetry for negative x. The complementary function evaluates the upper gamma tail directly, avoiding cancellation for positive large arguments. Inputs whose square would overflow use their limiting values.
+
+## Inverse error functions and normal quantile
+
+Inverse erf/erfc reduce to inverse regularized gamma P/Q at shape 1/2. Upper tails use Q directly; the normal quantile uses the erfc inverse and a two-sided tail probability, avoiding the loss of significance in forming 2p-1 near p=0 or p=1. Mathematical endpoint values are represented by signed infinities. A short small-argument expansion avoids squaring tiny erf inputs.
 
 ## Digamma and trigamma
 
@@ -65,6 +70,7 @@ Native tests cover:
 - Inverse probability-domain validation and output preservation.
 - Digamma/trigamma closed-form references at 1, 1/2, and 8, recurrence identities, and invalid-input handling.
 - erf/erfc reference values, symmetry, upper-tail behavior, and extreme finite inputs.
+- Inverse erf/erfc references, normal quantiles from both tails, round-trip checks, and endpoint/domain contracts.
 - Invalid domains, non-finite inputs, and output preservation.
 
 These tests are regression coverage, not a substitute for broad high-precision reference sweeps. Before exposing these functions publicly, add independently generated high-precision vectors across logarithmically spaced shape and argument ranges, monotonicity tests, derivative identities, and stress tests for extreme finite parameters.

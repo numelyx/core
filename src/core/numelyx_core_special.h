@@ -58,4 +58,15 @@ numelyx_core_numeric_status numelyx_core_erf(double x, double *result);
 /** Complementary error function erfc(x), for finite real x. */
 numelyx_core_numeric_status numelyx_core_erfc(double x, double *result);
 
+/** Inverse error function; accepts finite y in [-1,1]. */
+numelyx_core_numeric_status numelyx_core_inverse_erf(double y, double *result);
+
+/** Inverse complementary error function; accepts finite y in [0,2]. */
+numelyx_core_numeric_status numelyx_core_inverse_erfc(double y, double *result);
+
+/** Standard normal quantile; accepts finite probability p in [0,1]. */
+numelyx_core_numeric_status numelyx_core_normal_quantile(
+    double probability, double *result
+);
+
 #endif

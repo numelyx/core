@@ -498,3 +498,119 @@ numelyx_core_numeric_status numelyx_core_erfc(double x, double *result)
     *result = value;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+numelyx_core_numeric_status numelyx_core_inverse_erf(double y, double *result)
+{
+    double magnitude;
+    double gamma_argument;
+    double root;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(y)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (y < -1.0 || y > 1.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (y == 0.0) {
+        *result = y;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (y == 1.0 || y == -1.0) {
+        *result = copysign(INFINITY, y);
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    magnitude = fabs(y);
+    /* The first term of the inverse-erf series is correctly rounded here. */
+    if (magnitude < 1e-8) {
+        *result = copysign(magnitude * sqrt(acos(-1.0)) * 0.5, y);
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    if (magnitude <= 0.5) {
+        status = numelyx_core_inverse_regularized_gamma_p(
+            0.5, magnitude, &gamma_argument);
+    } else {
+        status = numelyx_core_inverse_regularized_gamma_q(
+            0.5, 1.0 - magnitude, &gamma_argument);
+    }
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    root = sqrt(gamma_argument);
+    if (!isfinite(root)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = copysign(root, y);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_inverse_erfc(double y, double *result)
+{
+    double gamma_argument;
+    double magnitude;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(y)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (y < 0.0 || y > 2.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (y == 0.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (y == 2.0) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (y == 1.0) {
+        *result = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    if (y < 1.0) {
+        status = numelyx_core_inverse_regularized_gamma_q(
+            0.5, y, &gamma_argument);
+        magnitude = 1.0;
+    } else {
+        status = numelyx_core_inverse_regularized_gamma_p(
+            0.5, 2.0 - y, &gamma_argument);
+        magnitude = -1.0;
+    }
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    gamma_argument = sqrt(gamma_argument);
+    if (!isfinite(gamma_argument))
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = magnitude * gamma_argument;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_normal_quantile(
+    double probability, double *result
+)
+{
+    double tail_probability;
+    double quantile;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    if (probability <= 0.5) {
+        tail_probability = 2.0 * probability;
+        status = numelyx_core_inverse_erfc(tail_probability, &quantile);
+        quantile = -sqrt(2.0) * quantile;
+    } else {
+        tail_probability = 2.0 * (1.0 - probability);
+        status = numelyx_core_inverse_erfc(tail_probability, &quantile);
+        quantile *= sqrt(2.0);
+    }
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (!isfinite(quantile)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = quantile;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
