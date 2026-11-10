@@ -914,11 +914,14 @@ numelyx_status numelyx_matrix_qr_decompose(
     numelyx_matrix **r
 )
 {
-    if (q == NULL || r == NULL || q == r) {
+    if (q == NULL || r == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
     *q = NULL;
     *r = NULL;
+    if (q == r) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
     return map_matrix_status(numelyx_core_matrix_qr_decompose(matrix, q, r));
 }
 
@@ -929,13 +932,15 @@ numelyx_status numelyx_matrix_svd(
     numelyx_matrix **vt
 )
 {
-    if (u == NULL || singular_values == NULL || vt == NULL
-        || u == singular_values || u == vt || singular_values == vt) {
+    if (u == NULL || singular_values == NULL || vt == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
     *u = NULL;
     *singular_values = NULL;
     *vt = NULL;
+    if (u == singular_values || u == vt || singular_values == vt) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
     return map_matrix_status(numelyx_core_matrix_svd(
         matrix, u, singular_values, vt));
 }
