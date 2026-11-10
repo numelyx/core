@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <numelyx/status.h>
 
@@ -22,7 +23,12 @@ typedef bool (*numelyx_gradient_fn)(
     double *gradient
 );
 
+/* Version tag for the initial optimizer options layout. */
+#define NUMELYX_OPTIMIZER_OPTIONS_VERSION_1 UINT32_C(1)
+
 typedef struct {
+    uint32_t struct_size;
+    uint32_t version;
     size_t max_iterations;
     size_t max_line_search_iterations;
     double gradient_tolerance;
