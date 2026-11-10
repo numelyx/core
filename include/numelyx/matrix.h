@@ -327,6 +327,42 @@ NUMELYX_API numelyx_status numelyx_matrix_solve(
     numelyx_matrix **solution
 );
 
+/** Stable public identifiers for the root storage representation. */
+typedef enum {
+    NUMELYX_STORAGE_DENSE = 0,
+    NUMELYX_STORAGE_UPPER_TRIANGULAR,
+    NUMELYX_STORAGE_LOWER_TRIANGULAR,
+    NUMELYX_STORAGE_DIAGONAL,
+    NUMELYX_STORAGE_IDENTITY,
+    NUMELYX_STORAGE_CONSTANT,
+    NUMELYX_STORAGE_ZERO,
+    NUMELYX_STORAGE_SCALED_IDENTITY,
+    NUMELYX_STORAGE_SPARSE,
+    NUMELYX_STORAGE_SYMMETRIC,
+    NUMELYX_STORAGE_BANDED
+} numelyx_storage_kind;
+
+/** Logical structural properties, computed/cached by the Core Matrix layer. */
+typedef struct {
+    int square;
+    int zero;
+    int diagonal;
+    int upper_triangular;
+    int lower_triangular;
+    int symmetric;
+    int identity;
+} numelyx_matrix_flags;
+
+/** Return the underlying root storage kind; views report their root kind. */
+NUMELYX_API numelyx_status numelyx_matrix_get_storage_kind(
+    const numelyx_matrix *matrix, numelyx_storage_kind *kind
+);
+
+/** Compute or retrieve logical structural flags; output is unchanged on error. */
+NUMELYX_API numelyx_status numelyx_matrix_get_flags(
+    numelyx_matrix *matrix, numelyx_matrix_flags *flags
+);
+
 /** Compute signed log(|det(A)|) without forming the determinant product. */
 NUMELYX_API numelyx_status numelyx_matrix_log_determinant(
     const numelyx_matrix *matrix, int *sign, double *log_abs_determinant
