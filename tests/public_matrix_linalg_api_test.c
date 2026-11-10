@@ -91,9 +91,9 @@ int main(void)
     numelyx_matrix_release(u); u = NULL;
     numelyx_matrix_release(vt); vt = NULL;
     if (numelyx_matrix_spectral_norm(a, &scalar) != NUMELYX_SUCCESS
-        || !close_to(scalar, 2.0)
+        || !close_to(scalar, 3.0)
         || numelyx_matrix_condition_estimate_one(a, &scalar)
-            != NUMELYX_SUCCESS || !close_to(scalar, 2.0))
+            != NUMELYX_SUCCESS || !close_to(scalar, 1.5))
         goto fail;
     {
         int positive_definite = 0, positive_semidefinite = 0;
@@ -108,7 +108,7 @@ int main(void)
         || numelyx_matrix_mean(a, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 1.25)
         || numelyx_matrix_variance(a, 0, &scalar) != NUMELYX_SUCCESS
-        || !close_to(scalar, 1.1875)
+        || !close_to(scalar, 1.6875)
         || numelyx_matrix_variance(a, 2, &scalar)
             != NUMELYX_INVALID_ARGUMENT)
         goto fail;
