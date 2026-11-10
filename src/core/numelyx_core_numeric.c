@@ -173,3 +173,85 @@ numelyx_core_numeric_status numelyx_core_numeric_log_sum_exp(
     *result = value;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+/*
+ * Stable log(1 - exp(x)). The split at -log(2) avoids catastrophic
+ * cancellation both near zero and when exp(x) is small.
+ */
+numelyx_core_numeric_status numelyx_core_numeric_log1mexp(
+    double input,
+    double *result
+)
+{
+    const double negative_log_two = -0.693147180559945309417232121458176568;
+    double value;
+
+    if (result == NULL) {
+        return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    }
+    if (!isfinite(input)) {
+        return NUMERUS_NUMERIC_NON_FINITE;
+    }
+    if (input > 0.0) {
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    }
+
+    if (input == 0.0) {
+        value = -INFINITY;
+    } else if (input < negative_log_two) {
+        value = log1p(-exp(input));
+    } else {
+        value = log(-expm1(input));
+    }
+
+    /* -INFINITY is the exact and documented value at the endpoint. */
+    if (isnan(value) || value == INFINITY) {
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    }
+
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_numeric_log_diff_exp(
+    double a,
+    double b,
+    double *result
+)
+{
+    double difference;
+    double correction;
+    double value;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) {
+        return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    }
+    if (!isfinite(a) || !isfinite(b)) {
+        return NUMERUS_NUMERIC_NON_FINITE;
+    }
+    if (b > a) {
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    }
+
+    difference = b - a;
+    if (difference == 0.0) {
+        value = -INFINITY;
+    } else {
+        status = numelyx_core_numeric_log1mexp(difference, &correction);
+        if (status != NUMERUS_NUMERIC_SUCCESS) {
+            return status;
+        }
+        value = a + correction;
+    }
+
+    /* -INFINITY is valid only when the two logarithms are equal. */
+    if (isnan(value) || value == INFINITY ||
+        (value == -INFINITY && a != b)) {
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    }
+
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
