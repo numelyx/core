@@ -56,7 +56,7 @@ Before declaring the C ABI stable, the implementation must provide:
 The first supported surface should be intentionally small:
 
 - Core semantic version and ABI-stability introspection.
-- A public status-code namespace.
+- A public status-code namespace with stable, static status-description strings.
 - Dense, identity, zero, constant, and diagonal Matrix creation, retain/release,
   dimensions, element access, lazy transpose/slice views, lazy element-wise addition,
   subtraction, Hadamard product and scalar scaling, eager matrix multiplication,
