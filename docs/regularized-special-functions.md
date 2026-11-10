@@ -9,6 +9,7 @@ The internal special-function layer currently provides:
 - Regularized upper incomplete gamma, Q(a,x).
 - Regularized incomplete beta, I_x(a,b).
 - Inverses of P(a,x), Q(a,x), and I_x(a,b), solved with monotone bracketing and bisection.
+- Digamma and trigamma for positive finite real arguments, using recurrence and asymptotic Bernoulli expansions.
 
 These are internal numerical primitives. They are not yet part of the installed public C ABI or language-binding API.
 
@@ -25,6 +26,10 @@ This branch selection computes the small tail directly rather than subtracting i
 The regularized incomplete beta uses a modified Lentz continued fraction and the standard symmetry transformation around (a+1)/(a+b+2). The exponential prefactor is assembled in the log domain using lgamma, log, and log1p; it is not formed as a product of potentially underflowing intermediate factors.
 
 At x=0 and x=1, exact endpoint values are returned.
+
+## Digamma and trigamma
+
+The positive-argument digamma and trigamma functions shift their arguments by recurrence to x >= 8, then evaluate asymptotic Bernoulli expansions. Restricting the current contract to x > 0 avoids reflection near non-positive poles. Non-finite intermediate results are reported as numerical failures and do not modify the output.
 
 ## Inverse functions
 
@@ -51,6 +56,7 @@ Native tests cover:
 - Beta symmetry and exact endpoints.
 - Round trips for inverse gamma P/Q and inverse beta over lower, central, and upper probabilities.
 - Inverse probability-domain validation and output preservation.
+- Digamma/trigamma closed-form references at 1, 1/2, and 8, recurrence identities, and invalid-input handling.
 - Invalid domains, non-finite inputs, and output preservation.
 
 These tests are regression coverage, not a substitute for broad high-precision reference sweeps. Before exposing these functions publicly, add independently generated high-precision vectors across logarithmically spaced shape and argument ranges, monotonicity tests, derivative identities, and stress tests for extreme finite parameters.
