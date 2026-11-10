@@ -1,6 +1,6 @@
 # Scalar Continuous and Discrete Distributions
 
-Status: internal Normal, Student-t, chi-square, Gamma, Beta, F, Poisson, and Binomial scalar distribution primitives added; validation is ongoing.
+Status: internal Normal, Student-t, chi-square, Gamma, Beta, F, Poisson, Binomial, Uniform, Logistic, Weibull, and Lognormal scalar distribution primitives added; validation is ongoing.
 
 ## Contract
 
@@ -16,6 +16,10 @@ The internal scalar normal family provides log-PDF, PDF, CDF, survival function,
 
 Student-t provides log-PDF/PDF, CDF/survival and their log tails, and quantiles. Its tails are evaluated through the log-lower regularized beta primitive, and quantiles use the inverse regularized beta. Chi-square provides the same scalar family using regularized gamma P/Q and the log-Q primitive. Support endpoints are explicit: chi-square has zero density outside its nonnegative support, and quantiles at probability endpoints return their mathematical limits.
 
+## Uniform, Logistic, Weibull, and Lognormal
+
+Uniform supports finite closed intervals. Logistic uses stable softplus log tails and a logit quantile. Weibull uses shape/scale parameterization and computes its survival log directly from the cumulative hazard. Lognormal reuses the normal log-tail and quantile primitives on log(X), including the Jacobian in its log-density.
+
 ## Discrete Poisson and Binomial
 
 Poisson and Binomial provide PMF/log-PMF, CDF/survival, log tails, and integer quantiles. Poisson tails use log-domain regularized gamma P/Q; Binomial tails use log-domain regularized beta lower/upper tails. Count parameters are limited to at most 2^53−1 so k+1 and factorial arguments remain exactly representable in double-precision special-function parameters. The Poisson quantile at probability one saturates to UINT64_MAX because its support is unbounded.
@@ -30,4 +34,4 @@ Gamma distribution uses shape/scale parameterization and regularized gamma P/Q t
 
 ## Validation
 
-Native tests cover standard-normal reference values, location/scale transformation, symmetry, log-tail behavior at 10 and 40 standard deviations, quantiles, invalid parameters, non-finite values, and extreme finite location differences. Student-t and chi-square tests cover closed-form reference cases, tails, quantiles, and parameter validation. Gamma and beta tests cover reference values, quantiles, tail logs, support boundaries, and invalid parameters. F-distribution tests cover closed-form reference cases, upper-tail logs, quantiles, and validation. Poisson and Binomial tests cover PMF/CDF/survival references, quantiles, degenerate endpoints, and invalid counts/probabilities.
+Native tests cover standard-normal reference values, location/scale transformation, symmetry, log-tail behavior at 10 and 40 standard deviations, quantiles, invalid parameters, non-finite values, and extreme finite location differences. Student-t and chi-square tests cover closed-form reference cases, tails, quantiles, and parameter validation. Gamma and beta tests cover reference values, quantiles, tail logs, support boundaries, and invalid parameters. F-distribution tests cover closed-form reference cases, upper-tail logs, quantiles, and validation. Poisson and Binomial tests cover PMF/CDF/survival references, quantiles, degenerate endpoints, and invalid counts/probabilities. Uniform, Logistic, Weibull, and Lognormal tests cover closed-form density/CDF/quantile values.

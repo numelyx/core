@@ -1547,3 +1547,515 @@ numelyx_core_numeric_status numelyx_core_binomial_quantile(
     *result = lower;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+static numelyx_core_numeric_status validate_interval_distribution(
+    double x, double lower, double upper, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x) || !isfinite(lower) || !isfinite(upper))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (lower >= upper) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_uniform_log_pdf(
+    double x, double lower, double upper, double *result
+)
+{
+    numelyx_core_numeric_status status =
+        validate_interval_distribution(x, lower, upper, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = x < lower || x > upper ? -INFINITY : -log(upper - lower);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_uniform_pdf(
+    double x, double lower, double upper, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_uniform_log_pdf(x, lower, upper, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static void uniform_log_tails(
+    double x, double lower, double upper,
+    double *log_cdf, double *log_survival
+)
+{
+    if (x <= lower) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+    } else if (x >= upper) {
+        *log_cdf = 0.0;
+        *log_survival = -INFINITY;
+    } else {
+        double cdf = (x - lower) / (upper - lower);
+        double survival = (upper - x) / (upper - lower);
+        *log_cdf = log(cdf);
+        *log_survival = log(survival);
+    }
+}
+
+#define DEFINE_UNIFORM_TAIL(name, index, transform) \
+numelyx_core_numeric_status numelyx_core_uniform_##name( \
+    double x, double lower, double upper, double *result) \
+{ \
+    double log_cdf, log_survival; \
+    numelyx_core_numeric_status status = \
+        validate_interval_distribution(x, lower, upper, result); \
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status; \
+    uniform_log_tails(x, lower, upper, &log_cdf, &log_survival); \
+    *result = transform; \
+    return NUMERUS_NUMERIC_SUCCESS; \
+}
+DEFINE_UNIFORM_TAIL(log_cdf, 0, log_cdf)
+DEFINE_UNIFORM_TAIL(log_survival, 1, log_survival)
+DEFINE_UNIFORM_TAIL(cdf, 2, exp(log_cdf))
+DEFINE_UNIFORM_TAIL(survival, 3, exp(log_survival))
+#undef DEFINE_UNIFORM_TAIL
+
+numelyx_core_numeric_status numelyx_core_uniform_quantile(
+    double probability, double lower, double upper, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(lower) || !isfinite(upper))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 || lower >= upper)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    *result = lower + probability * (upper - lower);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status validate_location_scale(
+    double x, double location, double scale, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x) || !isfinite(location) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (scale <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_log_pdf(
+    double x, double location, double scale, double *result
+)
+{
+    double z;
+    double value;
+    numelyx_core_numeric_status status =
+        validate_location_scale(x, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    z = standardized_difference(x, location, scale);
+    if (!isfinite(z)) value = -INFINITY;
+    else value = -log(scale) - log1pexp_stable(z) -
+        log1pexp_stable(-z);
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_pdf(
+    double x, double location, double scale, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_logistic_log_pdf(x, location, scale, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static void logistic_log_tails(
+    double z, double *log_cdf, double *log_survival
+)
+{
+    *log_cdf = -log1pexp_stable(-z);
+    *log_survival = -log1pexp_stable(z);
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_log_cdf(
+    double x, double location, double scale, double *result
+)
+{
+    double z, log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_location_scale(x, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    z = standardized_difference(x, location, scale);
+    if (z == INFINITY) log_cdf = 0.0;
+    else if (z == -INFINITY) log_cdf = -INFINITY;
+    else logistic_log_tails(z, &log_cdf, &log_survival);
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_log_survival(
+    double x, double location, double scale, double *result
+)
+{
+    double z, log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_location_scale(x, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    z = standardized_difference(x, location, scale);
+    if (z == INFINITY) log_survival = -INFINITY;
+    else if (z == -INFINITY) log_survival = 0.0;
+    else logistic_log_tails(z, &log_cdf, &log_survival);
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_cdf(
+    double x, double location, double scale, double *result
+)
+{
+    double log_cdf;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_logistic_log_cdf(x, location, scale, &log_cdf);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_survival(
+    double x, double location, double scale, double *result
+)
+{
+    double log_survival;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_logistic_log_survival(
+        x, location, scale, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_logistic_quantile(
+    double probability, double location, double scale, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(location) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 || scale <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = -INFINITY;
+    } else if (probability == 1.0) {
+        *result = INFINITY;
+    } else {
+        *result = location + scale * (log(probability) - log1p(-probability));
+    }
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status validate_weibull(
+    double x, double shape, double scale, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x) || !isfinite(shape) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (shape <= 0.0 || scale <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static double weibull_log_power(double x, double shape, double scale)
+{
+    if (x == 0.0) return -INFINITY;
+    return shape * (log(x) - log(scale));
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_log_pdf(
+    double x, double shape, double scale, double *result
+)
+{
+    double value;
+    numelyx_core_numeric_status status =
+        validate_weibull(x, shape, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (x < 0.0) value = -INFINITY;
+    else if (x == 0.0) {
+        if (shape < 1.0) value = INFINITY;
+        else if (shape == 1.0) value = -log(scale);
+        else value = -INFINITY;
+    } else {
+        double log_power = weibull_log_power(x, shape, scale);
+        double power = log_power > log(DBL_MAX) ? INFINITY : exp(log_power);
+        value = log(shape) - log(scale) +
+            (shape - 1.0) * (log(x) - log(scale)) - power;
+    }
+    if (isnan(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_pdf(
+    double x, double shape, double scale, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_weibull_log_pdf(x, shape, scale, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status weibull_log_tails(
+    double x, double shape, double scale,
+    double *log_cdf, double *log_survival
+)
+{
+    double log_power;
+    double power;
+    if (x <= 0.0) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    log_power = weibull_log_power(x, shape, scale);
+    power = log_power > log(DBL_MAX) ? INFINITY : exp(log_power);
+    *log_survival = -power;
+    if (power == INFINITY) {
+        *log_cdf = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    return numelyx_core_numeric_log1mexp(-power, log_cdf);
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_log_cdf(
+    double x, double shape, double scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_weibull(x, shape, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = weibull_log_tails(x, shape, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_log_survival(
+    double x, double shape, double scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_weibull(x, shape, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = weibull_log_tails(x, shape, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_cdf(
+    double x, double shape, double scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_weibull(x, shape, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = weibull_log_tails(x, shape, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_survival(
+    double x, double shape, double scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_weibull(x, shape, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = weibull_log_tails(x, shape, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_weibull_quantile(
+    double probability, double shape, double scale, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(shape) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 ||
+        shape <= 0.0 || scale <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = 0.0;
+    } else if (probability == 1.0) {
+        *result = INFINITY;
+    } else {
+        double log_quantile = log(scale) +
+            log(-log1p(-probability)) / shape;
+        *result = exp(log_quantile);
+    }
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status validate_lognormal(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x) || !isfinite(log_location) || !isfinite(log_scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (log_scale <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_log_pdf(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status =
+        validate_lognormal(x, log_location, log_scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (x <= 0.0) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    status = numelyx_core_normal_log_pdf(
+        log(x), log_location, log_scale, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_density - log(x);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_pdf(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_lognormal_log_pdf(
+        x, log_location, log_scale, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status lognormal_log_tails(
+    double x, double log_location, double log_scale,
+    double *log_cdf, double *log_survival
+)
+{
+    if (x <= 0.0) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    return numelyx_core_normal_log_tails(
+        log(x), log_location, log_scale, log_cdf, log_survival);
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_log_cdf(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_lognormal(x, log_location, log_scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = lognormal_log_tails(x, log_location, log_scale,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_log_survival(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_lognormal(x, log_location, log_scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = lognormal_log_tails(x, log_location, log_scale,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_cdf(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_lognormal(x, log_location, log_scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = lognormal_log_tails(x, log_location, log_scale,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_survival(
+    double x, double log_location, double log_scale, double *result
+)
+{
+    double log_cdf, log_survival;
+    numelyx_core_numeric_status status =
+        validate_lognormal(x, log_location, log_scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = lognormal_log_tails(x, log_location, log_scale,
+        &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_lognormal_quantile(
+    double probability, double log_location, double log_scale, double *result
+)
+{
+    double normal_quantile;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(log_location) || !isfinite(log_scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 || log_scale <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    status = numelyx_core_normal_quantile(
+        probability, log_location, log_scale, &normal_quantile);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(normal_quantile);
+    return NUMERUS_NUMERIC_SUCCESS;
+}

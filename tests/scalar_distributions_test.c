@@ -372,6 +372,51 @@ static void test_discrete_distribution_validation(void)
     assert(quantile == 54);
 }
 
+
+static void test_uniform_logistic_weibull_lognormal(void)
+{
+    double value;
+    assert(numelyx_core_uniform_pdf(4.0, 2.0, 6.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.25, 1e-15);
+    assert(numelyx_core_uniform_cdf(4.0, 2.0, 6.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 1e-15);
+    assert(numelyx_core_uniform_quantile(0.75, 2.0, 6.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 5.0, 1e-15);
+
+    assert(numelyx_core_logistic_pdf(0.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.25, 1e-15);
+    assert(numelyx_core_logistic_cdf(0.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 1e-15);
+    assert(numelyx_core_logistic_quantile(0.75, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, log(3.0), 1e-14);
+
+    assert(numelyx_core_weibull_pdf(3.0, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 2.0 / (3.0 * exp(1.0)), 2e-14);
+    assert(numelyx_core_weibull_survival(3.0, 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, exp(-1.0), 2e-14);
+    assert(numelyx_core_weibull_quantile(1.0-exp(-1.0), 2.0, 3.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 3.0, 2e-12);
+
+    assert(numelyx_core_lognormal_pdf(1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0 / sqrt(2.0 * acos(-1.0)), 2e-14);
+    assert(numelyx_core_lognormal_cdf(1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 2e-14);
+    assert(numelyx_core_lognormal_quantile(0.5, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0, 2e-14);
+}
+
 int main(void)
 {
     test_normal_distribution_reference_values();
@@ -389,6 +434,7 @@ int main(void)
     test_poisson_distribution_reference_values();
     test_binomial_distribution_reference_values();
     test_discrete_distribution_validation();
+    test_uniform_logistic_weibull_lognormal();
     puts("Scalar distribution tests passed.");
     return 0;
 }

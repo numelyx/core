@@ -207,4 +207,96 @@ numelyx_core_numeric_status numelyx_core_binomial_quantile(
     uint64_t *result
 );
 
+/** Uniform distribution on a finite closed interval [lower, upper]. */
+numelyx_core_numeric_status numelyx_core_uniform_log_pdf(
+    double x, double lower, double upper, double *result
+);
+numelyx_core_numeric_status numelyx_core_uniform_pdf(
+    double x, double lower, double upper, double *result
+);
+numelyx_core_numeric_status numelyx_core_uniform_log_cdf(
+    double x, double lower, double upper, double *result
+);
+numelyx_core_numeric_status numelyx_core_uniform_log_survival(
+    double x, double lower, double upper, double *result
+);
+numelyx_core_numeric_status numelyx_core_uniform_cdf(
+    double x, double lower, double upper, double *result
+);
+numelyx_core_numeric_status numelyx_core_uniform_survival(
+    double x, double lower, double upper, double *result
+);
+numelyx_core_numeric_status numelyx_core_uniform_quantile(
+    double probability, double lower, double upper, double *result
+);
+
+/** Logistic distribution with finite location and positive scale. */
+numelyx_core_numeric_status numelyx_core_logistic_log_pdf(
+    double x, double location, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_logistic_pdf(
+    double x, double location, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_logistic_log_cdf(
+    double x, double location, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_logistic_log_survival(
+    double x, double location, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_logistic_cdf(
+    double x, double location, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_logistic_survival(
+    double x, double location, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_logistic_quantile(
+    double probability, double location, double scale, double *result
+);
+
+/** Weibull distribution with positive shape and scale. */
+numelyx_core_numeric_status numelyx_core_weibull_log_pdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_weibull_pdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_weibull_log_cdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_weibull_log_survival(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_weibull_cdf(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_weibull_survival(
+    double x, double shape, double scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_weibull_quantile(
+    double probability, double shape, double scale, double *result
+);
+
+/** Lognormal distribution with normal parameters on log(X). */
+numelyx_core_numeric_status numelyx_core_lognormal_log_pdf(
+    double x, double log_location, double log_scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_lognormal_pdf(
+    double x, double log_location, double log_scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_lognormal_log_cdf(
+    double x, double log_location, double log_scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_lognormal_log_survival(
+    double x, double log_location, double log_scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_lognormal_cdf(
+    double x, double log_location, double log_scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_lognormal_survival(
+    double x, double log_location, double log_scale, double *result
+);
+numelyx_core_numeric_status numelyx_core_lognormal_quantile(
+    double probability, double log_location, double log_scale, double *result
+);
+
 #endif
