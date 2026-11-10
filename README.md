@@ -13,11 +13,28 @@ PHPT tests, and PHP build configuration are intentionally excluded.
 
 Requirements: CMake 3.16+ and a C11 compiler.
 
+Static library (default):
+
 ```sh
 cmake -S . -B build -DNUMELYX_BUILD_TESTS=ON
 cmake --build build --config Debug --parallel
 ctest --test-dir build -C Debug --output-on-failure
 ```
+
+Shared library (for runtime loading and language-binding integration):
+
+```sh
+cmake -S . -B build-shared -DNUMELYX_BUILD_SHARED=ON -DNUMELYX_BUILD_TESTS=ON
+cmake --build build-shared --config Debug --parallel
+ctest --test-dir build-shared -C Debug --output-on-failure
+```
+
+The shared build produces the platform-native library (`.so`, `.dylib`, or
+`.dll`). Windows builds currently use CMake's automatic symbol export. This
+does not yet constitute a stable public C ABI: a curated public-header layer,
+explicit API/export macros, and documented ownership/error contracts are
+still required before external SDKs should bind to it. Internal headers and
+symbol names remain subject to change.
 
 Standalone builds use the C runtime allocator. The source retains conditional
 Zend allocator support only in the upstream integration points; the CMake
@@ -48,7 +65,14 @@ TSAN_OPTIONS=halt_on_error=1 ctest --test-dir build-tsan -C Debug --output-on-fa
 The allocation-failure tests that use GNU linker `--wrap` are built only with
 GNU on Linux. Other compiler/platform configurations skip those tests.
 
-## Thread safety\n\nShared opaque objects use atomic reference counting. Matrix lazy caches are\nserialized per Matrix, and mutable RNG state is serialized per RNG. See\n[`docs/thread-safety-and-lifetime.md`](docs/thread-safety-and-lifetime.md) for\nownership requirements and callback restrictions.\n\n## Benchmarks
+## Thread safety
+
+Shared opaque objects use atomic reference counting. Matrix lazy caches are
+serialized per Matrix, and mutable RNG state is serialized per RNG. See
+[`docs/thread-safety-and-lifetime.md`](docs/thread-safety-and-lifetime.md) for
+ownership requirements and callback restrictions.
+
+## Benchmarks
 
 ```sh
 cmake -S . -B build -DNUMELYX_BUILD_BENCHMARKS=ON
