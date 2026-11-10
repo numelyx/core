@@ -32,10 +32,15 @@ static numelyx_core_matrix_status condition_solve(
         size_t column;
         double value;
 
-        if (numelyx_core_matrix_lu_get_permutation(
-                factorization, row, &source_row
-            ) != NUMERUS_MATRIX_SUCCESS) {
-            return NUMERUS_MATRIX_NUMERICAL_ERROR;
+        {
+            numelyx_core_matrix_status status =
+                numelyx_core_matrix_lu_get_permutation(
+                    factorization, row, &source_row
+                );
+
+            if (status != NUMERUS_MATRIX_SUCCESS) {
+                return status;
+            }
         }
 
         value = right_hand_side[source_row];
