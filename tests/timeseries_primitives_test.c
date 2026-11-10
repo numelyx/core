@@ -16,7 +16,7 @@ static void test_autocovariance_and_acf(void){
  assert(numelyx_core_autocorrelation(series,4,1,&value)==NUMELYX_TIMESERIES_SUCCESS);
  close_to(value,.25,1e-14);
  assert(numelyx_core_acf(series,4,2,acf)==NUMELYX_TIMESERIES_SUCCESS);
- close_to(acf[0],1,1e-15);close_to(acf[1],.25,1e-14);close_to(acf[2],-.375,1e-14);
+ close_to(acf[0],1,1e-15);close_to(acf[1],.25,1e-14);close_to(acf[2],-.3,1e-14);
 }
 static void test_differencing_and_validation(void){
  const double series[]={1,2,3,4};
