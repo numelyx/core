@@ -903,7 +903,7 @@ static void test_lbfgs_validation_and_allocation_cleanup(void)
     ) == NUMERUS_OPTIMIZER_SIZE_OVERFLOW);
     assert(result == NULL);
 
-    fail_after_allocations = 4;
+    fail_after_allocations = 9;
     assert(numelyx_core_optimizer_minimize_lbfgs(
         quadratic2_objective, quadratic2_gradient, &context,
         initial, 2, 4, &options, &result
