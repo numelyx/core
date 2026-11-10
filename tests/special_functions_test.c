@@ -316,6 +316,48 @@ static void test_special_function_monotonicity_and_digamma_derivative(void)
     close_to((psi_right - psi_left) / 2e-5, trigamma, 2e-9);
 }
 
+
+static void test_erf_erfc_reference_values_and_symmetry(void)
+{
+    double erf_value;
+    double erfc_value;
+    double opposite;
+
+    assert(numelyx_core_erf(0.0, &erf_value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(erf_value == 0.0);
+    assert(numelyx_core_erf(1.0, &erf_value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erf_value, 0.84270079294971486934, 3e-14);
+    assert(numelyx_core_erf(-1.0, &erf_value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erf_value, -0.84270079294971486934, 3e-14);
+
+    assert(numelyx_core_erfc(1.0, &erfc_value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erfc_value, 0.15729920705028513066, 3e-14);
+    assert(numelyx_core_erfc(-1.0, &erfc_value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erfc_value, 1.84270079294971486934, 3e-14);
+
+    assert(numelyx_core_erfc(5.0, &erfc_value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erfc_value, 1.5374597944280351e-12, 3e-25);
+    assert(numelyx_core_erf(2.0, &erf_value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(numelyx_core_erf(-2.0, &opposite) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erf_value, -opposite, 2e-15);
+}
+
+static void test_erf_erfc_validation_and_extremes(void)
+{
+    double value = 7.0;
+    assert(numelyx_core_erf(NAN, &value) == NUMERUS_NUMERIC_NON_FINITE);
+    assert(value == 7.0);
+    assert(numelyx_core_erfc(INFINITY, &value) == NUMERUS_NUMERIC_NON_FINITE);
+    assert(value == 7.0);
+    assert(numelyx_core_erf(1.0, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
+    assert(numelyx_core_erf(DBL_MAX, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 1.0);
+    assert(numelyx_core_erfc(-DBL_MAX, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 2.0);
+    assert(numelyx_core_erfc(DBL_MAX, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+}
+
 int main(void)
 {
     test_regularized_gamma_reference_values();
@@ -332,6 +374,8 @@ int main(void)
     test_high_precision_gamma_reference_vectors();
     test_high_precision_beta_reference_vectors();
     test_special_function_monotonicity_and_digamma_derivative();
+    test_erf_erfc_reference_values_and_symmetry();
+    test_erf_erfc_validation_and_extremes();
     puts("Special-function tests passed.");
     return 0;
 }
