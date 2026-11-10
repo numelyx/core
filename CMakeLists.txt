@@ -121,7 +121,7 @@ set_target_properties(numelyx_core PROPERTIES EXPORT_NAME Core)
 set(NUMELYX_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
 file(MAKE_DIRECTORY "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx")
 set(NUMELYX_UMBRELLA_HEADER
-    "/* Supported public API umbrella header. */\\n#ifndef NUMELYX_NUMELYX_H\\n#define NUMELYX_NUMELYX_H\\n#include <numelyx/version.h>\\n#include <numelyx/status.h>\\n#include <numelyx/matrix.h>\\n#include <numelyx/rng.h>\\n#include <numelyx/optimizer.h>\\n#include <numelyx/probability.h>\\n#endif /* NUMELYX_NUMELYX_H */\\n"
+    "/* Supported public API umbrella header. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n#include <numelyx/version.h>\n#include <numelyx/status.h>\n#include <numelyx/matrix.h>\n#include <numelyx/rng.h>\n#include <numelyx/optimizer.h>\n#include <numelyx/probability.h>\n#endif /* NUMELYX_NUMELYX_H */\n"
 )
 file(WRITE "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx/numelyx.h" "${NUMELYX_UMBRELLA_HEADER}")
 
