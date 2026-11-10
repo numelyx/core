@@ -112,6 +112,7 @@ static void test_bisection_failure_contracts(void)
         NUMELYX_ROOT_INVALID_ARGUMENT);
     assert(numelyx_core_bisection_default_options(NULL) ==
         NUMELYX_ROOT_INVALID_ARGUMENT);
+    result.root = 11.0;
     assert(numelyx_core_bisect(
         square_minus_two, NULL, -INFINITY, 2.0, &options, &result) ==
         NUMELYX_ROOT_NON_FINITE_INPUT);

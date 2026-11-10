@@ -1,4 +1,4 @@
-#include "../src/core/numelyx_core_distributions.h"
+#include "../src/statistics/numelyx_core_distributions.h"
 
 #include <assert.h>
 #include <float.h>
