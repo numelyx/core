@@ -87,6 +87,15 @@ static void test_covariance_validation_and_output_preservation(void){
   bread,scores,1,1,NUMELYX_COVARIANCE_HC1,&covariance)
   ==NUMELYX_COVARIANCE_DOMAIN_ERROR);
  assert(covariance==17);
+ {
+  const double design[]={1,1};
+  const double residuals[]={1,2};
+  const double leverage[]={0,1};
+  assert(numelyx_core_hc_sandwich_covariance(
+   bread,design,residuals,leverage,2,1,NUMELYX_COVARIANCE_HC_TYPE_3,
+   &covariance)==NUMELYX_COVARIANCE_DOMAIN_ERROR);
+  assert(covariance==17);
+ }
 }
 int main(void){
  test_hc0_hc1_sandwich(); test_multivariate_sandwich_orientation(); test_hc2_hc3_regression_covariance(); test_cluster_and_hac_sandwich();
