@@ -1058,6 +1058,132 @@ numelyx_status numelyx_matrix_trace(
 
 
 
+
+numelyx_status numelyx_matrix_row_echelon_form(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **echelon
+)
+{
+    if (echelon == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *echelon = NULL;
+    return map_matrix_status(numelyx_core_matrix_row_echelon_form(
+        matrix, echelon));
+}
+
+numelyx_status numelyx_matrix_reduced_row_echelon_form(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **reduced_echelon
+)
+{
+    if (reduced_echelon == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *reduced_echelon = NULL;
+    return map_matrix_status(numelyx_core_matrix_reduced_row_echelon_form(
+        matrix, reduced_echelon));
+}
+
+numelyx_status numelyx_matrix_symmetric_square_root(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **square_root
+)
+{
+    if (square_root == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *square_root = NULL;
+    return map_matrix_status(numelyx_core_matrix_symmetric_square_root(
+        matrix, square_root));
+}
+
+numelyx_status numelyx_matrix_symmetric_logarithm(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **logarithm
+)
+{
+    if (logarithm == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *logarithm = NULL;
+    return map_matrix_status(numelyx_core_matrix_symmetric_logarithm(
+        matrix, logarithm));
+}
+
+numelyx_status numelyx_matrix_symmetric_sine(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **sine
+)
+{
+    if (sine == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *sine = NULL;
+    return map_matrix_status(numelyx_core_matrix_symmetric_sine(
+        matrix, sine));
+}
+
+numelyx_status numelyx_matrix_symmetric_cosine(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **cosine
+)
+{
+    if (cosine == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *cosine = NULL;
+    return map_matrix_status(numelyx_core_matrix_symmetric_cosine(
+        matrix, cosine));
+}
+
+numelyx_status numelyx_matrix_symmetric_spectral_radius(
+    const numelyx_matrix *matrix,
+    double *radius
+)
+{
+    return map_matrix_status(numelyx_core_matrix_symmetric_spectral_radius(
+        matrix, radius));
+}
+
+numelyx_status numelyx_matrix_is_skew_symmetric(
+    const numelyx_matrix *matrix,
+    int *is_skew_symmetric
+)
+{
+    bool result;
+    numelyx_core_matrix_status status;
+
+    if (is_skew_symmetric == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    status = numelyx_core_matrix_is_skew_symmetric(matrix, &result);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+    *is_skew_symmetric = result ? 1 : 0;
+    return NUMELYX_SUCCESS;
+}
+
+numelyx_status numelyx_matrix_is_orthogonal(
+    const numelyx_matrix *matrix,
+    int *is_orthogonal
+)
+{
+    bool result;
+    numelyx_core_matrix_status status;
+
+    if (is_orthogonal == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    status = numelyx_core_matrix_is_orthogonal(matrix, &result);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+    *is_orthogonal = result ? 1 : 0;
+    return NUMELYX_SUCCESS;
+}
+
 numelyx_status numelyx_matrix_column_space_basis(
     const numelyx_matrix *matrix,
     numelyx_matrix **basis,
