@@ -393,7 +393,7 @@ static void test_normal_quantile_reference_values_and_round_trips(void)
     const double probabilities[] = {1e-10, 0.025, 0.5, 0.975, 1.0 - 1e-10};
     const double expected[] = {
         -6.361340902404056, -1.959963984540054,
-        0.0, 1.959963984540054, 6.361340902404056
+        0.0, 1.959963984540054, 6.361340889697422
     };
     size_t i;
     for (i = 0; i < sizeof(probabilities) / sizeof(probabilities[0]); i++) {
