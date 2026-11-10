@@ -66,6 +66,8 @@ The first supported surface should be intentionally small:
   API increments.
 - RNG creation, exact-state cloning, retain/release, deterministic raw output,
   uniform/normal sampling, and index sampling with an explicit Core deallocator.
+- BFGS optimizer options, objective/gradient callbacks, minimization, immutable
+  result ownership, and result inspection through an opaque handle.
 
 Do not export every internal helper simply because it exists. The API should
 expose composable numerical primitives rather than model-specific workflows.
