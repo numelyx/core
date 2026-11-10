@@ -14,7 +14,7 @@ int main(void)
     numelyx_matrix *u = NULL, *s = NULL, *vt = NULL, *pinv = NULL;
     numelyx_matrix *lower = NULL, *solution = NULL, *triangular = NULL;
     numelyx_matrix *rhs2 = NULL, *tri_solution = NULL;
-    numelyx_matrix *basis = NULL;
+    numelyx_matrix *basis = NULL, *extra = NULL;
     size_t rank = 0, subspace_dimension = 99;
     numelyx_matrix_solution_kind classification;
     int sign = 0;
@@ -101,6 +101,47 @@ int main(void)
         || !close_to(scalar, 2.0))
         goto fail;
 
+    if (numelyx_matrix_symmetric_square_root(
+            b, &extra) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(extra) != 2)
+        goto fail;
+    numelyx_matrix_release(extra); extra = NULL;
+    if (numelyx_matrix_symmetric_logarithm(
+            b, &extra) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(extra) != 2)
+        goto fail;
+    numelyx_matrix_release(extra); extra = NULL;
+    if (numelyx_matrix_symmetric_sine(
+            b, &extra) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(extra) != 2)
+        goto fail;
+    numelyx_matrix_release(extra); extra = NULL;
+    if (numelyx_matrix_symmetric_cosine(
+            b, &extra) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(extra) != 2)
+        goto fail;
+    numelyx_matrix_release(extra); extra = NULL;
+    if (numelyx_matrix_row_echelon_form(
+            a, &extra) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(extra) != 2)
+        goto fail;
+    numelyx_matrix_release(extra); extra = NULL;
+    if (numelyx_matrix_reduced_row_echelon_form(
+            a, &extra) != NUMELYX_SUCCESS
+        || numelyx_matrix_rows(extra) != 2)
+        goto fail;
+    numelyx_matrix_release(extra); extra = NULL;
+    {
+        int skew = 1, orthogonal = 1;
+        if (numelyx_matrix_symmetric_spectral_radius(a, &scalar)
+                != NUMELYX_SUCCESS || !close_to(scalar, 3.0)
+            || numelyx_matrix_is_skew_symmetric(a, &skew)
+                != NUMELYX_SUCCESS || skew != 0
+            || numelyx_matrix_is_orthogonal(a, &orthogonal)
+                != NUMELYX_SUCCESS || orthogonal != 0)
+            goto fail;
+    }
+
     if (numelyx_matrix_symmetric_eigen(
             a, &u, &vt) != NUMELYX_SUCCESS
         || numelyx_matrix_rows(u) != 2
@@ -180,6 +221,7 @@ int main(void)
             != NUMELYX_SUCCESS || !close_to(scalar, 1.0))
         goto fail;
 
+    numelyx_matrix_release(extra);
     numelyx_matrix_release(basis);
     numelyx_matrix_release(a);
     numelyx_matrix_release(b);
