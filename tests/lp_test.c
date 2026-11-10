@@ -26,7 +26,7 @@ static void test_lp_reference_and_negative_rhs_phase_one(void)
     double objective = -9.0;
     size_t iterations = 0;
 
-    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_OPTIMAL);
+    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_SUCCESS);
     assert(numelyx_core_lp_solve_maximize(
         a, b, c, 3, 2, &options, solution, &objective, &iterations
     ) == NUMELYX_LP_OPTIMAL);
@@ -58,7 +58,7 @@ static void test_lp_infeasible_unbounded_and_zero_constraints(void)
     double solution[2] = {71.0, 72.0};
     double objective = 73.0;
 
-    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_OPTIMAL);
+    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_SUCCESS);
     assert(numelyx_core_lp_solve_maximize(
         infeasible_a, infeasible_b, one_c, 2, 1,
         &options, solution, &objective, NULL
@@ -98,7 +98,7 @@ static void test_lp_degenerate_and_iteration_limit(void)
     double solution[2] = {0.0, 0.0};
     double objective = 0.0;
 
-    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_OPTIMAL);
+    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_SUCCESS);
     options.max_iterations = 1;
     assert(numelyx_core_lp_solve_maximize(
         a, b, c, 4, 2, &options, solution, &objective, NULL
@@ -116,7 +116,7 @@ static void test_lp_validation_and_output_preservation(void)
 
     assert(numelyx_core_lp_default_options(NULL) ==
         NUMELYX_LP_INVALID_ARGUMENT);
-    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_OPTIMAL);
+    assert(numelyx_core_lp_default_options(&options) == NUMELYX_LP_SUCCESS);
 
     assert(numelyx_core_lp_solve_maximize(
         a, b, c, 1, 1, &options, NULL, &objective, NULL

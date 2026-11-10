@@ -167,7 +167,7 @@ numelyx_core_lp_status numelyx_core_lp_default_options(
     options->max_iterations = 10000;
     options->feasibility_tolerance = 1e-9;
     options->optimality_tolerance = 1e-9;
-    return NUMELYX_LP_OPTIMAL;
+    return NUMELYX_LP_SUCCESS;
 }
 
 numelyx_core_lp_status numelyx_core_lp_solve_maximize(
