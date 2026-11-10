@@ -68,4 +68,26 @@ numelyx_core_covariance_status numelyx_core_hac_sandwich_covariance(
     double *covariance
 );
 
+typedef enum {
+    NUMELYX_COVARIANCE_HC_TYPE_0 = 0,
+    NUMELYX_COVARIANCE_HC_TYPE_1,
+    NUMELYX_COVARIANCE_HC_TYPE_2,
+    NUMELYX_COVARIANCE_HC_TYPE_3
+} numelyx_core_hc_type;
+
+/**
+ * Regression-score HC0-HC3 covariance from X, residuals, and bread.
+ * Leverage is required for HC2/HC3 and may be NULL for HC0/HC1.
+ */
+numelyx_core_covariance_status numelyx_core_hc_sandwich_covariance(
+    const double *bread,
+    const double *design,
+    const double *residuals,
+    const double *leverage,
+    size_t observation_count,
+    size_t parameter_count,
+    numelyx_core_hc_type type,
+    double *covariance
+);
+
 #endif

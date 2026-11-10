@@ -368,3 +368,107 @@ cleanup:
     free_workspaces(meat, compensation, temporary, candidate);
     return status;
 }
+
+
+numelyx_core_covariance_status numelyx_core_hc_sandwich_covariance(
+    const double *bread,
+    const double *design,
+    const double *residuals,
+    const double *leverage,
+    size_t observations,
+    size_t parameters,
+    numelyx_core_hc_type type,
+    double *covariance
+)
+{
+    size_t score_elements;
+    size_t score_bytes;
+    size_t covariance_elements;
+    size_t covariance_bytes;
+    size_t observation;
+    size_t parameter;
+    double *scores = NULL;
+    double *candidate = NULL;
+    numelyx_core_covariance_correction correction =
+        NUMELYX_COVARIANCE_HC0;
+    numelyx_core_covariance_status status;
+
+    if (bread == NULL || design == NULL || residuals == NULL ||
+        covariance == NULL || observations == 0 || parameters == 0)
+        return NUMELYX_COVARIANCE_INVALID_ARGUMENT;
+    if (type < NUMELYX_COVARIANCE_HC_TYPE_0 ||
+        type > NUMELYX_COVARIANCE_HC_TYPE_3)
+        return NUMELYX_COVARIANCE_INVALID_ARGUMENT;
+    if ((type == NUMELYX_COVARIANCE_HC_TYPE_2 ||
+         type == NUMELYX_COVARIANCE_HC_TYPE_3) && leverage == NULL)
+        return NUMELYX_COVARIANCE_INVALID_ARGUMENT;
+    if (type == NUMELYX_COVARIANCE_HC_TYPE_1)
+        correction = NUMELYX_COVARIANCE_HC1;
+
+    if (!numelyx_core_size_multiply(
+            observations, parameters, &score_elements) ||
+        !numelyx_core_size_multiply(
+            score_elements, sizeof(double), &score_bytes) ||
+        !numelyx_core_size_multiply(
+            parameters, parameters, &covariance_elements) ||
+        !numelyx_core_size_multiply(
+            covariance_elements, sizeof(double), &covariance_bytes))
+        return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
+
+    scores = (double *) malloc(score_bytes);
+    candidate = (double *) malloc(covariance_bytes);
+    if (scores == NULL || candidate == NULL) {
+        status = NUMELYX_COVARIANCE_OUT_OF_MEMORY;
+        goto cleanup;
+    }
+
+    for (observation = 0; observation < observations; observation++) {
+        double adjustment = 1.0;
+        if (!isfinite(residuals[observation])) {
+            status = NUMELYX_COVARIANCE_NON_FINITE_INPUT;
+            goto cleanup;
+        }
+        if (type == NUMELYX_COVARIANCE_HC_TYPE_2 ||
+            type == NUMELYX_COVARIANCE_HC_TYPE_3) {
+            double remaining;
+            if (!isfinite(leverage[observation])) {
+                status = NUMELYX_COVARIANCE_NON_FINITE_INPUT;
+                goto cleanup;
+            }
+            if (leverage[observation] < 0.0 ||
+                leverage[observation] >= 1.0) {
+                status = NUMELYX_COVARIANCE_DOMAIN_ERROR;
+                goto cleanup;
+            }
+            remaining = 1.0 - leverage[observation];
+            adjustment = type == NUMELYX_COVARIANCE_HC_TYPE_2
+                ? sqrt(remaining)
+                : remaining;
+        }
+        for (parameter = 0; parameter < parameters; parameter++) {
+            double x = design[observation * parameters + parameter];
+            double score;
+            if (!isfinite(x)) {
+                status = NUMELYX_COVARIANCE_NON_FINITE_INPUT;
+                goto cleanup;
+            }
+            score = x * (residuals[observation] / adjustment);
+            if (!isfinite(score)) {
+                status = NUMELYX_COVARIANCE_NUMERICAL_FAILURE;
+                goto cleanup;
+            }
+            scores[observation * parameters + parameter] = score;
+        }
+    }
+
+    status = numelyx_core_sandwich_covariance(
+        bread, scores, observations, parameters, correction, candidate);
+    if (status == NUMELYX_COVARIANCE_SUCCESS) {
+        memcpy(covariance, candidate, covariance_bytes);
+    }
+
+cleanup:
+    free(scores);
+    free(candidate);
+    return status;
+}

@@ -43,6 +43,25 @@ static void test_cluster_and_hac_sandwich(void){
   bread,scores,3,1,1,&covariance)==NUMELYX_COVARIANCE_SUCCESS);
  close_to(covariance,5.5,1e-14);
 }
+static void test_hc2_hc3_regression_covariance(void){
+ const double bread[]={.5};
+ const double design[]={1,1,1};
+ const double residuals[]={1,2,3};
+ const double leverage[]={0,.5,.75};
+ double covariance=99;
+ assert(numelyx_core_hc_sandwich_covariance(bread,design,residuals,leverage,
+  3,1,NUMELYX_COVARIANCE_HC_TYPE_0,&covariance)==NUMELYX_COVARIANCE_SUCCESS);
+ close_to(covariance,3.5,1e-14);
+ assert(numelyx_core_hc_sandwich_covariance(bread,design,residuals,leverage,
+  3,1,NUMELYX_COVARIANCE_HC_TYPE_1,&covariance)==NUMELYX_COVARIANCE_SUCCESS);
+ close_to(covariance,5.25,1e-14);
+ assert(numelyx_core_hc_sandwich_covariance(bread,design,residuals,leverage,
+  3,1,NUMELYX_COVARIANCE_HC_TYPE_2,&covariance)==NUMELYX_COVARIANCE_SUCCESS);
+ close_to(covariance,11.25,1e-14);
+ assert(numelyx_core_hc_sandwich_covariance(bread,design,residuals,leverage,
+  3,1,NUMELYX_COVARIANCE_HC_TYPE_3,&covariance)==NUMELYX_COVARIANCE_SUCCESS);
+ close_to(covariance,40.25,1e-14);
+}
 static void test_covariance_validation_and_output_preservation(void){
  const double bread[]={1};
  const double scores[]={1,2};
@@ -70,7 +89,7 @@ static void test_covariance_validation_and_output_preservation(void){
  assert(covariance==17);
 }
 int main(void){
- test_hc0_hc1_sandwich(); test_multivariate_sandwich_orientation(); test_cluster_and_hac_sandwich();
+ test_hc0_hc1_sandwich(); test_multivariate_sandwich_orientation(); test_hc2_hc3_regression_covariance(); test_cluster_and_hac_sandwich();
  test_covariance_validation_and_output_preservation();
  puts("Robust covariance tests passed."); return 0;
 }
