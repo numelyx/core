@@ -7,8 +7,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/NumelyxCoreTargets.cmake")
 
 # A package installation may contain only the configuration that was
 # installed (for example Debug on multi-config generators). Map consumer
-# configurations to that available imported configuration instead of leaving
-# IMPORTED_LOCATION unset for Release/RelWithDebInfo/etc.
+# configurations to that available imported configuration.
 get_target_property(_numelyx_imported_configs Numelyx::Core IMPORTED_CONFIGURATIONS)
 if(_numelyx_imported_configs)
     list(GET _numelyx_imported_configs 0 _numelyx_available_config)
@@ -18,8 +17,44 @@ if(_numelyx_imported_configs)
             "${_numelyx_available_config}"
         )
     endforeach()
+
+    # Single-config generators can leave CMAKE_BUILD_TYPE empty. In that
+    # case CMake looks for the unqualified IMPORTED_LOCATION property rather
+    # than IMPORTED_LOCATION_NOCONFIG, so provide the generic fallback too.
+    get_target_property(_numelyx_generic_location Numelyx::Core IMPORTED_LOCATION)
+    if(NOT _numelyx_generic_location)
+        get_target_property(
+            _numelyx_config_location
+            Numelyx::Core
+            "IMPORTED_LOCATION_${_numelyx_available_config}"
+        )
+        if(_numelyx_config_location)
+            set_property(TARGET Numelyx::Core PROPERTY
+                IMPORTED_LOCATION "${_numelyx_config_location}"
+            )
+        endif()
+    endif()
+
+    get_target_property(_numelyx_generic_implib Numelyx::Core IMPORTED_IMPLIB)
+    if(NOT _numelyx_generic_implib)
+        get_target_property(
+            _numelyx_config_implib
+            Numelyx::Core
+            "IMPORTED_IMPLIB_${_numelyx_available_config}"
+        )
+        if(_numelyx_config_implib)
+            set_property(TARGET Numelyx::Core PROPERTY
+                IMPORTED_IMPLIB "${_numelyx_config_implib}"
+            )
+        endif()
+    endif()
 endif()
+
 unset(_numelyx_imported_configs)
 unset(_numelyx_available_config)
+unset(_numelyx_generic_location)
+unset(_numelyx_config_location)
+unset(_numelyx_generic_implib)
+unset(_numelyx_config_implib)
 
 check_required_components(NumelyxCore)
