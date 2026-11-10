@@ -1,5 +1,8 @@
 #include <numelyx/matrix.h>
 
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "numelyx_core_matrix_core.h"
 #include "numelyx_core_matrix_types.h"
 #include "numelyx_core_matrix_views.h"
@@ -221,6 +224,58 @@ numelyx_status numelyx_matrix_create_symmetric(
         &data,
         matrix
     );
+}
+
+numelyx_status numelyx_matrix_create_sparse(
+    size_t rows,
+    size_t columns,
+    double default_value,
+    const numelyx_sparse_entry *entries,
+    size_t count,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+    numelyx_core_storage_sparse_entry *core_entries = NULL;
+    numelyx_status result;
+
+    if (matrix == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *matrix = NULL;
+
+    if (count != 0 && entries == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    if (count > SIZE_MAX / sizeof(*core_entries)) {
+        return NUMELYX_SIZE_OVERFLOW;
+    }
+
+    if (count != 0) {
+        core_entries = malloc(count * sizeof(*core_entries));
+        if (core_entries == NULL) {
+            return NUMELYX_OUT_OF_MEMORY;
+        }
+
+        for (size_t i = 0; i < count; i++) {
+            core_entries[i].index = entries[i].index;
+            core_entries[i].value = entries[i].value;
+        }
+    }
+
+    data.entries = core_entries;
+    data.count = count;
+    data.default_value = default_value;
+    result = create_matrix(
+        NUMERUS_STORAGE_SPARSE,
+        rows,
+        columns,
+        &data,
+        matrix
+    );
+
+    free(core_entries);
+    return result;
 }
 
 numelyx_status numelyx_matrix_transpose(
