@@ -67,6 +67,7 @@ The first supported surface should be intentionally small:
   explicit materialization through opaque handles. Structured constructors preserve implicit storage rather than
   materializing dense data; views retain their parent dependencies.
 - Public Matrix factorization and analysis primitives: QR, reduced SVD, Moore–Penrose pseudoinverse, Cholesky, LU solve, triangular solve, ordinary and weighted least squares, numerical rank, signed log-determinant, trace, and Frobenius/induced norms. These are thin status/ownership adapters over the Core algorithms; they do not introduce model-specific workflows.
+- Public Matrix introspection exposes stable storage-kind identifiers and logical structural flags. A derived view reports the root storage kind while structural flags describe the view's logical values.
 - RNG creation, exact-state cloning, retain/release, deterministic raw output,
   uniform/normal sampling, and index sampling with an explicit Core deallocator.
 - BFGS optimizer options with explicit structure-size/version fields,
