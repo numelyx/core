@@ -34,12 +34,13 @@ The current public probability API is not a general distribution library. The cu
 
 ## Implementation status on this branch
 
-The following first-stage numerical primitives have now been added internally:
+The following first-stage numerical primitives have been added internally:
 - Stable log-one-minus-exp and log-difference-exp operations, including exact zero-mass endpoints and extreme finite operand handling.
 - Regularized lower/upper incomplete gamma functions using a series and a modified continued fraction.
 - Regularized incomplete beta using a modified continued fraction with symmetry selection and log-domain prefactors.
+- Bracketed inverse regularized gamma P/Q and inverse regularized beta functions, with direct upper-tail evaluation for inverse gamma Q and symmetry handling for upper-tail beta probabilities.
 
-Native regression tests and focused numerical-contract documentation have been added for these functions. They remain internal and are not part of the installed public API. Build, test, sanitizer, high-precision sweep, and cross-platform results are not yet verified for this branch; do not treat this workstream as complete.
+Native regression tests and focused numerical-contract documentation cover these functions. They remain internal and are not part of the installed public API. The initial special-function implementation passed the complete CI matrix on commit 7c189a1, including Linux, macOS, Windows, ASan/UBSan, and ThreadSanitizer. The inverse-function additions and their round-trip tests are awaiting the current CI run; broad independent high-precision sweeps remain outstanding.
 
 ## Capability domains
 
