@@ -444,6 +444,39 @@ typedef enum {
     NUMELYX_MATRIX_SOLUTION_INCONSISTENT
 } numelyx_matrix_solution_kind;
 
+/** Materialize row-echelon and reduced row-echelon forms. */
+NUMELYX_API numelyx_status numelyx_matrix_row_echelon_form(
+    const numelyx_matrix *matrix, numelyx_matrix **echelon
+);
+NUMELYX_API numelyx_status numelyx_matrix_reduced_row_echelon_form(
+    const numelyx_matrix *matrix, numelyx_matrix **reduced_echelon
+);
+
+/** Symmetric spectral matrix functions. Inputs must satisfy each operation's domain. */
+NUMELYX_API numelyx_status numelyx_matrix_symmetric_square_root(
+    const numelyx_matrix *matrix, numelyx_matrix **square_root
+);
+NUMELYX_API numelyx_status numelyx_matrix_symmetric_logarithm(
+    const numelyx_matrix *matrix, numelyx_matrix **logarithm
+);
+NUMELYX_API numelyx_status numelyx_matrix_symmetric_sine(
+    const numelyx_matrix *matrix, numelyx_matrix **sine
+);
+NUMELYX_API numelyx_status numelyx_matrix_symmetric_cosine(
+    const numelyx_matrix *matrix, numelyx_matrix **cosine
+);
+NUMELYX_API numelyx_status numelyx_matrix_symmetric_spectral_radius(
+    const numelyx_matrix *matrix, double *radius
+);
+
+/** Structural predicates; integer outputs are 0 or 1 and unchanged on error. */
+NUMELYX_API numelyx_status numelyx_matrix_is_skew_symmetric(
+    const numelyx_matrix *matrix, int *is_skew_symmetric
+);
+NUMELYX_API numelyx_status numelyx_matrix_is_orthogonal(
+    const numelyx_matrix *matrix, int *is_orthogonal
+);
+
 /**
  * Return a basis for the column/row/null space. Basis vectors are columns.
  * For a zero-dimensional space, success returns *basis == NULL and dimension 0.
