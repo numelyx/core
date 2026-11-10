@@ -3,7 +3,10 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
-static void close_to(double a,double b,double t){assert(fabs(a-b)<=t);}
+static void close_to(double a,double b,double t){
+ if (!(fabs(a-b)<=t)) fprintf(stderr,"fuzzy close_to failed actual=%.17g expected=%.17g tolerance=%.17g\\n",a,b,t);
+ assert(fabs(a-b)<=t);
+}
 static void test_membership_functions(void){
  double mu;
  assert(numelyx_core_fuzzy_triangular_membership(1,0,1,2,&mu)==NUMELYX_FUZZY_SUCCESS);
