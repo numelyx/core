@@ -1,7 +1,7 @@
 # Numelyx Core
 
-Numelyx Core is a standalone C numerical-computing library migrated from the
-native computational layer of [Numerus](https://github.com/ephpicman/Numerus).
+Numelyx Core is a standalone, language-independent C numerical and statistical
+computing engine.
 
 The repository contains the language-independent numerical implementation:
 immutable matrix storage, composable Matrix primitives and views, numerical
