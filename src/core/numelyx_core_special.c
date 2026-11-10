@@ -484,9 +484,15 @@ numelyx_core_numeric_status numelyx_core_erfc(double x, double *result)
     }
 
     square = x * x;
-    status = numelyx_core_regularized_gamma_q(0.5, square, &gamma_value);
-    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
-    value = x > 0.0 ? gamma_value : 2.0 - gamma_value;
+    if (x > 0.0) {
+        status = numelyx_core_regularized_gamma_q(0.5, square, &gamma_value);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        value = gamma_value;
+    } else {
+        status = numelyx_core_regularized_gamma_p(0.5, square, &gamma_value);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        value = 1.0 + gamma_value;
+    }
     if (!isfinite(value) || value < 0.0 || value > 2.0)
         return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
     *result = value;
