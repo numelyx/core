@@ -197,6 +197,7 @@ int main(void)
     return 0;
 
 fail:
+    numelyx_matrix_release(basis);
     numelyx_matrix_release(a);
     numelyx_matrix_release(b);
     numelyx_matrix_release(q);
