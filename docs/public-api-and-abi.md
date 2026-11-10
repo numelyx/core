@@ -59,8 +59,8 @@ The first supported surface should be intentionally small:
 - A public status-code namespace with stable, static status-description strings.
 - Dense, identity, zero, constant, and diagonal Matrix creation, retain/release,
   dimensions, element access, lazy transpose/slice views, lazy element-wise addition,
-  subtraction, Hadamard product and scalar scaling, eager matrix multiplication,
-  and explicit materialization through opaque handles. Structured constructors preserve implicit storage rather than
+  subtraction, Hadamard product and scalar scaling, eager matrix multiplication, determinant, LU-based inverse and solve, and
+  explicit materialization through opaque handles. Structured constructors preserve implicit storage rather than
   materializing dense data; views retain their parent dependencies.
 - Additional storage constructors, views, and numerical operations in later
   API increments.
