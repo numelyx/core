@@ -298,6 +298,59 @@ int main(void)
             return 12;
         }
         numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_scaled_identity(2, 3.0, &structured)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 1, 1, &value) != NUMELYX_SUCCESS
+            || value != 3.0
+            || numelyx_matrix_get(structured, 1, 0, &value) != NUMELYX_SUCCESS
+            || value != 0.0) {
+            numelyx_matrix_release(structured);
+            return 21;
+        }
+        numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_upper_triangular(
+                2,
+                (const double[]){1.0, 2.0, 3.0},
+                &structured
+            ) != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 0, 1, &value) != NUMELYX_SUCCESS
+            || value != 2.0
+            || numelyx_matrix_get(structured, 1, 0, &value) != NUMELYX_SUCCESS
+            || value != 0.0) {
+            numelyx_matrix_release(structured);
+            return 22;
+        }
+        numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_lower_triangular(
+                2,
+                (const double[]){1.0, 2.0, 3.0},
+                &structured
+            ) != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 1, 0, &value) != NUMELYX_SUCCESS
+            || value != 2.0
+            || numelyx_matrix_get(structured, 0, 1, &value) != NUMELYX_SUCCESS
+            || value != 0.0) {
+            numelyx_matrix_release(structured);
+            return 23;
+        }
+        numelyx_matrix_release(structured);
+
+        if (numelyx_matrix_create_symmetric(
+                2,
+                (const double[]){1.0, 2.0, 3.0},
+                &structured
+            ) != NUMELYX_SUCCESS
+            || numelyx_matrix_get(structured, 0, 1, &value) != NUMELYX_SUCCESS
+            || value != 2.0
+            || numelyx_matrix_get(structured, 1, 0, &value) != NUMELYX_SUCCESS
+            || value != 2.0) {
+            numelyx_matrix_release(structured);
+            return 24;
+        }
+        numelyx_matrix_release(structured);
     }
 
     numelyx_matrix_release(NULL);
