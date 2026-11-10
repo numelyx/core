@@ -40,7 +40,8 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_triangular_membership(
     if (!(a <= b && b <= c) || a == c)
         return NUMELYX_FUZZY_DOMAIN_ERROR;
 
-    if (x <= a || x >= c) value = 0.0;
+    if ((a == b && x == a) || (b == c && x == c)) value = 1.0;
+    else if (x <= a || x >= c) value = 0.0;
     else if (x == b) value = 1.0;
     else if (x < b) value = (x - a) / (b - a);
     else value = (c - x) / (c - b);
@@ -61,7 +62,8 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_trapezoidal_membership(
     if (!(a <= b && b <= c && c <= d) || a == d)
         return NUMELYX_FUZZY_DOMAIN_ERROR;
 
-    if (x <= a || x >= d) value = 0.0;
+    if ((a == b && x == a) || (c == d && x == d)) value = 1.0;
+    else if (x <= a || x >= d) value = 0.0;
     else if (x >= b && x <= c) value = 1.0;
     else if (x < b) value = (x - a) / (b - a);
     else value = (d - x) / (d - c);
@@ -251,8 +253,8 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_triangular_alpha_cut(
         return NUMELYX_FUZZY_NON_FINITE_INPUT;
     if (!(a <= b && b <= c) || a == c || alpha < 0.0 || alpha > 1.0)
         return NUMELYX_FUZZY_DOMAIN_ERROR;
-    *lower = a + alpha * (b - a);
-    *upper = c - alpha * (c - b);
+    *lower = (1.0 - alpha) * a + alpha * b;
+    *upper = (1.0 - alpha) * c + alpha * b;
     return NUMELYX_FUZZY_SUCCESS;
 }
 
@@ -269,7 +271,7 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_trapezoidal_alpha_cut(
     if (!(a <= b && b <= c && c <= d) || a == d ||
         alpha < 0.0 || alpha > 1.0)
         return NUMELYX_FUZZY_DOMAIN_ERROR;
-    *lower = a + alpha * (b - a);
-    *upper = d - alpha * (d - c);
+    *lower = (1.0 - alpha) * a + alpha * b;
+    *upper = (1.0 - alpha) * d + alpha * c;
     return NUMELYX_FUZZY_SUCCESS;
 }

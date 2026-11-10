@@ -1,5 +1,6 @@
 #include "../src/fuzzy/numelyx_core_fuzzy.h"
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 static void close_to(double a,double b,double t){assert(fabs(a-b)<=t);}
@@ -10,6 +11,10 @@ static void test_membership_functions(void){
  assert(numelyx_core_fuzzy_triangular_membership(.5,0,1,2,&mu)==NUMELYX_FUZZY_SUCCESS);
  close_to(mu,.5,1e-15);
  assert(numelyx_core_fuzzy_trapezoidal_membership(1.5,0,1,2,3,&mu)==NUMELYX_FUZZY_SUCCESS);
+ assert(mu==1);
+ assert(numelyx_core_fuzzy_triangular_membership(0,0,0,2,&mu)==NUMELYX_FUZZY_SUCCESS);
+ assert(mu==1);
+ assert(numelyx_core_fuzzy_trapezoidal_membership(0,0,1,2,2,&mu)==NUMELYX_FUZZY_SUCCESS);
  assert(mu==1);
  assert(numelyx_core_fuzzy_trapezoidal_membership(.5,0,1,2,3,&mu)==NUMELYX_FUZZY_SUCCESS);
  close_to(mu,.5,1e-15);
@@ -43,6 +48,8 @@ static void test_alpha_cuts_and_validation(void){
  double lower=9,upper=10;
  assert(numelyx_core_fuzzy_triangular_alpha_cut(0,1,2,.5,&lower,&upper)==NUMELYX_FUZZY_SUCCESS);
  close_to(lower,.5,1e-15); close_to(upper,1.5,1e-15);
+ assert(numelyx_core_fuzzy_triangular_alpha_cut(-DBL_MAX,0,DBL_MAX,.5,&lower,&upper)==NUMELYX_FUZZY_SUCCESS);
+ assert(isfinite(lower)&&isfinite(upper));
  assert(numelyx_core_fuzzy_trapezoidal_alpha_cut(0,1,2,3,1,&lower,&upper)==NUMELYX_FUZZY_SUCCESS);
  close_to(lower,1,1e-15); close_to(upper,2,1e-15);
  lower=9;upper=10;
