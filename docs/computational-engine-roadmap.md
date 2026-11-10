@@ -43,9 +43,10 @@ The following first-stage numerical primitives have been added internally:
 - erf/erfc using regularized gamma tails, including direct upper-tail evaluation and small-negative-input handling.
 - Inverse erf/erfc and standard normal quantile using direct gamma-tail inverses.
 - Allocation-free bracketed scalar bisection and safeguarded Newton with sign-safe bracketing, overflow-safe midpoints, derivative fallback, and explicit termination diagnostics.
+- Internal scalar Normal, Student-t, and chi-square distributions with density/log-density, CDF/survival, log tails, and quantiles.
 - Bracketed inverse regularized gamma P/Q and inverse regularized beta functions, with direct upper-tail evaluation for inverse gamma Q and symmetry handling for upper-tail beta probabilities.
 
-Native regression tests and focused numerical-contract documentation cover these functions. They remain internal and are not part of the installed public API. The initial special-function implementation passed the complete CI matrix on commit 7c189a1, including Linux, macOS, Windows, ASan/UBSan, and ThreadSanitizer. The inverse-function additions and their round-trip tests are awaiting the current CI run; broad independent high-precision sweeps remain outstanding.
+Native regression tests and focused numerical-contract documentation cover these functions. They remain internal and are not part of the installed public API. The scalar distribution layer currently includes Normal, Student-t, and chi-square families; it is not yet a complete distribution library. The initial special-function implementation passed the complete CI matrix on commit 7c189a1, including Linux, macOS, Windows, ASan/UBSan, and ThreadSanitizer. The inverse-function additions and their round-trip tests are awaiting the current CI run; broad independent high-precision sweeps remain outstanding.
 
 ## Capability domains
 

@@ -1,4 +1,4 @@
-# Scalar Normal Distribution
+# Scalar Distributions: Normal, Student-t, and Chi-square
 
 Status: internal normal, Student-t, and chi-square scalar distribution primitives added; validation is ongoing.
 
