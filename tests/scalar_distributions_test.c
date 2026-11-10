@@ -64,9 +64,10 @@ static void test_normal_distribution_quantile_and_validation(void)
         0.025, 3.0, 2.0, &value) == NUMERUS_NUMERIC_SUCCESS);
     close_to(value, 3.0 - 2.0 * 1.959963984540054, 4e-12);
 
+    value = 17.0;
     assert(numelyx_core_normal_pdf(0.0, 0.0, 0.0, &value) ==
         NUMERUS_NUMERIC_DOMAIN_ERROR);
-    assert(value == 3.0 - 2.0 * 1.959963984540054);
+    assert(value == 17.0);
     assert(numelyx_core_normal_cdf(NAN, 0.0, 1.0, &value) ==
         NUMERUS_NUMERIC_NON_FINITE);
     assert(numelyx_core_normal_distribution_quantile(
