@@ -117,19 +117,11 @@ set_target_properties(numelyx_core PROPERTIES EXPORT_NAME Core)
 # The current declarations are installed as explicitly unstable detail headers.
 # They are useful for in-repository and early SDK integration, but are not yet
 # the compatibility promise of a versioned public C API.
-file(GLOB_RECURSE NUMELYX_DETAIL_HEADERS CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
-)
 set(NUMELYX_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
 file(MAKE_DIRECTORY "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx")
 set(NUMELYX_UMBRELLA_HEADER
-    "/* Generated umbrella header. The detail API is currently unstable. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n#include <numelyx/version.h>\n#include <numelyx/status.h>\n#include <numelyx/matrix.h>\n#include <numelyx/rng.h>\n#include <numelyx/optimizer.h>\n#include <numelyx/probability.h>\n"
+    "/* Supported public API umbrella header. */\\n#ifndef NUMELYX_NUMELYX_H\\n#define NUMELYX_NUMELYX_H\\n#include <numelyx/version.h>\\n#include <numelyx/status.h>\\n#include <numelyx/matrix.h>\\n#include <numelyx/rng.h>\\n#include <numelyx/optimizer.h>\\n#include <numelyx/probability.h>\\n#endif /* NUMELYX_NUMELYX_H */\\n"
 )
-foreach(header IN LISTS NUMELYX_DETAIL_HEADERS)
-    file(RELATIVE_PATH header_relative "${CMAKE_CURRENT_SOURCE_DIR}/src" "${header}")
-    string(APPEND NUMELYX_UMBRELLA_HEADER "#include <numelyx/detail/${header_relative}>\n")
-endforeach()
-string(APPEND NUMELYX_UMBRELLA_HEADER "#endif /* NUMELYX_NUMELYX_H */\n")
 file(WRITE "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx/numelyx.h" "${NUMELYX_UMBRELLA_HEADER}")
 
 target_include_directories(numelyx_core
