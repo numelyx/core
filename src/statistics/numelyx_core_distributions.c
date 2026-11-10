@@ -1002,7 +1002,7 @@ numelyx_core_numeric_status numelyx_core_f_log_pdf(
     log_beta = lgamma(a) + lgamma(b) - lgamma(a + b);
     if (x == 0.0) {
         if (a < 1.0) value = INFINITY;
-        else if (a == 1.0) value = log(numerator_df / denominator_df) - log_beta;
+        else if (a == 1.0) value = log(numerator_df) - log(denominator_df) - log_beta;
         else value = -INFINITY;
     } else {
         log_ratio = log(numerator_df) + log(x) - log(denominator_df);
