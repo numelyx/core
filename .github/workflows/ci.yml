@@ -52,10 +52,13 @@ jobs:
         run: cmake --install build-shared --prefix package-prefix
       - name: Build installed shared-package consumer
         run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=package-prefix
+      - name: Build package consumer
+        run: cmake --build package-consumer-build --config Debug --parallel 2
+      - name: Make installed DLL available to the Windows loader
+        if: runner.os == 'Windows'
+        run: cmake -E copy_directory package-prefix/bin package-consumer-build/Debug
       - name: Test installed shared-package consumer
-        run: |
-          cmake --build package-consumer-build --config Debug --parallel 2
-          ctest --test-dir package-consumer-build -C Debug --output-on-failure
+        run: ctest --test-dir package-consumer-build -C Debug --output-on-failure
 
   thread-sanitizer:
     name: ThreadSanitizer (Ubuntu / GCC)
