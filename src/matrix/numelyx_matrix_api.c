@@ -446,10 +446,10 @@ numelyx_status numelyx_matrix_remove_row(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_remove_row(parent, row, view));
 }
@@ -460,10 +460,10 @@ numelyx_status numelyx_matrix_remove_column(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_remove_column(parent, column, view));
 }
@@ -475,10 +475,10 @@ numelyx_status numelyx_matrix_swap_rows(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_swap_rows(parent, row1, row2, view));
 }
@@ -490,10 +490,10 @@ numelyx_status numelyx_matrix_swap_columns(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_swap_columns(parent, column1, column2, view));
 }
@@ -503,10 +503,10 @@ numelyx_status numelyx_matrix_rotate_90_clockwise(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_rotate_90_clockwise(parent, view));
 }
@@ -516,10 +516,10 @@ numelyx_status numelyx_matrix_rotate_180(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_rotate_180(parent, view));
 }
@@ -529,10 +529,10 @@ numelyx_status numelyx_matrix_rotate_90_counterclockwise(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_rotate_90_counterclockwise(parent, view));
 }
@@ -543,10 +543,10 @@ numelyx_status numelyx_matrix_join_horizontal(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_join_horizontal(left, right, view));
 }
@@ -557,10 +557,10 @@ numelyx_status numelyx_matrix_join_vertical(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_join_vertical(top, bottom, view));
 }
@@ -575,10 +575,10 @@ numelyx_status numelyx_matrix_pad(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_pad(parent, top, bottom, left, right, value, view));
 }
@@ -592,10 +592,10 @@ numelyx_status numelyx_matrix_zero_extend(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_zero_extend(parent, top, bottom, left, right, view));
 }
@@ -607,10 +607,10 @@ numelyx_status numelyx_matrix_repeat(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_repeat(parent, row_repetitions, column_repetitions, view));
 }
@@ -621,10 +621,10 @@ numelyx_status numelyx_matrix_block_diagonal(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_block_diagonal(parent, repetitions, view));
 }
@@ -636,10 +636,10 @@ numelyx_status numelyx_matrix_block_grid(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_block_grid(blocks, block_row_count, block_column_count, view));
 }
@@ -650,10 +650,10 @@ numelyx_status numelyx_matrix_diagonal_extract(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_diagonal_extract(parent, offset, view));
 }
@@ -664,10 +664,10 @@ numelyx_status numelyx_matrix_diagonal_from_vector(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_diagonal_from_vector(vector, offset, view));
 }
@@ -679,10 +679,10 @@ numelyx_status numelyx_matrix_permute_rows(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_permute_rows(parent, permutation, count, view));
 }
@@ -694,10 +694,10 @@ numelyx_status numelyx_matrix_permute_columns(
     numelyx_matrix **view
 )
 {
-    if (*view == NULL) {
+    if (view == NULL) {
         return NUMELYX_INVALID_ARGUMENT;
     }
-    **view = NULL;
+    *view = NULL;
     return map_matrix_status((numelyx_core_matrix_status)
         numelyx_core_matrix_create_permute_columns(parent, permutation, count, view));
 }
