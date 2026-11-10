@@ -123,7 +123,7 @@ file(GLOB_RECURSE NUMELYX_DETAIL_HEADERS CONFIGURE_DEPENDS
 set(NUMELYX_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
 file(MAKE_DIRECTORY "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx")
 set(NUMELYX_UMBRELLA_HEADER
-    "/* Generated umbrella header. The detail API is currently unstable. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n#include <numelyx/version.h>\n#include <numelyx/status.h>\n#include <numelyx/matrix.h>\n#include <numelyx/rng.h>\n"
+    "/* Generated umbrella header. The detail API is currently unstable. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n#include <numelyx/version.h>\n#include <numelyx/status.h>\n#include <numelyx/matrix.h>\n#include <numelyx/rng.h>\n#include <numelyx/optimizer.h>\n"
 )
 foreach(header IN LISTS NUMELYX_DETAIL_HEADERS)
     file(RELATIVE_PATH header_relative "${CMAKE_CURRENT_SOURCE_DIR}/src" "${header}")
