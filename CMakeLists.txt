@@ -208,6 +208,9 @@ if(NUMELYX_BUILD_TESTS)
             NUMELYX_VERSION_MINOR=${PROJECT_VERSION_MINOR}
             NUMELYX_VERSION_PATCH=${PROJECT_VERSION_PATCH}
         )
+        if(MSVC)
+            target_compile_options(numelyx_core_test_support PUBLIC /experimental:c11atomics)
+        endif()
         target_link_libraries(numelyx_core_test_support PUBLIC Threads::Threads)
         if(UNIX)
             target_link_libraries(numelyx_core_test_support PUBLIC m)
@@ -222,6 +225,16 @@ if(NUMELYX_BUILD_TESTS)
         matrix_concurrent_allocation_failure_test
         storage_allocation_failure_test
     )
+
+    if(NUMELYX_BUILD_SHARED AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_test(
+            NAME shared_symbol_visibility
+            COMMAND ${CMAKE_COMMAND}
+                -DNM=${CMAKE_NM}
+                -DLIBRARY=$<TARGET_FILE:numelyx_core>
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check-shared-symbols.cmake
+        )
+    endif()
 
     foreach(test_source IN LISTS NUMELYX_TEST_SOURCES)
         get_filename_component(test_name "${test_source}" NAME_WE)
