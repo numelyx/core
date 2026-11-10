@@ -334,6 +334,8 @@ static void test_erf_erfc_reference_values_and_symmetry(void)
     close_to(erfc_value, 0.15729920705028513066, 3e-14);
     assert(numelyx_core_erfc(-1.0, &erfc_value) == NUMERUS_NUMERIC_SUCCESS);
     close_to(erfc_value, 1.84270079294971486934, 3e-14);
+    assert(numelyx_core_erfc(-1e-10, &erfc_value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(erfc_value, 1.0 + 1.1283791670955125739e-10, 3e-16);
 
     assert(numelyx_core_erfc(5.0, &erfc_value) == NUMERUS_NUMERIC_SUCCESS);
     close_to(erfc_value, 1.5374597944280351e-12, 3e-25);
