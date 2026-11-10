@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <float.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -385,6 +386,12 @@ static void test_uniform_logistic_weibull_lognormal(void)
     assert(numelyx_core_uniform_quantile(0.75, 2.0, 6.0, &value) ==
         NUMERUS_NUMERIC_SUCCESS);
     close_to(value, 5.0, 1e-15);
+    assert(numelyx_core_uniform_cdf(0.0, -DBL_MAX, DBL_MAX, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 1e-15);
+    assert(numelyx_core_uniform_pdf(0.0, -DBL_MAX, DBL_MAX, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value > 0.0 && isfinite(value));
 
     assert(numelyx_core_logistic_pdf(0.0, 0.0, 1.0, &value) ==
         NUMERUS_NUMERIC_SUCCESS);
