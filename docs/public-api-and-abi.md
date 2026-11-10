@@ -64,7 +64,8 @@ The first supported surface should be intentionally small:
   materializing dense data; views retain their parent dependencies.
 - Additional storage constructors, views, and numerical operations in later
   API increments.
-- RNG creation, deterministic state operations, sampling, and release.
+- RNG creation, exact-state cloning, retain/release, deterministic raw output,
+  uniform/normal sampling, and index sampling with an explicit Core deallocator.
 
 Do not export every internal helper simply because it exists. The API should
 expose composable numerical primitives rather than model-specific workflows.
