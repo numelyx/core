@@ -55,11 +55,12 @@ Before declaring the C ABI stable, the implementation must provide:
 
 The first supported surface should be intentionally small:
 
-- Core version and ABI information.
-- Status/error inspection.
-- Matrix creation from supported storage inputs, retain/release, dimensions,
-  element access, and views.
-- Explicitly named numerical operations added in later API increments.
+- Core semantic version and ABI-stability introspection.
+- A public status-code namespace.
+- Dense Matrix creation, retain/release, dimensions, and element access through
+  an opaque handle. This is the first implemented Matrix API increment.
+- Additional storage constructors, views, and numerical operations in later
+  API increments.
 - RNG creation, deterministic state operations, sampling, and release.
 
 Do not export every internal helper simply because it exists. The API should
