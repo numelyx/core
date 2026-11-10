@@ -51,6 +51,34 @@ NUMELYX_API numelyx_status numelyx_matrix_create_diagonal(
     numelyx_matrix **matrix
 );
 
+/** Create a scaled identity Matrix with one stored diagonal scalar. */
+NUMELYX_API numelyx_status numelyx_matrix_create_scaled_identity(
+    size_t size,
+    double diagonal_value,
+    numelyx_matrix **matrix
+);
+
+/** Create packed upper-triangular storage (row-wise, on and above diagonal). */
+NUMELYX_API numelyx_status numelyx_matrix_create_upper_triangular(
+    size_t size,
+    const double *packed_values,
+    numelyx_matrix **matrix
+);
+
+/** Create packed lower-triangular storage (row-wise, on and below diagonal). */
+NUMELYX_API numelyx_status numelyx_matrix_create_lower_triangular(
+    size_t size,
+    const double *packed_values,
+    numelyx_matrix **matrix
+);
+
+/** Create symmetric storage from packed lower-triangular values. */
+NUMELYX_API numelyx_status numelyx_matrix_create_symmetric(
+    size_t size,
+    const double *packed_lower_values,
+    numelyx_matrix **matrix
+);
+
 /**
  * Create a lazy transpose view. The view retains its parent and does not copy
  * matrix values. Release the parent reference independently after creation.
