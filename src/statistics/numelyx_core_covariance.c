@@ -6,6 +6,7 @@
 #include "numelyx_core_size.h"
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -129,6 +130,7 @@ numelyx_core_covariance_status numelyx_core_sandwich_covariance(
     double *temporary = NULL;
     double *candidate = NULL;
     size_t matrix_bytes = 0;
+    size_t score_elements;
     size_t observation;
     size_t i;
     size_t j;
@@ -147,6 +149,12 @@ numelyx_core_covariance_status numelyx_core_sandwich_covariance(
         correction_factor = (double) observations /
             (double) (observations - parameters);
     }
+    if (!numelyx_core_size_multiply(
+            observations, parameters, &score_elements))
+        return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
+    if (!numelyx_core_size_multiply(
+            observations, parameters, &score_elements))
+        return NUMELYX_COVARIANCE_SIZE_OVERFLOW;
     status = allocate_workspaces(parameters, &meat, &compensation,
         &temporary, &candidate, &matrix_bytes);
     if (status != NUMELYX_COVARIANCE_SUCCESS) goto cleanup;
@@ -191,6 +199,7 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
     double *temporary = NULL;
     double *candidate = NULL;
     size_t matrix_bytes = 0;
+    size_t score_elements;
     size_t cluster_elements;
     size_t cluster_bytes;
     size_t observation;
@@ -212,6 +221,8 @@ numelyx_core_covariance_status numelyx_core_cluster_sandwich_covariance(
         observations == 0 || parameters == 0)
         return NUMELYX_COVARIANCE_INVALID_ARGUMENT;
     if (!numelyx_core_size_multiply(
+            observations, parameters, &score_elements) ||
+        !numelyx_core_size_multiply(
             cluster_count, parameters, &cluster_elements) ||
         !numelyx_core_size_multiply(
             cluster_elements, sizeof(double), &cluster_bytes)) {
@@ -283,6 +294,7 @@ numelyx_core_covariance_status numelyx_core_hac_sandwich_covariance(
     double *temporary = NULL;
     double *candidate = NULL;
     size_t matrix_bytes = 0;
+    size_t score_elements;
     size_t observation;
     size_t lag;
     size_t i;

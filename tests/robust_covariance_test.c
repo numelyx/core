@@ -37,7 +37,7 @@ static void test_covariance_validation_and_output_preservation(void){
  const size_t invalid_clusters[]={0,2};
  double covariance=17;
  assert(numelyx_core_sandwich_covariance(
-  bread,scores,2,1,NUMELYX_COVARIANCE_HC1,&covariance)
+  bread,scores,2,1,NUMELYX_COVARIANCE_HC0,&covariance)
   ==NUMELYX_COVARIANCE_SUCCESS);
  close_to(covariance,5.0,1e-14);
  covariance=17;
