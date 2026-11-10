@@ -444,6 +444,38 @@ typedef enum {
     NUMELYX_MATRIX_SOLUTION_INCONSISTENT
 } numelyx_matrix_solution_kind;
 
+/**
+ * Return a basis for the column/row/null space. Basis vectors are columns.
+ * For a zero-dimensional space, success returns *basis == NULL and dimension 0.
+ * The caller owns a non-NULL returned basis.
+ */
+NUMELYX_API numelyx_status numelyx_matrix_column_space_basis(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **basis,
+    size_t *dimension
+);
+NUMELYX_API numelyx_status numelyx_matrix_row_space_basis(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **basis,
+    size_t *dimension
+);
+NUMELYX_API numelyx_status numelyx_matrix_null_space(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **basis,
+    size_t *nullity
+);
+
+/** Inspect finite-value properties without materializing views. */
+NUMELYX_API numelyx_status numelyx_matrix_has_nan(
+    const numelyx_matrix *matrix, int *has_nan
+);
+NUMELYX_API numelyx_status numelyx_matrix_has_infinity(
+    const numelyx_matrix *matrix, int *has_infinity
+);
+NUMELYX_API numelyx_status numelyx_matrix_is_finite(
+    const numelyx_matrix *matrix, int *is_finite
+);
+
 /** Symmetric eigendecomposition; eigenvalues are descending, eigenvectors are columns. */
 NUMELYX_API numelyx_status numelyx_matrix_symmetric_eigen(
     const numelyx_matrix *matrix,
