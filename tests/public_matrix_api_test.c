@@ -53,6 +53,35 @@ int main(void)
     }
 
     {
+        const double source_values[] = {1.0, 2.0, 3.0, 4.0};
+        numelyx_matrix *parent = NULL;
+        numelyx_matrix *transpose = NULL;
+        numelyx_matrix *slice = NULL;
+
+        if (numelyx_matrix_create_dense(2, 2, source_values, &parent)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_transpose(parent, &transpose) != NUMELYX_SUCCESS
+            || numelyx_matrix_slice(transpose, 0, 1, 1, 1, &slice)
+                != NUMELYX_SUCCESS) {
+            numelyx_matrix_release(slice);
+            numelyx_matrix_release(transpose);
+            numelyx_matrix_release(parent);
+            return 13;
+        }
+
+        numelyx_matrix_release(parent);
+        numelyx_matrix_release(transpose);
+        if (numelyx_matrix_rows(slice) != 1
+            || numelyx_matrix_columns(slice) != 1
+            || numelyx_matrix_get(slice, 0, 0, &value) != NUMELYX_SUCCESS
+            || value != 3.0) {
+            numelyx_matrix_release(slice);
+            return 14;
+        }
+        numelyx_matrix_release(slice);
+    }
+
+    {
         numelyx_matrix *structured = NULL;
 
         if (numelyx_matrix_create_identity(3, &structured) != NUMELYX_SUCCESS
