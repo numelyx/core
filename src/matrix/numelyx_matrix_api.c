@@ -837,6 +837,160 @@ numelyx_status numelyx_matrix_solve(
     ));
 }
 
+
+numelyx_status numelyx_matrix_log_determinant(
+    const numelyx_matrix *matrix,
+    int *sign,
+    double *log_abs_determinant
+)
+{
+    return map_matrix_status(numelyx_core_matrix_log_determinant(
+        matrix, sign, log_abs_determinant));
+}
+
+numelyx_status numelyx_matrix_qr_decompose(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **q,
+    numelyx_matrix **r
+)
+{
+    if (q == NULL || r == NULL || q == r) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *q = NULL;
+    *r = NULL;
+    return map_matrix_status(numelyx_core_matrix_qr_decompose(matrix, q, r));
+}
+
+numelyx_status numelyx_matrix_svd(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **u,
+    numelyx_matrix **singular_values,
+    numelyx_matrix **vt
+)
+{
+    if (u == NULL || singular_values == NULL || vt == NULL
+        || u == singular_values || u == vt || singular_values == vt) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *u = NULL;
+    *singular_values = NULL;
+    *vt = NULL;
+    return map_matrix_status(numelyx_core_matrix_svd(
+        matrix, u, singular_values, vt));
+}
+
+numelyx_status numelyx_matrix_pseudoinverse(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **pseudoinverse
+)
+{
+    if (pseudoinverse == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *pseudoinverse = NULL;
+    return map_matrix_status(numelyx_core_matrix_pseudoinverse(
+        matrix, pseudoinverse));
+}
+
+numelyx_status numelyx_matrix_cholesky(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **lower
+)
+{
+    if (lower == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *lower = NULL;
+    return map_matrix_status(numelyx_core_matrix_cholesky(matrix, lower));
+}
+
+numelyx_status numelyx_matrix_least_squares(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    numelyx_matrix **solution
+)
+{
+    if (solution == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *solution = NULL;
+    return map_matrix_status(numelyx_core_matrix_least_squares(
+        matrix, right_hand_side, solution));
+}
+
+numelyx_status numelyx_matrix_weighted_least_squares(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    const double *weights,
+    size_t weights_count,
+    numelyx_matrix **solution
+)
+{
+    if (solution == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *solution = NULL;
+    return map_matrix_status(numelyx_core_matrix_weighted_least_squares(
+        matrix, right_hand_side, weights, weights_count, solution));
+}
+
+numelyx_status numelyx_matrix_rank(
+    const numelyx_matrix *matrix,
+    size_t *rank
+)
+{
+    return map_matrix_status(numelyx_core_matrix_rank(matrix, rank));
+}
+
+numelyx_status numelyx_matrix_solve_triangular(
+    const numelyx_matrix *triangular,
+    const numelyx_matrix *right_hand_side,
+    int lower,
+    int transpose,
+    numelyx_matrix **solution
+)
+{
+    if (solution == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *solution = NULL;
+    return map_matrix_status(numelyx_core_matrix_solve_triangular(
+        triangular, right_hand_side, lower != 0, transpose != 0, solution));
+}
+
+numelyx_status numelyx_matrix_norm_frobenius(
+    const numelyx_matrix *matrix,
+    double *norm
+)
+{
+    return map_matrix_status(numelyx_core_matrix_norm_frobenius(matrix, norm));
+}
+
+numelyx_status numelyx_matrix_norm_one(
+    const numelyx_matrix *matrix,
+    double *norm
+)
+{
+    return map_matrix_status(numelyx_core_matrix_norm_one(matrix, norm));
+}
+
+numelyx_status numelyx_matrix_norm_infinity(
+    const numelyx_matrix *matrix,
+    double *norm
+)
+{
+    return map_matrix_status(numelyx_core_matrix_norm_infinity(matrix, norm));
+}
+
+numelyx_status numelyx_matrix_trace(
+    const numelyx_matrix *matrix,
+    double *trace
+)
+{
+    return map_matrix_status(numelyx_core_matrix_trace(matrix, trace));
+}
+
 numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix)
 {
     return map_matrix_status(numelyx_core_matrix_retain(matrix));
