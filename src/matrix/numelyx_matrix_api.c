@@ -133,6 +133,96 @@ numelyx_status numelyx_matrix_create_diagonal(
     return create_matrix(NUMERUS_STORAGE_DIAGONAL, size, size, &data, matrix);
 }
 
+numelyx_status numelyx_matrix_create_scaled_identity(
+    size_t size,
+    double diagonal_value,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    data.value = diagonal_value;
+    return create_matrix(
+        NUMERUS_STORAGE_SCALED_IDENTITY,
+        size,
+        size,
+        &data,
+        matrix
+    );
+}
+
+numelyx_status numelyx_matrix_create_upper_triangular(
+    size_t size,
+    const double *packed_values,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    if (packed_values == NULL) {
+        if (matrix != NULL) {
+            *matrix = NULL;
+        }
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    data.values = packed_values;
+    return create_matrix(
+        NUMERUS_STORAGE_UPPER_TRIANGULAR,
+        size,
+        size,
+        &data,
+        matrix
+    );
+}
+
+numelyx_status numelyx_matrix_create_lower_triangular(
+    size_t size,
+    const double *packed_values,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    if (packed_values == NULL) {
+        if (matrix != NULL) {
+            *matrix = NULL;
+        }
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    data.values = packed_values;
+    return create_matrix(
+        NUMERUS_STORAGE_LOWER_TRIANGULAR,
+        size,
+        size,
+        &data,
+        matrix
+    );
+}
+
+numelyx_status numelyx_matrix_create_symmetric(
+    size_t size,
+    const double *packed_lower_values,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    if (packed_lower_values == NULL) {
+        if (matrix != NULL) {
+            *matrix = NULL;
+        }
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    data.values = packed_lower_values;
+    return create_matrix(
+        NUMERUS_STORAGE_SYMMETRIC,
+        size,
+        size,
+        &data,
+        matrix
+    );
+}
+
 numelyx_status numelyx_matrix_transpose(
     numelyx_matrix *parent,
     numelyx_matrix **view
