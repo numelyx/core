@@ -694,6 +694,11 @@ static numelyx_core_numeric_status beta_log_tails(
         direct_log_tail = log_front + log(fraction) - log(a);
         if (isnan(direct_log_tail) || direct_log_tail > 0.0)
             return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        if (direct_log_tail == -INFINITY) {
+            *log_lower = -INFINITY;
+            *log_upper = 0.0;
+            return NUMERUS_NUMERIC_SUCCESS;
+        }
         status = numelyx_core_numeric_log1mexp(direct_log_tail, log_upper);
         if (status != NUMERUS_NUMERIC_SUCCESS) return status;
         *log_lower = direct_log_tail;
@@ -704,6 +709,11 @@ static numelyx_core_numeric_status beta_log_tails(
         direct_log_tail = log_front + log(fraction) - log(b);
         if (isnan(direct_log_tail) || direct_log_tail > 0.0)
             return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        if (direct_log_tail == -INFINITY) {
+            *log_lower = 0.0;
+            *log_upper = -INFINITY;
+            return NUMERUS_NUMERIC_SUCCESS;
+        }
         status = numelyx_core_numeric_log1mexp(direct_log_tail, log_lower);
         if (status != NUMERUS_NUMERIC_SUCCESS) return status;
         *log_upper = direct_log_tail;

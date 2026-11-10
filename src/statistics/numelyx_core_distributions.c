@@ -505,6 +505,10 @@ static numelyx_core_numeric_status chi_square_log_tails(
         0.5 * degrees_of_freedom, 0.5 * x, &log_q);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
     *log_survival = log_q;
+    if (log_q == -INFINITY) {
+        *log_cdf = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
     return numelyx_core_numeric_log1mexp(log_q, log_cdf);
 }
 
@@ -1002,7 +1006,7 @@ numelyx_core_numeric_status numelyx_core_f_log_pdf(
         else value = -INFINITY;
     } else {
         log_ratio = log(numerator_df) + log(x) - log(denominator_df);
-        value = a * log(numerator_df / denominator_df) +
+        value = a * (log(numerator_df) - log(denominator_df)) +
             (a - 1.0) * log(x) - log_beta -
             (a + b) * log1pexp_stable(log_ratio);
     }
