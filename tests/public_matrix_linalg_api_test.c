@@ -283,9 +283,13 @@ int main(void)
         const double deficient_values[] = {1.0, 2.0, 2.0, 4.0};
         const double consistent_values[] = {3.0, 6.0};
         const double inconsistent_values[] = {3.0, 7.0};
+        const double consistent_multi_values[] = {3.0, 6.0, 6.0, 12.0};
+        const double inconsistent_multi_values[] = {3.0, 6.0, 6.0, 13.0};
         numelyx_matrix *deficient = NULL;
         numelyx_matrix *consistent = NULL;
         numelyx_matrix *inconsistent = NULL;
+        numelyx_matrix *consistent_multi = NULL;
+        numelyx_matrix *inconsistent_multi = NULL;
 
         if (numelyx_matrix_create_dense(2, 2, deficient_values, &deficient)
                 != NUMELYX_SUCCESS
@@ -293,18 +297,34 @@ int main(void)
                 != NUMELYX_SUCCESS
             || numelyx_matrix_create_dense(2, 1, inconsistent_values, &inconsistent)
                 != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(
+                2, 2, consistent_multi_values, &consistent_multi)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(
+                2, 2, inconsistent_multi_values, &inconsistent_multi)
+                != NUMELYX_SUCCESS
             || numelyx_matrix_classify_system(
                 deficient, consistent, &classification) != NUMELYX_SUCCESS
             || classification != NUMELYX_MATRIX_SOLUTION_INFINITE
             || numelyx_matrix_classify_system(
                 deficient, inconsistent, &classification) != NUMELYX_SUCCESS
+            || classification != NUMELYX_MATRIX_SOLUTION_INCONSISTENT
+            || numelyx_matrix_classify_system(
+                deficient, consistent_multi, &classification) != NUMELYX_SUCCESS
+            || classification != NUMELYX_MATRIX_SOLUTION_INFINITE
+            || numelyx_matrix_classify_system(
+                deficient, inconsistent_multi, &classification) != NUMELYX_SUCCESS
             || classification != NUMELYX_MATRIX_SOLUTION_INCONSISTENT) {
+            numelyx_matrix_release(inconsistent_multi);
+            numelyx_matrix_release(consistent_multi);
             numelyx_matrix_release(inconsistent);
             numelyx_matrix_release(consistent);
             numelyx_matrix_release(deficient);
             goto fail;
         }
 
+        numelyx_matrix_release(inconsistent_multi);
+        numelyx_matrix_release(consistent_multi);
         numelyx_matrix_release(inconsistent);
         numelyx_matrix_release(consistent);
         numelyx_matrix_release(deficient);
