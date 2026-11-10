@@ -29,6 +29,16 @@ static numelyx_status map_matrix_status(numelyx_core_matrix_status status)
             return NUMELYX_RANK_DEFICIENT;
         case NUMERUS_MATRIX_NO_CONVERGENCE:
             return NUMELYX_NO_CONVERGENCE;
+        case NUMERUS_MATRIX_DIVISION_BY_ZERO:
+            return NUMELYX_DIVISION_BY_ZERO;
+        case NUMERUS_MATRIX_NOT_SYMMETRIC:
+            return NUMELYX_NOT_SYMMETRIC;
+        case NUMERUS_MATRIX_NOT_POSITIVE_DEFINITE:
+            return NUMELYX_NOT_POSITIVE_DEFINITE;
+        case NUMERUS_MATRIX_NOT_POSITIVE_SEMIDEFINITE:
+            return NUMELYX_NOT_POSITIVE_SEMIDEFINITE;
+        case NUMERUS_MATRIX_PIVOT_TOO_SMALL:
+            return NUMELYX_PIVOT_TOO_SMALL;
         default:
             return NUMELYX_NUMERICAL_ERROR;
     }
