@@ -72,7 +72,6 @@ NUMELYX_API numelyx_status numelyx_matrix_create_lower_triangular(
     numelyx_matrix **matrix
 );
 
-/** Create symmetric storage from packed lower-triangular values. */
 /** One sparse override, addressed by row-major linear index. */
 typedef struct {
     size_t index;
@@ -102,7 +101,7 @@ NUMELYX_API numelyx_status numelyx_matrix_create_banded(
     numelyx_matrix **matrix
 );
 
-
+/** Create symmetric storage from packed lower-triangular values. */
 NUMELYX_API numelyx_status numelyx_matrix_create_symmetric(
     size_t size,
     const double *packed_lower_values,
