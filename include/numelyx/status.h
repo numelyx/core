@@ -25,6 +25,9 @@ typedef enum {
     NUMELYX_NUMERICAL_ERROR
 } numelyx_status;
 
+/** Return a static, NUL-terminated description for a public status value. */
+NUMELYX_API const char *numelyx_status_string(numelyx_status status);
+
 NUMELYX_END_DECLS
 
 #endif /* NUMELYX_STATUS_H */
