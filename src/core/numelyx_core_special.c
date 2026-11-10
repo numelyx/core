@@ -368,3 +368,74 @@ numelyx_core_numeric_status numelyx_core_inverse_regularized_beta(
     *result = reflected ? 1.0 - value : value;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+/*
+ * Digamma and trigamma use recurrence to shift x into the asymptotic region,
+ * followed by Bernoulli-number expansions. This avoids reflection near poles;
+ * the current contract is restricted to positive real arguments.
+ */
+numelyx_core_numeric_status numelyx_core_digamma(double x, double *result)
+{
+    double value = 0.0;
+    double inverse;
+    double inverse2;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (x <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+
+    while (x < 8.0) {
+        value -= 1.0 / x;
+        x += 1.0;
+        if (!isfinite(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    }
+
+    inverse = 1.0 / x;
+    inverse2 = inverse * inverse;
+    value += log(x) - 0.5 * inverse
+        - inverse2 * (1.0 / 12.0
+        - inverse2 * (1.0 / 120.0
+        - inverse2 * (1.0 / 252.0
+        - inverse2 * (1.0 / 240.0
+        - inverse2 * (5.0 / 660.0
+        - inverse2 * (691.0 / 32760.0
+        - inverse2 * (1.0 / 12.0)))))));
+
+    if (!isfinite(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_trigamma(double x, double *result)
+{
+    double value = 0.0;
+    double inverse;
+    double inverse2;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (x <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+
+    while (x < 8.0) {
+        double term = 1.0 / x;
+        term *= term;
+        value += term;
+        x += 1.0;
+        if (!isfinite(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    }
+
+    inverse = 1.0 / x;
+    inverse2 = inverse * inverse;
+    value += inverse + 0.5 * inverse2
+        + inverse * inverse2 * (1.0 / 6.0
+        - inverse2 * (1.0 / 30.0
+        - inverse2 * (1.0 / 42.0
+        - inverse2 * (1.0 / 30.0
+        - inverse2 * (5.0 / 66.0
+        - inverse2 * (691.0 / 2730.0
+        - inverse2 * (7.0 / 6.0)))))));
+
+    if (!isfinite(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
