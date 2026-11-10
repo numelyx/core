@@ -388,10 +388,15 @@ int main(void)
         numelyx_matrix_release(grid);
         numelyx_matrix_release(block_diagonal);
         numelyx_matrix_release(repeated);
+        numelyx_matrix_release(zero_extended);
         numelyx_matrix_release(padded);
+        numelyx_matrix_release(joined_vertical);
         numelyx_matrix_release(joined);
+        numelyx_matrix_release(permuted_columns);
+        numelyx_matrix_release(swapped_rows);
         numelyx_matrix_release(swapped);
         numelyx_matrix_release(removed);
+        numelyx_matrix_release(rotated_ccw);
         numelyx_matrix_release(rotated_180);
         numelyx_matrix_release(rotated);
     }
