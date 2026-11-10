@@ -14,6 +14,18 @@ static void test_hc0_hc1_sandwich(void){
   NUMELYX_COVARIANCE_HC1,&covariance)==NUMELYX_COVARIANCE_SUCCESS);
  close_to(covariance,5.25,1e-14);
 }
+static void test_multivariate_sandwich_orientation(void){
+ const double bread[]={1,.5,0,2};
+ const double scores[]={1,2,3,4};
+ double covariance[4]={0,0,0,0};
+ assert(numelyx_core_sandwich_covariance(
+  bread,scores,2,2,NUMELYX_COVARIANCE_HC0,covariance)
+  ==NUMELYX_COVARIANCE_SUCCESS);
+ close_to(covariance[0],29,1e-14);
+ close_to(covariance[1],48,1e-14);
+ close_to(covariance[2],48,1e-14);
+ close_to(covariance[3],80,1e-14);
+}
 static void test_cluster_and_hac_sandwich(void){
  const double bread[]={.5};
  const double scores[]={1,2,3};
@@ -58,7 +70,7 @@ static void test_covariance_validation_and_output_preservation(void){
  assert(covariance==17);
 }
 int main(void){
- test_hc0_hc1_sandwich(); test_cluster_and_hac_sandwich();
+ test_hc0_hc1_sandwich(); test_multivariate_sandwich_orientation(); test_cluster_and_hac_sandwich();
  test_covariance_validation_and_output_preservation();
  puts("Robust covariance tests passed."); return 0;
 }
