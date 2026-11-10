@@ -33,6 +33,8 @@ const char *numelyx_status_string(numelyx_status status)
             return "not positive semidefinite";
         case NUMELYX_PIVOT_TOO_SMALL:
             return "pivot too small";
+        case NUMELYX_NO_OBJECTIVE_VALUE:
+            return "no objective value";
         case NUMELYX_NUMERICAL_ERROR:
             return "numerical error";
         default:
