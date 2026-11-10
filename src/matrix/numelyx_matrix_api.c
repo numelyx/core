@@ -226,6 +226,41 @@ numelyx_status numelyx_matrix_create_symmetric(
     );
 }
 
+numelyx_status numelyx_matrix_create_banded(
+    size_t rows,
+    size_t columns,
+    size_t lower_bandwidth,
+    size_t upper_bandwidth,
+    const double *packed_band_values,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    if (matrix == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *matrix = NULL;
+
+    if (rows == 0 || columns == 0
+        || lower_bandwidth >= rows
+        || upper_bandwidth >= columns
+        || packed_band_values == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+
+    data.values = packed_band_values;
+    data.lower_bandwidth = lower_bandwidth;
+    data.upper_bandwidth = upper_bandwidth;
+    return create_matrix(
+        NUMERUS_STORAGE_BANDED,
+        rows,
+        columns,
+        &data,
+        matrix
+    );
+}
+
 numelyx_status numelyx_matrix_create_sparse(
     size_t rows,
     size_t columns,
