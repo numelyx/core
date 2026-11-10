@@ -34,8 +34,12 @@ int main(void)
                "not positive definite") != 0) {
         return 6;
     }
-    if (strcmp(numelyx_status_string((numelyx_status) 999), "unknown status") != 0) {
+    if (strcmp(numelyx_status_string(NUMELYX_NO_OBJECTIVE_VALUE),
+               "no objective value") != 0) {
         return 7;
+    }
+    if (strcmp(numelyx_status_string((numelyx_status) 999), "unknown status") != 0) {
+        return 8;
     }
 
     return 0;
