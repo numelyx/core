@@ -186,6 +186,28 @@ int main(void)
             != NUMELYX_SUCCESS || !close_to(scalar, 1.5))
         goto fail;
     {
+        const double pivoted_values[] = {0.0, 1.0, 2.0, 3.0};
+        const double singular_values[] = {2.0, 0.0, 0.0, 0.0};
+        numelyx_matrix *pivoted = NULL;
+        numelyx_matrix *singular = NULL;
+
+        if (numelyx_matrix_create_dense(
+                2, 2, pivoted_values, &pivoted) != NUMELYX_SUCCESS
+            || numelyx_matrix_condition_estimate_one(pivoted, &scalar)
+                != NUMELYX_SUCCESS || !close_to(scalar, 10.0)
+            || numelyx_matrix_create_dense(
+                2, 2, singular_values, &singular) != NUMELYX_SUCCESS
+            || numelyx_matrix_condition_estimate_one(singular, &scalar)
+                != NUMELYX_SUCCESS || !isinf(scalar)) {
+            numelyx_matrix_release(singular);
+            numelyx_matrix_release(pivoted);
+            goto fail;
+        }
+
+        numelyx_matrix_release(singular);
+        numelyx_matrix_release(pivoted);
+    }
+    {
         int positive_definite = 0, positive_semidefinite = 0;
         if (numelyx_matrix_classify_definiteness(
                 a, &positive_definite, &positive_semidefinite)
