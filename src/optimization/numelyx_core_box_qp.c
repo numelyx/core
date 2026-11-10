@@ -135,11 +135,16 @@ numelyx_core_qp_status numelyx_core_box_qp_solve(
         !numelyx_core_size_multiply(n,sizeof(*x),&vector_bytes))
         return NUMELYX_QP_SIZE_OVERFLOW;
 
+    for (i=0;i<matrix_elements;i++) {
+        if (!isfinite(h[i])) return NUMELYX_QP_NON_FINITE_INPUT;
+    }
     for (i=0;i<n;i++) {
         if (!isfinite(g[i]) || !isfinite(initial[i]) ||
-            isnan(lower[i]) || isnan(upper[i]) ||
-            lower[i]==INFINITY || upper[i]==-INFINITY || lower[i]>upper[i])
+            isnan(lower[i]) || isnan(upper[i]))
             return NUMELYX_QP_NON_FINITE_INPUT;
+        if (lower[i]==INFINITY || upper[i]==-INFINITY ||
+            lower[i]>upper[i])
+            return NUMELYX_QP_INVALID_ARGUMENT;
     }
     factor=(double*)calloc(1,matrix_bytes);
     x=(double*)malloc(vector_bytes);
