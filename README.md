@@ -40,6 +40,27 @@ Standalone builds use the C runtime allocator. The source retains conditional
 Zend allocator support only in the upstream integration points; the CMake
 target selects the libc allocator paths and does not include PHP headers.
 
+## Install and consume from another CMake project
+
+Install the selected static or shared build:
+
+```sh
+cmake --install build --prefix install
+```
+
+Then consume the exported target:
+
+```cmake
+find_package(NumelyxCore CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE Numelyx::Core)
+```
+
+The current transitional umbrella header is `<numelyx/numelyx.h>`. It includes
+the existing subsystem headers installed under `numelyx/detail/`. These are
+currently **unstable integration headers**, not a frozen public API: names,
+layouts, and contracts may change until the dedicated public C API/ABI review
+is complete. SDKs should not yet promise compatibility across Core releases.
+
 ## Sanitizer builds
 
 The sanitizer configurations are intended for Linux with GCC or Clang and
