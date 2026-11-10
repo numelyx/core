@@ -55,7 +55,7 @@ find_package(NumelyxCore CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE Numelyx::Core)
 ```
 
-The initial supported headers are `<numelyx/version.h>`, `<numelyx/status.h>`, and `<numelyx/matrix.h>`. They expose semantic-version and ABI-version introspection plus an opaque-handle Matrix API for dense, identity, zero, constant, and diagonal creation, retain/release, dimensions, element access, and lazy transpose/slice views. `numelyx_core_abi_version()` currently returns `0`, explicitly indicating that no stable ABI has been declared.
+The initial supported headers are `<numelyx/version.h>`, `<numelyx/status.h>`, and `<numelyx/matrix.h>`. They expose semantic-version and ABI-version introspection plus an opaque-handle Matrix API for dense, identity, zero, constant, and diagonal creation; retain/release; dimensions and element access; lazy transpose/slice and element-wise arithmetic; eager matrix multiplication; and explicit materialization. `numelyx_core_abi_version()` currently returns `0`, explicitly indicating that no stable ABI has been declared.
 
 The current umbrella header `<numelyx/numelyx.h>` includes both the initial supported headers and the existing subsystem headers installed under `numelyx/detail/`. The latter are **unstable integration headers**, not a frozen public API: names, layouts, and contracts may change until the dedicated public C API/ABI review is complete. SDKs should use only the explicitly supported headers and must not yet promise ABI compatibility across Core releases.
 
