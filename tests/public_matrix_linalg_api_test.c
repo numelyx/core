@@ -142,6 +142,8 @@ int main(void)
             goto fail;
     }
 
+    numelyx_matrix_release(u); u = NULL;
+    numelyx_matrix_release(vt); vt = NULL;
     if (numelyx_matrix_symmetric_eigen(
             a, &u, &vt) != NUMELYX_SUCCESS
         || numelyx_matrix_rows(u) != 2
