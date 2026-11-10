@@ -765,7 +765,7 @@ static bool gamma_p_series_log(double a, double x, double *log_value)
         sum += delta;
         if (!isfinite(sum) || !isfinite(delta)) return false;
         if (fabs(delta) <= fabs(sum) * NUMELYX_SPECIAL_EPSILON) {
-            log_scale = a * log(x) - x - lgamma(a + 1.0);
+            log_scale = a * log(x) - x - lgamma(a);
             *log_value = log_scale + log(sum);
             return !isnan(*log_value) && *log_value <= 0.0;
         }

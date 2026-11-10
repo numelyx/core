@@ -8,6 +8,10 @@
 
 static void close_to(double actual, double expected, double tolerance)
 {
+    if (!(fabs(actual - expected) <= tolerance)) {
+        fprintf(stderr, "distribution close_to failed: actual=%.17g expected=%.17g tolerance=%.17g\\n",
+            actual, expected, tolerance);
+    }
     assert(fabs(actual - expected) <= tolerance);
 }
 
