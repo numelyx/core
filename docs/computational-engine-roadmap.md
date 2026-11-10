@@ -40,9 +40,9 @@ The following reusable internal primitives have been added. They are not yet a c
 - Positive-argument digamma/trigamma and erf/erfc/inverse-erf/normal-quantile support.
 - Scalar Normal, Student-t, chi-square, Gamma, Beta, F, Uniform, Logistic, Weibull, and Lognormal distributions with density/log-density, CDF/survival, log tails, and quantiles.
 - Discrete Poisson and Binomial distributions with PMF/log-PMF, CDF/survival, log tails, and integer quantiles.
-- Generic HC0/HC1, cluster CR0/CR1, and Bartlett Newey-West HAC sandwich covariance primitives from caller-supplied score arrays.
+- Generic HC0-HC3, cluster CR0/CR1, and Bartlett Newey-West HAC sandwich covariance primitives from caller-supplied score arrays, including a regression-score leverage adapter.
 - Generic delta-method variance/standard-error and Cholesky-based Wald tests with log chi-square p-values.
-- Generic GMM moment objective, Jacobian gradient, and Gauss-Newton curvature evaluation. Counts are capped at 2^53−1 where exact conversion to the double-precision special-function layer is required.
+- Generic GMM moment objective, Jacobian gradient, Gauss-Newton curvature, and Hansen J overidentification log-p-value. Counts are capped at 2^53−1 where exact conversion to the double-precision special-function layer is required.
 - Atomic affine Box-Muller sampling against a caller-owned RNG stream.
 - Dense BFGS and O(nm)-memory L-BFGS, plus safeguarded scalar bisection/Newton root solvers.
 - Dense two-phase simplex for max cᵀx subject to Ax ≤ b and x ≥ 0, with Phase-I feasibility and Bland anti-cycling selection.
