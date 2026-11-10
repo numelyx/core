@@ -54,10 +54,6 @@ numelyx_status numelyx_optimizer_default_options(
         return map_optimizer_status(status);
     }
 
-    copy_options_to_core(
-        (const numelyx_optimizer_options *) &core_options,
-        &core_options
-    );
     options->max_iterations = core_options.max_iterations;
     options->max_line_search_iterations = core_options.max_line_search_iterations;
     options->gradient_tolerance = core_options.gradient_tolerance;
