@@ -28,6 +28,10 @@ jobs:
         run: cmake --install build --config Debug --prefix package-prefix
       - name: Verify only public headers are installed
         run: cmake -DPREFIX=package-prefix -P tests/package-consumer/check-install.cmake
+      - name: Inspect generated package export
+        run: |
+          find package-prefix -name 'NumelyxCoreTargets*' -type f -print
+          cat package-prefix/lib/cmake/NumelyxCore/NumelyxCoreTargets.cmake
       - name: Build installed-package consumer
         run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/package-prefix
       - name: Test installed-package consumer
@@ -54,6 +58,10 @@ jobs:
         run: cmake --install build-shared --config Debug --prefix package-prefix
       - name: Verify only public headers are installed
         run: cmake -DPREFIX=package-prefix -P tests/package-consumer/check-install.cmake
+      - name: Inspect generated shared-package export
+        run: |
+          find package-prefix -name 'NumelyxCoreTargets*' -type f -print
+          cat package-prefix/lib/cmake/NumelyxCore/NumelyxCoreTargets.cmake
       - name: Build installed shared-package consumer
         run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/package-prefix
       - name: Build package consumer
