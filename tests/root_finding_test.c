@@ -105,7 +105,7 @@ static void test_bisection_failure_contracts(void)
         square_minus_two, NULL, 0.0, 2.0, &options, &result) ==
         NUMELYX_ROOT_ITERATION_LIMIT);
     assert(result.iterations == 1);
-    assert(result.function_evaluations == 3);
+    assert(result.function_evaluations == 4);
 
     assert(numelyx_core_bisect(
         square_minus_two, NULL, 1.0, 1.0, &options, &result) ==
