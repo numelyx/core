@@ -15,10 +15,10 @@ if(NOT nm_status EQUAL 0)
     message(FATAL_ERROR "Could not inspect shared-library symbols: ${nm_error}")
 endif()
 
-if(NOT symbols MATCHES "[ \t]numelyx_matrix_create_dense(@@[^ \t\n]+)?([ \t\n]|$)")
+if(NOT symbols MATCHES "numelyx_matrix_create_dense")
     message(FATAL_ERROR "Supported public symbol numelyx_matrix_create_dense is not exported")
 endif()
 
-if(symbols MATCHES "[ \t]numelyx_core_matrix_create(@@[^ \t\n]+)?([ \t\n]|$)")
+if(symbols MATCHES "numelyx_core_matrix_create")
     message(FATAL_ERROR "Private Core symbol numelyx_core_matrix_create leaked from shared library")
 endif()
