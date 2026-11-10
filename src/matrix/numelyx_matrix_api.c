@@ -57,7 +57,7 @@ numelyx_status numelyx_matrix_create_dense(
         rows,
         columns,
         &data,
-        (numelyx_core_matrix **) matrix
+        matrix
     );
 
     return map_matrix_status((numelyx_core_matrix_status) status);
@@ -65,24 +65,22 @@ numelyx_status numelyx_matrix_create_dense(
 
 numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix)
 {
-    return map_matrix_status(numelyx_core_matrix_retain(
-        (numelyx_core_matrix *) matrix
-    ));
+    return map_matrix_status(numelyx_core_matrix_retain(matrix));
 }
 
 void numelyx_matrix_release(numelyx_matrix *matrix)
 {
-    numelyx_core_matrix_destroy((numelyx_core_matrix *) matrix);
+    numelyx_core_matrix_destroy(matrix);
 }
 
 size_t numelyx_matrix_rows(const numelyx_matrix *matrix)
 {
-    return numelyx_core_matrix_rows((const numelyx_core_matrix *) matrix);
+    return numelyx_core_matrix_rows(matrix);
 }
 
 size_t numelyx_matrix_columns(const numelyx_matrix *matrix)
 {
-    return numelyx_core_matrix_columns((const numelyx_core_matrix *) matrix);
+    return numelyx_core_matrix_columns(matrix);
 }
 
 numelyx_status numelyx_matrix_get(
@@ -93,7 +91,7 @@ numelyx_status numelyx_matrix_get(
 )
 {
     return map_matrix_status(numelyx_core_matrix_get(
-        (const numelyx_core_matrix *) matrix,
+        matrix,
         row,
         column,
         value
