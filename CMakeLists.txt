@@ -231,7 +231,13 @@ if(NUMELYX_BUILD_TESTS)
             target_compile_definitions(${test_name} PRIVATE NUMERUS_RNG_TEST_ALLOCATOR)
         endif()
 
-        if(test_name STREQUAL "lifetime_test")
+        if(test_name STREQUAL "version_api_test")
+            target_compile_definitions(${test_name} PRIVATE
+                NUMELYX_EXPECTED_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+                NUMELYX_EXPECTED_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+                NUMELYX_EXPECTED_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+            )
+        elseif(test_name STREQUAL "lifetime_test")
             target_link_libraries(${test_name} PRIVATE Threads::Threads)
         endif()
 
