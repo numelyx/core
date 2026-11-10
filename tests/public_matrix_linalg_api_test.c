@@ -45,9 +45,15 @@ int main(void)
         || !close_to(scalar, 3.0))
         goto fail;
 
+    if (numelyx_matrix_qr_decompose(a, &q, &q) != NUMELYX_INVALID_ARGUMENT
+        || q != NULL)
+        goto fail;
     if (numelyx_matrix_qr_decompose(a, &q, &r) != NUMELYX_SUCCESS
         || numelyx_matrix_rows(q) != 2 || numelyx_matrix_columns(q) != 2
         || numelyx_matrix_rows(r) != 2 || numelyx_matrix_columns(r) != 2)
+        goto fail;
+    if (numelyx_matrix_svd(a, &u, &u, &vt) != NUMELYX_INVALID_ARGUMENT
+        || u != NULL || vt != NULL)
         goto fail;
     if (numelyx_matrix_svd(a, &u, &s, &vt) != NUMELYX_SUCCESS
         || numelyx_matrix_rows(u) != 2
