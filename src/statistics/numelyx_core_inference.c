@@ -8,6 +8,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -131,6 +132,7 @@ numelyx_core_inference_status numelyx_core_wald_test(
     size_t restriction_elements;
     size_t restriction_square;
     size_t covariance_bytes;
+    size_t restriction_covariance_bytes;
     size_t restriction_bytes;
     size_t vector_bytes;
     size_t i;
@@ -162,13 +164,15 @@ numelyx_core_inference_status numelyx_core_wald_test(
         !numelyx_core_size_multiply(
             covariance_elements, sizeof(double), &covariance_bytes) ||
         !numelyx_core_size_multiply(
+            restriction_square, sizeof(double), &restriction_covariance_bytes) ||
+        !numelyx_core_size_multiply(
             restriction_elements, sizeof(double), &restriction_bytes) ||
         !numelyx_core_size_multiply(
             restriction_count, sizeof(double), &vector_bytes))
         return NUMELYX_INFERENCE_SIZE_OVERFLOW;
 
-    restricted_covariance = (double *) calloc(1, covariance_bytes);
-    factor = (double *) malloc(covariance_bytes);
+    restricted_covariance = (double *) calloc(1, restriction_covariance_bytes);
+    factor = (double *) malloc(restriction_covariance_bytes);
     rv = (double *) malloc(restriction_bytes);
     difference = (double *) malloc(vector_bytes);
     forward = (double *) malloc(vector_bytes);
@@ -245,6 +249,15 @@ numelyx_core_inference_status numelyx_core_wald_test(
         if (!isfinite(restricted_covariance[i])) {
             status = NUMELYX_INFERENCE_NUMERICAL_FAILURE;
             goto cleanup;
+        }
+    }
+    for (i = 0; i < restriction_count; i++) {
+        for (j = i + 1; j < restriction_count; j++) {
+            double symmetric =
+                0.5 * restricted_covariance[i * restriction_count + j] +
+                0.5 * restricted_covariance[j * restriction_count + i];
+            restricted_covariance[i * restriction_count + j] = symmetric;
+            restricted_covariance[j * restriction_count + i] = symmetric;
         }
     }
     if (!cholesky_factor(
