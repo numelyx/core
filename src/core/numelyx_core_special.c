@@ -223,3 +223,138 @@ numelyx_core_numeric_status numelyx_core_regularized_beta(
     *result = value;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+#define NUMELYX_SPECIAL_INVERSE_MAX_ITERATIONS 2048
+
+static numelyx_core_numeric_status validate_probability_inverse(
+    double probability, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability <= 0.0 || probability >= 1.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static double safe_midpoint(double lower, double upper)
+{
+    return lower + (upper - lower) * 0.5;
+}
+
+numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_p(
+    double a, double probability, double *result
+)
+{
+    double lower = 0.0;
+    double upper;
+    double value;
+    size_t iteration;
+    numelyx_core_numeric_status status;
+
+    if (!isfinite(a)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (a <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    status = validate_probability_inverse(probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    upper = a > 1.0 ? a : 1.0;
+    for (;;) {
+        status = numelyx_core_regularized_gamma_p(a, upper, &value);
+        if (status != NUMERUS_NUMERIC_SUCCESS)
+            return status;
+        if (value >= probability) break;
+        if (upper > DBL_MAX * 0.5) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        upper *= 2.0;
+    }
+
+    for (iteration = 0; iteration < NUMELYX_SPECIAL_INVERSE_MAX_ITERATIONS;
+         iteration++) {
+        double midpoint = safe_midpoint(lower, upper);
+        if (midpoint == lower || midpoint == upper) break;
+        status = numelyx_core_regularized_gamma_p(a, midpoint, &value);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        if (value < probability) lower = midpoint;
+        else upper = midpoint;
+    }
+    *result = safe_midpoint(lower, upper);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_q(
+    double a, double probability, double *result
+)
+{
+    double lower = 0.0;
+    double upper;
+    double value;
+    size_t iteration;
+    numelyx_core_numeric_status status;
+
+    if (!isfinite(a)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (a <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    status = validate_probability_inverse(probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    upper = a > 1.0 ? a : 1.0;
+    for (;;) {
+        status = numelyx_core_regularized_gamma_q(a, upper, &value);
+        if (status != NUMERUS_NUMERIC_SUCCESS)
+            return status;
+        if (value <= probability) break;
+        if (upper > DBL_MAX * 0.5) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        upper *= 2.0;
+    }
+
+    for (iteration = 0; iteration < NUMELYX_SPECIAL_INVERSE_MAX_ITERATIONS;
+         iteration++) {
+        double midpoint = safe_midpoint(lower, upper);
+        if (midpoint == lower || midpoint == upper) break;
+        status = numelyx_core_regularized_gamma_q(a, midpoint, &value);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        if (value > probability) lower = midpoint;
+        else upper = midpoint;
+    }
+    *result = safe_midpoint(lower, upper);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_inverse_regularized_beta(
+    double a, double b, double probability, double *result
+)
+{
+    double lower = 0.0;
+    double upper = 1.0;
+    double target = probability;
+    bool reflected = false;
+    double value;
+    size_t iteration;
+    numelyx_core_numeric_status status;
+
+    if (!isfinite(a) || !isfinite(b)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (a <= 0.0 || b <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    status = validate_probability_inverse(probability, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    if (probability > 0.5) {
+        double temporary = a;
+        a = b;
+        b = temporary;
+        target = 1.0 - probability;
+        reflected = true;
+    }
+
+    for (iteration = 0; iteration < NUMELYX_SPECIAL_INVERSE_MAX_ITERATIONS;
+         iteration++) {
+        double midpoint = safe_midpoint(lower, upper);
+        if (midpoint == lower || midpoint == upper) break;
+        status = numelyx_core_regularized_beta(a, b, midpoint, &value);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        if (value < target) lower = midpoint;
+        else upper = midpoint;
+    }
+
+    value = safe_midpoint(lower, upper);
+    *result = reflected ? 1.0 - value : value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
