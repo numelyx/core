@@ -7,6 +7,7 @@
 #include <float.h>
 #include <stddef.h>
 #include <math.h>
+#include <stdint.h>
 
 static numelyx_core_fuzzy_status validate_membership_input(
     double x, double *membership
@@ -504,6 +505,119 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_defuzzify_mean_of_maxima(
         double value = (scaled_sum / (double) maxima_count) * coordinate_scale;
         if (!isfinite(value)) return NUMELYX_FUZZY_NUMERICAL_FAILURE;
         *result = value;
+    }
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_mamdani_aggregate(
+    const double *rule_strengths,
+    const double *consequent_memberships,
+    size_t rule_count,
+    size_t sample_count,
+    numelyx_core_fuzzy_implication implication,
+    numelyx_core_fuzzy_aggregation aggregation,
+    double *output_memberships
+)
+{
+    size_t matrix_elements;
+    size_t rule;
+    size_t sample;
+
+    if (rule_strengths == NULL || consequent_memberships == NULL ||
+        output_memberships == NULL || rule_count == 0 || sample_count == 0)
+        return NUMELYX_FUZZY_INVALID_ARGUMENT;
+    if ((implication != NUMELYX_FUZZY_IMPLICATION_MIN &&
+         implication != NUMELYX_FUZZY_IMPLICATION_PRODUCT) ||
+        (aggregation != NUMELYX_FUZZY_AGGREGATION_MAX &&
+         aggregation != NUMELYX_FUZZY_AGGREGATION_PROBABILISTIC_SUM &&
+         aggregation != NUMELYX_FUZZY_AGGREGATION_BOUNDED_SUM))
+        return NUMELYX_FUZZY_INVALID_ARGUMENT;
+    if (rule_count > SIZE_MAX / sample_count)
+        return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+    matrix_elements = rule_count * sample_count;
+
+    for (rule = 0; rule < rule_count; rule++) {
+        if (!isfinite(rule_strengths[rule]))
+            return NUMELYX_FUZZY_NON_FINITE_INPUT;
+        if (rule_strengths[rule] < 0.0 || rule_strengths[rule] > 1.0)
+            return NUMELYX_FUZZY_DOMAIN_ERROR;
+    }
+    for (sample = 0; sample < matrix_elements; sample++) {
+        if (!isfinite(consequent_memberships[sample]))
+            return NUMELYX_FUZZY_NON_FINITE_INPUT;
+        if (consequent_memberships[sample] < 0.0 ||
+            consequent_memberships[sample] > 1.0)
+            return NUMELYX_FUZZY_DOMAIN_ERROR;
+    }
+
+    for (sample = 0; sample < sample_count; sample++) {
+        double aggregate = 0.0;
+        for (rule = 0; rule < rule_count; rule++) {
+            double consequent =
+                consequent_memberships[rule * sample_count + sample];
+            double implied = implication == NUMELYX_FUZZY_IMPLICATION_MIN
+                ? fmin(rule_strengths[rule], consequent)
+                : rule_strengths[rule] * consequent;
+
+            if (aggregation == NUMELYX_FUZZY_AGGREGATION_MAX) {
+                if (implied > aggregate) aggregate = implied;
+            } else if (aggregation ==
+                NUMELYX_FUZZY_AGGREGATION_PROBABILISTIC_SUM) {
+                aggregate = aggregate + implied - aggregate * implied;
+            } else {
+                aggregate = fmin(1.0, aggregate + implied);
+            }
+        }
+        output_memberships[sample] = aggregate;
+    }
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_sugeno_aggregate(
+    const double *rule_strengths,
+    const double *rule_outputs,
+    size_t rule_count,
+    double *output
+)
+{
+    size_t index;
+    double total_strength = 0.0;
+    double output_scale = 0.0;
+    double weighted_sum = 0.0;
+    double correction = 0.0;
+
+    if (rule_strengths == NULL || rule_outputs == NULL ||
+        output == NULL || rule_count == 0)
+        return NUMELYX_FUZZY_INVALID_ARGUMENT;
+
+    for (index = 0; index < rule_count; index++) {
+        if (!isfinite(rule_strengths[index]) || !isfinite(rule_outputs[index]))
+            return NUMELYX_FUZZY_NON_FINITE_INPUT;
+        if (rule_strengths[index] < 0.0 || rule_strengths[index] > 1.0)
+            return NUMELYX_FUZZY_DOMAIN_ERROR;
+        total_strength += rule_strengths[index];
+        if (fabs(rule_outputs[index]) > output_scale)
+            output_scale = fabs(rule_outputs[index]);
+    }
+    if (total_strength <= 0.0) return NUMELYX_FUZZY_DOMAIN_ERROR;
+    if (output_scale == 0.0) {
+        *output = 0.0;
+        return NUMELYX_FUZZY_SUCCESS;
+    }
+
+    for (index = 0; index < rule_count; index++) {
+        double term = (rule_outputs[index] / output_scale) *
+            rule_strengths[index];
+        double adjusted = term - correction;
+        double next = weighted_sum + adjusted;
+        correction = (next - weighted_sum) - adjusted;
+        weighted_sum = next;
+    }
+    {
+        double value = (weighted_sum / total_strength) * output_scale;
+        if (!isfinite(value)) return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+        *output = value;
     }
     return NUMELYX_FUZZY_SUCCESS;
 }

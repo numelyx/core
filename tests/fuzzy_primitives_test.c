@@ -93,7 +93,39 @@ static void test_fuzzy_defuzzification(void){
   assert(value==77);
  }
 }
+
+static void test_mamdani_and_sugeno_inference_aggregation(void){
+ const double strengths[]={.5,.8};
+ const double consequents[]={0,.6,1,.4,.5,0};
+ double output[]={91,92,93};
+ double sugeno=94;
+ assert(numelyx_core_fuzzy_mamdani_aggregate(strengths,consequents,2,3,
+  NUMELYX_FUZZY_IMPLICATION_MIN,NUMELYX_FUZZY_AGGREGATION_MAX,output)==NUMELYX_FUZZY_SUCCESS);
+ close_to(output[0],.4,1e-15); close_to(output[1],.5,1e-15); close_to(output[2],.5,1e-15);
+ assert(numelyx_core_fuzzy_mamdani_aggregate(strengths,consequents,2,3,
+  NUMELYX_FUZZY_IMPLICATION_PRODUCT,NUMELYX_FUZZY_AGGREGATION_PROBABILISTIC_SUM,output)==NUMELYX_FUZZY_SUCCESS);
+ close_to(output[0],.32,1e-15); close_to(output[1],.55,1e-15); close_to(output[2],.5,1e-15);
+ {
+  const double crisp[]={10,20};
+  assert(numelyx_core_fuzzy_sugeno_aggregate(strengths,crisp,2,&sugeno)==NUMELYX_FUZZY_SUCCESS);
+  close_to(sugeno,18,1e-15);
+ }
+ {
+  const double invalid[]={.5,1.1};
+  output[0]=91;
+  assert(numelyx_core_fuzzy_mamdani_aggregate(invalid,consequents,2,3,
+   NUMELYX_FUZZY_IMPLICATION_MIN,NUMELYX_FUZZY_AGGREGATION_MAX,output)==NUMELYX_FUZZY_DOMAIN_ERROR);
+  assert(output[0]==91);
+ }
+ {
+  const double zero[]={0,0};
+  sugeno=94;
+  assert(numelyx_core_fuzzy_sugeno_aggregate(zero,strengths,2,&sugeno)==NUMELYX_FUZZY_DOMAIN_ERROR);
+  assert(sugeno==94);
+ }
+}
+
 int main(void){
- test_membership_functions(); test_fuzzy_operators(); test_alpha_cuts_and_validation(); test_fuzzy_interval_arithmetic(); test_fuzzy_defuzzification();
+ test_membership_functions(); test_fuzzy_operators(); test_alpha_cuts_and_validation(); test_fuzzy_interval_arithmetic(); test_fuzzy_defuzzification(); test_mamdani_and_sugeno_inference_aggregation();
  puts("Fuzzy primitive tests passed."); return 0;
 }
