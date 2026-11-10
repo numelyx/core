@@ -41,7 +41,9 @@ int main(void)
     numelyx_optimizer_termination termination;
     numelyx_optimizer_result *result = NULL;
 
-    if (numelyx_optimizer_default_options(&options) != NUMELYX_SUCCESS) {
+    if (numelyx_optimizer_default_options(&options) != NUMELYX_SUCCESS
+        || options.struct_size != (uint32_t) sizeof(options)
+        || options.version != NUMELYX_OPTIMIZER_OPTIONS_VERSION_1) {
         return 1;
     }
     if (numelyx_optimizer_minimize(
