@@ -1346,7 +1346,7 @@ static numelyx_core_numeric_status validate_binomial(
 {
     if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
     if (!isfinite(probability)) return NUMERUS_NUMERIC_NON_FINITE;
-    if (probability < 0.0 || probability > 1.0 || successes > trials)
+    if (probability < 0.0 || probability > 1.0)
         return NUMERUS_NUMERIC_DOMAIN_ERROR;
     if (trials > NUMELYX_DISTRIBUTION_MAX_EXACT_COUNT)
         return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
@@ -1363,6 +1363,10 @@ numelyx_core_numeric_status numelyx_core_binomial_log_pmf(
     numelyx_core_numeric_status status =
         validate_binomial(successes, trials, probability, result);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (successes > trials) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
 
     if (probability == 0.0) {
         value = successes == 0 ? 0.0 : -INFINITY;

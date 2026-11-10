@@ -358,8 +358,11 @@ static void test_discrete_distribution_validation(void)
         NUMERUS_NUMERIC_DOMAIN_ERROR);
     assert(value == 53.0);
     assert(numelyx_core_binomial_pmf(3, 2, 0.5, &value) ==
-        NUMERUS_NUMERIC_DOMAIN_ERROR);
-    assert(value == 53.0);
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    assert(numelyx_core_binomial_cdf(3, 2, 0.5, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 1.0);
     assert(numelyx_core_poisson_quantile(1.1, 2.0, &quantile) ==
         NUMERUS_NUMERIC_DOMAIN_ERROR);
     assert(quantile == 54);

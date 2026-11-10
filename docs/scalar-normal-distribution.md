@@ -18,7 +18,7 @@ Student-t provides log-PDF/PDF, CDF/survival and their log tails, and quantiles.
 
 ## Discrete Poisson and Binomial
 
-Poisson and Binomial provide PMF/log-PMF, CDF/survival, log tails, and integer quantiles. Poisson tails use log-domain regularized gamma P/Q; Binomial tails use log-domain regularized beta lower/upper tails. Count parameters are limited to 2^53 so conversion to the underlying double-precision special-function parameters does not silently discard integer units. The Poisson quantile at probability one saturates to UINT64_MAX because its support is unbounded.
+Poisson and Binomial provide PMF/log-PMF, CDF/survival, log tails, and integer quantiles. Poisson tails use log-domain regularized gamma P/Q; Binomial tails use log-domain regularized beta lower/upper tails. Count parameters are limited to at most 2^53−1 so k+1 and factorial arguments remain exactly representable in double-precision special-function parameters. The Poisson quantile at probability one saturates to UINT64_MAX because its support is unbounded.
 
 ## F distribution
 
