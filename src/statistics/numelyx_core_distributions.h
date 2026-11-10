@@ -30,4 +30,57 @@ numelyx_core_numeric_status numelyx_core_normal_distribution_quantile(
     double probability, double location, double scale, double *result
 );
 
+/** Student-t distribution with finite location, positive scale and degrees of freedom. */
+numelyx_core_numeric_status numelyx_core_student_t_log_pdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+);
+numelyx_core_numeric_status numelyx_core_student_t_pdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+);
+numelyx_core_numeric_status numelyx_core_student_t_log_cdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+);
+numelyx_core_numeric_status numelyx_core_student_t_log_survival(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+);
+numelyx_core_numeric_status numelyx_core_student_t_cdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+);
+numelyx_core_numeric_status numelyx_core_student_t_survival(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+);
+numelyx_core_numeric_status numelyx_core_student_t_quantile(
+    double probability, double degrees_of_freedom, double location,
+    double scale, double *result
+);
+
+/** Chi-square distribution with finite positive degrees of freedom. */
+numelyx_core_numeric_status numelyx_core_chi_square_log_pdf(
+    double x, double degrees_of_freedom, double *result
+);
+numelyx_core_numeric_status numelyx_core_chi_square_pdf(
+    double x, double degrees_of_freedom, double *result
+);
+numelyx_core_numeric_status numelyx_core_chi_square_log_cdf(
+    double x, double degrees_of_freedom, double *result
+);
+numelyx_core_numeric_status numelyx_core_chi_square_log_survival(
+    double x, double degrees_of_freedom, double *result
+);
+numelyx_core_numeric_status numelyx_core_chi_square_cdf(
+    double x, double degrees_of_freedom, double *result
+);
+numelyx_core_numeric_status numelyx_core_chi_square_survival(
+    double x, double degrees_of_freedom, double *result
+);
+numelyx_core_numeric_status numelyx_core_chi_square_quantile(
+    double probability, double degrees_of_freedom, double *result
+);
+
 #endif

@@ -79,11 +79,72 @@ static void test_normal_distribution_quantile_and_validation(void)
     assert(value == -INFINITY);
 }
 
+
+static void test_student_t_distribution_reference_values(void)
+{
+    double value;
+    assert(numelyx_core_student_t_pdf(0.0, 1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0 / acos(-1.0), 3e-14);
+    assert(numelyx_core_student_t_cdf(1.0, 1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.75, 3e-14);
+    assert(numelyx_core_student_t_survival(1.0, 1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.25, 3e-14);
+    assert(numelyx_core_student_t_quantile(0.75, 1.0, 0.0, 1.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0, 3e-12);
+    assert(numelyx_core_student_t_log_survival(
+        10.0, 1.0, 0.0, 1.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(isfinite(value) && value < -3.0);
+}
+
+static void test_chi_square_distribution_reference_values(void)
+{
+    double value;
+    assert(numelyx_core_chi_square_pdf(2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5 * exp(-1.0), 3e-14);
+    assert(numelyx_core_chi_square_cdf(2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0 - exp(-1.0), 3e-14);
+    assert(numelyx_core_chi_square_survival(2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, exp(-1.0), 3e-14);
+    assert(numelyx_core_chi_square_quantile(0.5, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 2.0 * log(2.0), 3e-12);
+    assert(numelyx_core_chi_square_log_survival(
+        1000.0, 2.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -500.0, 2e-12);
+}
+
+static void test_student_t_and_chi_square_validation(void)
+{
+    double value = 17.0;
+    assert(numelyx_core_student_t_pdf(
+        0.0, 0.0, 0.0, 1.0, &value) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 17.0);
+    assert(numelyx_core_student_t_quantile(
+        1.1, 2.0, 0.0, 1.0, &value) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 17.0);
+    assert(numelyx_core_chi_square_pdf(
+        1.0, 0.0, &value) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 17.0);
+    assert(numelyx_core_chi_square_cdf(
+        NAN, 2.0, &value) == NUMERUS_NUMERIC_NON_FINITE);
+    assert(value == 17.0);
+}
+
 int main(void)
 {
     test_normal_distribution_reference_values();
     test_normal_distribution_log_tails();
     test_normal_distribution_quantile_and_validation();
+    test_student_t_distribution_reference_values();
+    test_chi_square_distribution_reference_values();
+    test_student_t_and_chi_square_validation();
     puts("Scalar distribution tests passed.");
     return 0;
 }

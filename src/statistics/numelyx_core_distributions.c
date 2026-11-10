@@ -192,3 +192,407 @@ numelyx_core_numeric_status numelyx_core_normal_distribution_quantile(
     *result = value;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+
+static numelyx_core_numeric_status validate_student_t(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x) || !isfinite(degrees_of_freedom) ||
+        !isfinite(location) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (degrees_of_freedom <= 0.0 || scale <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static double log1pexp_stable(double value)
+{
+    if (value > 0.0) return value + log1p(exp(-value));
+    return log1p(exp(value));
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_log_pdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    const double log_pi = 1.1447298858494001741434273513530587116;
+    double z;
+    double log_kernel;
+    double value;
+    numelyx_core_numeric_status status =
+        validate_student_t(x, degrees_of_freedom, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    z = standardized_difference(x, location, scale);
+    if (!isfinite(z)) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (z == 0.0) {
+        log_kernel = 0.0;
+    } else {
+        double log_ratio = 2.0 * log(fabs(z)) - log(degrees_of_freedom);
+        log_kernel = log1pexp_stable(log_ratio);
+    }
+    value = lgamma(0.5 * (degrees_of_freedom + 1.0)) -
+        lgamma(0.5 * degrees_of_freedom) -
+        0.5 * (log(degrees_of_freedom) + log_pi) -
+        log(scale) -
+        0.5 * (degrees_of_freedom + 1.0) * log_kernel;
+    if (isnan(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_pdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_student_t_log_pdf(
+        x, degrees_of_freedom, location, scale, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status student_t_log_tails(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *log_cdf, double *log_survival
+)
+{
+    double z = standardized_difference(x, location, scale);
+    double log_tail;
+    double ratio;
+    double beta_x;
+    numelyx_core_numeric_status status;
+
+    if (isinf(z)) {
+        if (z < 0.0) {
+            *log_cdf = -INFINITY;
+            *log_survival = 0.0;
+        } else {
+            *log_cdf = 0.0;
+            *log_survival = -INFINITY;
+        }
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    if (z == 0.0) {
+        log_tail = NUMELYX_LOG_HALF;
+    } else {
+        if (fabs(z) > sqrt(degrees_of_freedom)) {
+            ratio = sqrt(degrees_of_freedom) / fabs(z);
+            beta_x = (ratio * ratio) / (1.0 + ratio * ratio);
+        } else {
+            ratio = fabs(z) / sqrt(degrees_of_freedom);
+            beta_x = 1.0 / (1.0 + ratio * ratio);
+        }
+        status = numelyx_core_regularized_beta_log_lower(
+            0.5 * degrees_of_freedom, 0.5, beta_x, &log_tail);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        log_tail += NUMELYX_LOG_HALF;
+    }
+
+    if (z < 0.0) {
+        *log_cdf = log_tail;
+        *log_survival = log1p(-exp(log_tail));
+    } else {
+        *log_cdf = log1p(-exp(log_tail));
+        *log_survival = log_tail;
+    }
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_log_cdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_student_t(x, degrees_of_freedom, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = student_t_log_tails(
+        x, degrees_of_freedom, location, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_log_survival(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_student_t(x, degrees_of_freedom, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = student_t_log_tails(
+        x, degrees_of_freedom, location, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_cdf(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_student_t(x, degrees_of_freedom, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = student_t_log_tails(
+        x, degrees_of_freedom, location, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_survival(
+    double x, double degrees_of_freedom, double location, double scale,
+    double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_student_t(x, degrees_of_freedom, location, scale, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = student_t_log_tails(
+        x, degrees_of_freedom, location, scale, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_student_t_quantile(
+    double probability, double degrees_of_freedom, double location,
+    double scale, double *result
+)
+{
+    double tail_probability;
+    double beta_x;
+    double log_magnitude;
+    double magnitude;
+    double value;
+    numelyx_core_numeric_status status;
+
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(degrees_of_freedom) ||
+        !isfinite(location) || !isfinite(scale))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 ||
+        degrees_of_freedom <= 0.0 || scale <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 0.5) {
+        *result = location;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    if (probability < 0.5) {
+        tail_probability = 2.0 * probability;
+    } else {
+        tail_probability = 2.0 * (1.0 - probability);
+    }
+    status = numelyx_core_inverse_regularized_beta(
+        0.5 * degrees_of_freedom, 0.5, tail_probability, &beta_x);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (beta_x <= 0.0) {
+        magnitude = INFINITY;
+    } else {
+        log_magnitude = 0.5 * (
+            log(degrees_of_freedom) + log1p(-beta_x) - log(beta_x));
+        magnitude = exp(log_magnitude);
+    }
+    value = location + (probability < 0.5 ? -1.0 : 1.0) * scale * magnitude;
+    if (isnan(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status validate_chi_square(
+    double degrees_of_freedom, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(degrees_of_freedom)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (degrees_of_freedom <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_log_pdf(
+    double x, double degrees_of_freedom, double *result
+)
+{
+    double shape;
+    double value;
+    numelyx_core_numeric_status status =
+        validate_chi_square(degrees_of_freedom, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    if (x < 0.0) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    shape = 0.5 * degrees_of_freedom;
+    if (x == 0.0) {
+        if (shape < 1.0) value = INFINITY;
+        else if (shape == 1.0) value = -log(2.0);
+        else value = -INFINITY;
+    } else {
+        value = (shape - 1.0) * log(x) - 0.5 * x -
+            shape * log(2.0) - lgamma(shape);
+    }
+    if (isnan(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_pdf(
+    double x, double degrees_of_freedom, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_chi_square_log_pdf(x, degrees_of_freedom, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status chi_square_log_tails(
+    double x, double degrees_of_freedom,
+    double *log_cdf, double *log_survival
+)
+{
+    double log_q;
+    numelyx_core_numeric_status status;
+    if (x < 0.0) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (x == 0.0) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    status = numelyx_core_regularized_gamma_log_q(
+        0.5 * degrees_of_freedom, 0.5 * x, &log_q);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *log_survival = log_q;
+    return numelyx_core_numeric_log1mexp(log_q, log_cdf);
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_log_cdf(
+    double x, double degrees_of_freedom, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_chi_square(degrees_of_freedom, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    status = chi_square_log_tails(x, degrees_of_freedom, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_log_survival(
+    double x, double degrees_of_freedom, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_chi_square(degrees_of_freedom, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    status = chi_square_log_tails(x, degrees_of_freedom, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_cdf(
+    double x, double degrees_of_freedom, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_chi_square(degrees_of_freedom, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    status = chi_square_log_tails(x, degrees_of_freedom, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_survival(
+    double x, double degrees_of_freedom, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_chi_square(degrees_of_freedom, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (!isfinite(x)) return NUMERUS_NUMERIC_NON_FINITE;
+    status = chi_square_log_tails(x, degrees_of_freedom, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_chi_square_quantile(
+    double probability, double degrees_of_freedom, double *result
+)
+{
+    double gamma_quantile;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(degrees_of_freedom))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 || degrees_of_freedom <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    status = numelyx_core_inverse_regularized_gamma_p(
+        0.5 * degrees_of_freedom, probability, &gamma_quantile);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = 2.0 * gamma_quantile;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
