@@ -12,6 +12,15 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+# CMake's install(EXPORT) needs a concrete configuration for single-config
+# generators. Without one, the generated targets file can omit the library
+# location entirely. Multi-config generators provide their configurations.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+        "Build configuration for single-configuration generators" FORCE
+    )
+endif()
+
 file(GLOB_RECURSE NUMELYX_CORE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/storage/*.c"
