@@ -84,10 +84,11 @@ numelyx_status numelyx_optimizer_minimize(
     }
     *result = NULL;
 
-    if (options != NULL) {
-        copy_options_to_core(options, &core_options);
-        core_options_pointer = &core_options;
+    if (options == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
     }
+    copy_options_to_core(options, &core_options);
+    core_options_pointer = &core_options;
 
     return map_optimizer_status(numelyx_core_optimizer_minimize(
         objective,
