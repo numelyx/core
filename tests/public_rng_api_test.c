@@ -40,6 +40,22 @@ int main(void)
         numelyx_rng_release(first);
         return 4;
     }
+    for (size_t i = 0; i < 5; i++) {
+        if (indices[i] >= 20) {
+            numelyx_rng_free_indices(indices);
+            numelyx_rng_release(clone);
+            numelyx_rng_release(first);
+            return 5;
+        }
+        for (size_t j = 0; j < i; j++) {
+            if (indices[i] == indices[j]) {
+                numelyx_rng_free_indices(indices);
+                numelyx_rng_release(clone);
+                numelyx_rng_release(first);
+                return 6;
+            }
+        }
+    }
     numelyx_rng_free_indices(indices);
 
     numelyx_rng_release(clone);
