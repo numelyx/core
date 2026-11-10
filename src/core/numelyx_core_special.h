@@ -46,4 +46,10 @@ numelyx_core_numeric_status numelyx_core_inverse_regularized_beta(
     double a, double b, double probability, double *result
 );
 
+/** Digamma psi(x), for finite x > 0. */
+numelyx_core_numeric_status numelyx_core_digamma(double x, double *result);
+
+/** Trigamma psi_1(x), for finite x > 0. */
+numelyx_core_numeric_status numelyx_core_trigamma(double x, double *result);
+
 #endif
