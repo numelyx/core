@@ -253,6 +253,7 @@ numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_p(
     size_t iteration;
     numelyx_core_numeric_status status;
 
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
     if (!isfinite(a)) return NUMERUS_NUMERIC_NON_FINITE;
     if (a <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
     status = validate_probability_inverse(probability, result);
@@ -331,6 +332,7 @@ numelyx_core_numeric_status numelyx_core_inverse_regularized_beta(
     size_t iteration;
     numelyx_core_numeric_status status;
 
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
     if (!isfinite(a) || !isfinite(b)) return NUMERUS_NUMERIC_NON_FINITE;
     if (a <= 0.0 || b <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
     status = validate_probability_inverse(probability, result);
