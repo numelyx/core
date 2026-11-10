@@ -4,6 +4,7 @@
 #include "numelyx_core_matrix_types.h"
 #include "numelyx_core_matrix_views.h"
 #include "numelyx_core_matrix_operations.h"
+#include "numelyx_core_matrix_linalg.h"
 
 static numelyx_status map_matrix_status(numelyx_core_matrix_status status)
 {
@@ -268,6 +269,46 @@ numelyx_status numelyx_matrix_materialize(
     *result = NULL;
     status = numelyx_core_matrix_materialize(source, result);
     return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_determinant(
+    numelyx_matrix *matrix,
+    double *determinant
+)
+{
+    return map_matrix_status(numelyx_core_matrix_determinant(
+        matrix,
+        determinant
+    ));
+}
+
+numelyx_status numelyx_matrix_inverse(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **inverse
+)
+{
+    if (inverse == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *inverse = NULL;
+    return map_matrix_status(numelyx_core_matrix_inverse(matrix, inverse));
+}
+
+numelyx_status numelyx_matrix_solve(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    numelyx_matrix **solution
+)
+{
+    if (solution == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *solution = NULL;
+    return map_matrix_status(numelyx_core_matrix_solve(
+        matrix,
+        right_hand_side,
+        solution
+    ));
 }
 
 numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix)
