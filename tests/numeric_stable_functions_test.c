@@ -204,6 +204,10 @@ static void test_log_diff_exp_stability_and_domain(void)
         NUMERUS_NUMERIC_SUCCESS);
     assert(value == -INFINITY);
 
+    assert(numelyx_core_numeric_log_diff_exp(DBL_MAX, -DBL_MAX, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == DBL_MAX);
+
     value = 73.0;
     assert(numelyx_core_numeric_log_diff_exp(1.0, 2.0, &value) ==
         NUMERUS_NUMERIC_DOMAIN_ERROR);
