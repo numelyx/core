@@ -135,4 +135,28 @@ numelyx_core_numeric_status numelyx_core_beta_quantile(
     double probability, double alpha, double beta, double *result
 );
 
+/** F distribution with positive numerator and denominator degrees of freedom. */
+numelyx_core_numeric_status numelyx_core_f_log_pdf(
+    double x, double numerator_df, double denominator_df, double *result
+);
+numelyx_core_numeric_status numelyx_core_f_pdf(
+    double x, double numerator_df, double denominator_df, double *result
+);
+numelyx_core_numeric_status numelyx_core_f_log_cdf(
+    double x, double numerator_df, double denominator_df, double *result
+);
+numelyx_core_numeric_status numelyx_core_f_log_survival(
+    double x, double numerator_df, double denominator_df, double *result
+);
+numelyx_core_numeric_status numelyx_core_f_cdf(
+    double x, double numerator_df, double denominator_df, double *result
+);
+numelyx_core_numeric_status numelyx_core_f_survival(
+    double x, double numerator_df, double denominator_df, double *result
+);
+numelyx_core_numeric_status numelyx_core_f_quantile(
+    double probability, double numerator_df, double denominator_df,
+    double *result
+);
+
 #endif

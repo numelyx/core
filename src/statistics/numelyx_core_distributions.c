@@ -962,3 +962,190 @@ numelyx_core_numeric_status numelyx_core_beta_quantile(
     return numelyx_core_inverse_regularized_beta(
         alpha, beta, probability, result);
 }
+
+
+static numelyx_core_numeric_status validate_f_distribution(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(x) || !isfinite(numerator_df) || !isfinite(denominator_df))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (numerator_df <= 0.0 || denominator_df <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_f_log_pdf(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    double a;
+    double b;
+    double log_beta;
+    double log_ratio;
+    double value;
+    numelyx_core_numeric_status status =
+        validate_f_distribution(x, numerator_df, denominator_df, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (x < 0.0) {
+        *result = -INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    a = 0.5 * numerator_df;
+    b = 0.5 * denominator_df;
+    log_beta = lgamma(a) + lgamma(b) - lgamma(a + b);
+    if (x == 0.0) {
+        if (a < 1.0) value = INFINITY;
+        else if (a == 1.0) value = log(numerator_df / denominator_df) - log_beta;
+        else value = -INFINITY;
+    } else {
+        log_ratio = log(numerator_df) + log(x) - log(denominator_df);
+        value = a * log(numerator_df / denominator_df) +
+            (a - 1.0) * log(x) - log_beta -
+            (a + b) * log1pexp_stable(log_ratio);
+    }
+    if (isnan(value)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_f_pdf(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    double log_density;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    status = numelyx_core_f_log_pdf(x, numerator_df, denominator_df, &log_density);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_density);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+static numelyx_core_numeric_status f_log_tails(
+    double x, double numerator_df, double denominator_df,
+    double *log_cdf, double *log_survival
+)
+{
+    double beta_x;
+    double ratio;
+    numelyx_core_numeric_status status;
+
+    if (x <= 0.0) {
+        *log_cdf = -INFINITY;
+        *log_survival = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    if (x > denominator_df / numerator_df) {
+        ratio = sqrt(denominator_df / numerator_df) / sqrt(x);
+        beta_x = 1.0 / (1.0 + ratio * ratio);
+    } else {
+        ratio = sqrt(numerator_df / denominator_df) * sqrt(x);
+        beta_x = (ratio * ratio) / (1.0 + ratio * ratio);
+    }
+    status = numelyx_core_regularized_beta_log_lower(
+        0.5 * numerator_df, 0.5 * denominator_df, beta_x, log_cdf);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    return numelyx_core_regularized_beta_log_upper(
+        0.5 * numerator_df, 0.5 * denominator_df, beta_x, log_survival);
+}
+
+numelyx_core_numeric_status numelyx_core_f_log_cdf(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_f_distribution(x, numerator_df, denominator_df, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = f_log_tails(x, numerator_df, denominator_df, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_cdf;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_f_log_survival(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_f_distribution(x, numerator_df, denominator_df, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = f_log_tails(x, numerator_df, denominator_df, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = log_survival;
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_f_cdf(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_f_distribution(x, numerator_df, denominator_df, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = f_log_tails(x, numerator_df, denominator_df, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_cdf);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_f_survival(
+    double x, double numerator_df, double denominator_df, double *result
+)
+{
+    double log_cdf;
+    double log_survival;
+    numelyx_core_numeric_status status =
+        validate_f_distribution(x, numerator_df, denominator_df, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    status = f_log_tails(x, numerator_df, denominator_df, &log_cdf, &log_survival);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    *result = exp(log_survival);
+    return NUMERUS_NUMERIC_SUCCESS;
+}
+
+numelyx_core_numeric_status numelyx_core_f_quantile(
+    double probability, double numerator_df, double denominator_df,
+    double *result
+)
+{
+    double beta_x;
+    double log_quantile;
+    numelyx_core_numeric_status status;
+    if (result == NULL) return NUMERUS_NUMERIC_INVALID_ARGUMENT;
+    if (!isfinite(probability) || !isfinite(numerator_df) ||
+        !isfinite(denominator_df))
+        return NUMERUS_NUMERIC_NON_FINITE;
+    if (probability < 0.0 || probability > 1.0 ||
+        numerator_df <= 0.0 || denominator_df <= 0.0)
+        return NUMERUS_NUMERIC_DOMAIN_ERROR;
+    if (probability == 0.0) {
+        *result = 0.0;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    if (probability == 1.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+
+    status = numelyx_core_inverse_regularized_beta(
+        0.5 * numerator_df, 0.5 * denominator_df, probability, &beta_x);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (beta_x >= 1.0) {
+        *result = INFINITY;
+        return NUMERUS_NUMERIC_SUCCESS;
+    }
+    log_quantile = log(denominator_df) - log(numerator_df) +
+        log(beta_x) - log1p(-beta_x);
+    *result = exp(log_quantile);
+    return NUMERUS_NUMERIC_SUCCESS;
+}

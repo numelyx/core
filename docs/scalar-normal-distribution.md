@@ -16,10 +16,14 @@ The internal scalar normal family provides log-PDF, PDF, CDF, survival function,
 
 Student-t provides log-PDF/PDF, CDF/survival and their log tails, and quantiles. Its tails are evaluated through the log-lower regularized beta primitive, and quantiles use the inverse regularized beta. Chi-square provides the same scalar family using regularized gamma P/Q and the log-Q primitive. Support endpoints are explicit: chi-square has zero density outside its nonnegative support, and quantiles at probability endpoints return their mathematical limits.
 
+## F distribution
+
+F distribution uses the standard numerator/denominator degrees-of-freedom parameterization. Its density is evaluated in the log domain; CDF and survival tails use the regularized beta lower/upper logs, and quantiles use the inverse regularized beta with a log-domain odds transform.
+
 ## Gamma and beta
 
 Gamma distribution uses shape/scale parameterization and regularized gamma P/Q tails; beta uses alpha/beta parameters and regularized incomplete beta log tails. Both expose density/log-density, CDF/survival, log tails, and quantiles. Support boundaries are explicit, and CDF/survival use complementary special functions rather than subtracting a rounded CDF.
 
 ## Validation
 
-Native tests cover standard-normal reference values, location/scale transformation, symmetry, log-tail behavior at 10 and 40 standard deviations, quantiles, invalid parameters, non-finite values, and extreme finite location differences. Student-t and chi-square tests cover closed-form reference cases, tails, quantiles, and parameter validation. Gamma and beta tests cover reference values, quantiles, tail logs, support boundaries, and invalid parameters.
+Native tests cover standard-normal reference values, location/scale transformation, symmetry, log-tail behavior at 10 and 40 standard deviations, quantiles, invalid parameters, non-finite values, and extreme finite location differences. Student-t and chi-square tests cover closed-form reference cases, tails, quantiles, and parameter validation. Gamma and beta tests cover reference values, quantiles, tail logs, support boundaries, and invalid parameters. F-distribution tests cover closed-form reference cases, upper-tail logs, quantiles, and validation.

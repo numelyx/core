@@ -259,6 +259,45 @@ static void test_gamma_beta_distribution_support_and_validation(void)
     assert(value == 29.0);
 }
 
+
+static void test_f_distribution_reference_values(void)
+{
+    double value;
+    assert(numelyx_core_f_pdf(1.0, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.25, 3e-14);
+    assert(numelyx_core_f_cdf(1.0, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 3e-14);
+    assert(numelyx_core_f_survival(1.0, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 0.5, 3e-14);
+    assert(numelyx_core_f_quantile(0.5, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, 1.0, 3e-12);
+    assert(numelyx_core_f_log_survival(1000.0, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, -log(1001.0), 3e-12);
+}
+
+static void test_f_distribution_validation_and_support(void)
+{
+    double value = 37.0;
+    assert(numelyx_core_f_pdf(-1.0, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    assert(numelyx_core_f_cdf(-1.0, 2.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+    value = 37.0;
+    assert(numelyx_core_f_pdf(1.0, 0.0, 2.0, &value) ==
+        NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 37.0);
+    assert(numelyx_core_f_quantile(
+        0.5, 2.0, 0.0, &value) == NUMERUS_NUMERIC_DOMAIN_ERROR);
+    assert(value == 37.0);
+}
+
 int main(void)
 {
     test_normal_distribution_reference_values();
@@ -271,6 +310,8 @@ int main(void)
     test_gamma_distribution_reference_values();
     test_beta_distribution_reference_values();
     test_gamma_beta_distribution_support_and_validation();
+    test_f_distribution_reference_values();
+    test_f_distribution_validation_and_support();
     puts("Scalar distribution tests passed.");
     return 0;
 }
