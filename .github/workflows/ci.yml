@@ -25,11 +25,11 @@ jobs:
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
       - name: Install package
-        run: cmake --install build --prefix package-prefix
+        run: cmake --install build --config Debug --prefix package-prefix
       - name: Verify only public headers are installed
         run: cmake -DPREFIX=package-prefix -P tests/package-consumer/check-install.cmake
       - name: Build installed-package consumer
-        run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=package-prefix
+        run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/package-prefix
       - name: Test installed-package consumer
         run: |
           cmake --build package-consumer-build --config Debug --parallel 2
@@ -51,11 +51,11 @@ jobs:
       - name: Test shared library
         run: ctest --test-dir build-shared -C Debug --output-on-failure
       - name: Install shared package
-        run: cmake --install build-shared --prefix package-prefix
+        run: cmake --install build-shared --config Debug --prefix package-prefix
       - name: Verify only public headers are installed
         run: cmake -DPREFIX=package-prefix -P tests/package-consumer/check-install.cmake
       - name: Build installed shared-package consumer
-        run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=package-prefix
+        run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/package-prefix
       - name: Build package consumer
         run: cmake --build package-consumer-build --config Debug --parallel 2
       - name: Make installed DLL available to the Windows loader
