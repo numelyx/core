@@ -14,7 +14,7 @@ static void test_membership_functions(void){
  assert(mu==1);
  assert(numelyx_core_fuzzy_triangular_membership(0,0,0,2,&mu)==NUMELYX_FUZZY_SUCCESS);
  assert(mu==1);
- assert(numelyx_core_fuzzy_trapezoidal_membership(0,0,1,2,2,&mu)==NUMELYX_FUZZY_SUCCESS);
+ assert(numelyx_core_fuzzy_trapezoidal_membership(0,0,0,1,2,&mu)==NUMELYX_FUZZY_SUCCESS);
  assert(mu==1);
  assert(numelyx_core_fuzzy_trapezoidal_membership(.5,0,1,2,3,&mu)==NUMELYX_FUZZY_SUCCESS);
  close_to(mu,.5,1e-15);
