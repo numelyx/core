@@ -1,3 +1,4 @@
+#include <float.h>
 #include <math.h>
 #include <stddef.h>
 
@@ -206,6 +207,28 @@ int main(void)
 
         numelyx_matrix_release(singular);
         numelyx_matrix_release(pivoted);
+    }
+    {
+        const double tiny_value[] = {DBL_MIN};
+        const double huge_value[] = {DBL_MAX};
+        numelyx_matrix *tiny = NULL;
+        numelyx_matrix *huge = NULL;
+
+        if (numelyx_matrix_create_dense(1, 1, tiny_value, &tiny)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_condition_estimate_one(tiny, &scalar)
+                != NUMELYX_SUCCESS || !close_to(scalar, 1.0)
+            || numelyx_matrix_create_dense(1, 1, huge_value, &huge)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_condition_estimate_one(huge, &scalar)
+                != NUMELYX_SUCCESS || !close_to(scalar, 1.0)) {
+            numelyx_matrix_release(huge);
+            numelyx_matrix_release(tiny);
+            goto fail;
+        }
+
+        numelyx_matrix_release(huge);
+        numelyx_matrix_release(tiny);
     }
     {
         int positive_definite = 0, positive_semidefinite = 0;
