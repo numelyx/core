@@ -351,6 +351,51 @@ int main(void)
             return 24;
         }
         numelyx_matrix_release(structured);
+
+        {
+            const numelyx_sparse_entry entries[] = {
+                {0, 1.0},
+                {4, 5.0},
+                {8, 9.0}
+            };
+            const numelyx_sparse_entry duplicate_entries[] = {
+                {0, 1.0},
+                {0, 2.0}
+            };
+
+            if (numelyx_matrix_create_sparse(
+                    3,
+                    3,
+                    0.0,
+                    entries,
+                    3,
+                    &structured
+                ) != NUMELYX_SUCCESS
+                || numelyx_matrix_get(structured, 1, 1, &value)
+                    != NUMELYX_SUCCESS
+                || value != 5.0
+                || numelyx_matrix_get(structured, 0, 2, &value)
+                    != NUMELYX_SUCCESS
+                || value != 0.0) {
+                numelyx_matrix_release(structured);
+                return 25;
+            }
+            numelyx_matrix_release(structured);
+            structured = NULL;
+
+            if (numelyx_matrix_create_sparse(
+                    2,
+                    2,
+                    0.0,
+                    duplicate_entries,
+                    2,
+                    &structured
+                ) != NUMELYX_INVALID_ARGUMENT
+                || structured != NULL) {
+                numelyx_matrix_release(structured);
+                return 26;
+            }
+        }
     }
 
     numelyx_matrix_release(NULL);
