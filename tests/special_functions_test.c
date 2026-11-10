@@ -157,6 +157,12 @@ static void test_inverse_special_function_validation(void)
     assert(numelyx_core_inverse_regularized_beta(
         2.0, 3.0, NAN, &value) == NUMERUS_NUMERIC_NON_FINITE);
     assert(value == 19.0);
+    assert(numelyx_core_inverse_regularized_gamma_p(
+        2.0, 0.5, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
+    assert(numelyx_core_inverse_regularized_gamma_q(
+        2.0, 0.5, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
+    assert(numelyx_core_inverse_regularized_beta(
+        2.0, 3.0, 0.5, NULL) == NUMERUS_NUMERIC_INVALID_ARGUMENT);
 }
 
 int main(void)
