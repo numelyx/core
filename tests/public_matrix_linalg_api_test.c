@@ -14,7 +14,8 @@ int main(void)
     numelyx_matrix *u = NULL, *s = NULL, *vt = NULL, *pinv = NULL;
     numelyx_matrix *lower = NULL, *solution = NULL, *triangular = NULL;
     numelyx_matrix *rhs2 = NULL, *tri_solution = NULL;
-    size_t rank = 0;
+    numelyx_matrix *basis = NULL;
+    size_t rank = 0, subspace_dimension = 99;
     numelyx_matrix_solution_kind classification;
     int sign = 0;
     double scalar = 0.0, log_abs = 0.0;
@@ -33,6 +34,31 @@ int main(void)
         goto fail;
     if (numelyx_matrix_rank(a, &rank) != NUMELYX_SUCCESS || rank != 2)
         goto fail;
+    if (numelyx_matrix_column_space_basis(
+            a, &basis, &subspace_dimension) != NUMELYX_SUCCESS
+        || basis == NULL || subspace_dimension != 2)
+        goto fail;
+    numelyx_matrix_release(basis); basis = NULL;
+    if (numelyx_matrix_row_space_basis(
+            a, &basis, &subspace_dimension) != NUMELYX_SUCCESS
+        || basis == NULL || subspace_dimension != 2)
+        goto fail;
+    numelyx_matrix_release(basis); basis = NULL;
+    subspace_dimension = 99;
+    if (numelyx_matrix_null_space(
+            a, &basis, &subspace_dimension) != NUMELYX_SUCCESS
+        || basis != NULL || subspace_dimension != 0)
+        goto fail;
+    {
+        int has_nan = 1, has_infinity = 1, is_finite = 0;
+        if (numelyx_matrix_has_nan(a, &has_nan) != NUMELYX_SUCCESS
+            || has_nan != 0
+            || numelyx_matrix_has_infinity(a, &has_infinity)
+                != NUMELYX_SUCCESS || has_infinity != 0
+            || numelyx_matrix_is_finite(a, &is_finite)
+                != NUMELYX_SUCCESS || is_finite != 1)
+            goto fail;
+    }
     if (numelyx_matrix_trace(a, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 5.0))
         goto fail;
@@ -154,6 +180,7 @@ int main(void)
             != NUMELYX_SUCCESS || !close_to(scalar, 1.0))
         goto fail;
 
+    numelyx_matrix_release(basis);
     numelyx_matrix_release(a);
     numelyx_matrix_release(b);
     numelyx_matrix_release(q);
