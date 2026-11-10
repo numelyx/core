@@ -104,11 +104,11 @@ static void test_mamdani_and_sugeno_inference_aggregation(void){
  close_to(output[0],.4,1e-15); close_to(output[1],.5,1e-15); close_to(output[2],.5,1e-15);
  assert(numelyx_core_fuzzy_mamdani_aggregate(strengths,consequents,2,3,
   NUMELYX_FUZZY_IMPLICATION_PRODUCT,NUMELYX_FUZZY_AGGREGATION_PROBABILISTIC_SUM,output)==NUMELYX_FUZZY_SUCCESS);
- close_to(output[0],.32,1e-15); close_to(output[1],.55,1e-15); close_to(output[2],.5,1e-15);
+ close_to(output[0],.32,1e-15); close_to(output[1],.58,1e-15); close_to(output[2],.5,1e-15);
  {
   const double crisp[]={10,20};
   assert(numelyx_core_fuzzy_sugeno_aggregate(strengths,crisp,2,&sugeno)==NUMELYX_FUZZY_SUCCESS);
-  close_to(sugeno,18,1e-15);
+  close_to(sugeno,21.0/1.3,1e-14);
  }
  {
   const double invalid[]={.5,1.1};
