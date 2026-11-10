@@ -89,6 +89,20 @@ NUMELYX_API numelyx_status numelyx_matrix_create_sparse(
     numelyx_matrix **matrix
 );
 
+/** Create fixed-bandwidth storage from row-major packed band rows.
+ * Each row stores lower_bandwidth + upper_bandwidth + 1 values, with the
+ * main diagonal at slot upper_bandwidth; out-of-matrix slots are ignored.
+ */
+NUMELYX_API numelyx_status numelyx_matrix_create_banded(
+    size_t rows,
+    size_t columns,
+    size_t lower_bandwidth,
+    size_t upper_bandwidth,
+    const double *packed_band_values,
+    numelyx_matrix **matrix
+);
+
+
 NUMELYX_API numelyx_status numelyx_matrix_create_symmetric(
     size_t size,
     const double *packed_lower_values,
