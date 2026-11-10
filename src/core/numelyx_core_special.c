@@ -200,16 +200,22 @@ numelyx_core_numeric_status numelyx_core_regularized_beta(
     else {
         log_front = lgamma(a + b) - lgamma(a) - lgamma(b) +
             a * log(x) + b * log1p(-x);
-        front = exp(log_front);
-        if (!isfinite(front)) return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+        if (!isfinite(log_front))
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
         if (x < (a + 1.0) / (a + b + 2.0)) {
-            if (!beta_continued_fraction(a, b, x, &fraction))
+            double log_tail;
+            if (!beta_continued_fraction(a, b, x, &fraction) ||
+                fraction <= 0.0)
                 return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
-            value = front * fraction / a;
+            log_tail = log_front + log(fraction) - log(a);
+            value = exp(log_tail);
         } else {
-            if (!beta_continued_fraction(b, a, 1.0 - x, &fraction))
+            double log_complement;
+            if (!beta_continued_fraction(b, a, 1.0 - x, &fraction) ||
+                fraction <= 0.0)
                 return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
-            value = 1.0 - front * fraction / b;
+            log_complement = log_front + log(fraction) - log(b);
+            value = 1.0 - exp(log_complement);
         }
         value = clamp_probability(value);
         if (!isfinite(value) || value < 0.0 || value > 1.0)
