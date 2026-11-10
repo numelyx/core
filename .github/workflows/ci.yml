@@ -24,6 +24,14 @@ jobs:
         run: cmake --build build --config Debug --parallel 2
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
+      - name: Install package
+        run: cmake --install build --prefix package-prefix
+      - name: Build installed-package consumer
+        run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=package-prefix
+      - name: Test installed-package consumer
+        run: |
+          cmake --build package-consumer-build --config Debug --parallel 2
+          ctest --test-dir package-consumer-build -C Debug --output-on-failure
 
   shared-build-and-test:
     name: Shared library (${{ matrix.os }})
@@ -40,6 +48,14 @@ jobs:
         run: cmake --build build-shared --config Debug --parallel 2
       - name: Test shared library
         run: ctest --test-dir build-shared -C Debug --output-on-failure
+      - name: Install shared package
+        run: cmake --install build-shared --prefix package-prefix
+      - name: Build installed shared-package consumer
+        run: cmake -S tests/package-consumer -B package-consumer-build -DCMAKE_PREFIX_PATH=package-prefix
+      - name: Test installed shared-package consumer
+        run: |
+          cmake --build package-consumer-build --config Debug --parallel 2
+          ctest --test-dir package-consumer-build -C Debug --output-on-failure
 
   thread-sanitizer:
     name: ThreadSanitizer (Ubuntu / GCC)
