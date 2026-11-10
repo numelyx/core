@@ -30,11 +30,12 @@ ctest --test-dir build-shared -C Debug --output-on-failure
 ```
 
 The shared build produces the platform-native library (`.so`, `.dylib`, or
-`.dll`). The supported API uses explicit import/export declarations; Windows
-still enables automatic export for transitional internal symbols. This does
-not yet constitute a stable ABI: the public surface is still being expanded,
-and ABI version `0` explicitly signals that compatibility is not guaranteed.
-Internal headers and symbols remain private and may change.
+`.dll`). Only declarations marked with the public `NUMELYX_API` macro are
+exported; internal symbols remain hidden and are not part of the package
+contract. This does not yet constitute a stable ABI: the public surface is
+still being expanded, and ABI version `0` explicitly signals that
+compatibility is not guaranteed. Internal headers and symbols remain private
+and may change.
 
 Standalone builds use the C runtime allocator. The source retains conditional
 Zend allocator support only in the upstream integration points; the CMake
@@ -55,7 +56,7 @@ find_package(NumelyxCore CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE Numelyx::Core)
 ```
 
-The initial supported headers are `<numelyx/version.h>`, `<numelyx/status.h>`, `<numelyx/matrix.h>`, `<numelyx/rng.h>`, `<numelyx/optimizer.h>`, and `<numelyx/probability.h>`. They expose semantic-version and ABI-version introspection; an opaque-handle Matrix API for dense, identity, zero, constant, scaled-identity, diagonal, packed triangular, symmetric, sparse, and banded creation, retain/release, dimensions and element access, lazy transpose/slice/selection/reshape/flatten/rotation/join/padding/block views and element-wise arithmetic, eager matrix multiplication, determinant, LU-based inverse/solve, and explicit materialization; plus deterministic RNG creation, cloning, generation, sampling, and release; BFGS minimization with callback-driven objectives, versioned options, and opaque result handles; and multivariate Gaussian density/sampling primitives that reuse Matrix and RNG handles. `numelyx_core_abi_version()` currently returns `0`, explicitly indicating that no stable ABI has been declared.
+The initial supported headers are `<numelyx/version.h>`, `<numelyx/status.h>`, `<numelyx/matrix.h>`, `<numelyx/rng.h>`, `<numelyx/optimizer.h>`, and `<numelyx/probability.h>`. They expose semantic-version and ABI-version introspection; an opaque-handle Matrix API for dense, identity, zero, constant, scaled-identity, diagonal, packed triangular, symmetric, sparse, and banded creation, retain/release, dimensions and element access, lazy transpose/slice/selection/reshape/flatten/rotation/join/padding/block views and element-wise arithmetic, eager matrix multiplication, determinant, LU-based inverse/solve, and explicit materialization; factorization and analysis primitives including QR, reduced SVD, pseudoinverse, Cholesky, triangular and least-squares solves, numerical rank, norms, eigen/LDLᵀ decomposition, condition and definiteness classification, subspace bases, scalar reductions, and finite-value inspection; plus deterministic RNG creation, cloning, generation, sampling, and release; BFGS minimization with callback-driven objectives, versioned options, and opaque result handles; and multivariate Gaussian density/sampling primitives that reuse Matrix and RNG handles. `numelyx_core_abi_version()` currently returns `0`, explicitly indicating that no stable ABI has been declared.
 
 The umbrella header `<numelyx/numelyx.h>` includes only supported public headers; it does not pull private detail headers into consumer translation units. Legacy subsystem headers remain in the source tree only; they are not installed or exported to consumers. SDKs must use only the supported public headers and must not yet promise ABI compatibility across Core releases.
 
