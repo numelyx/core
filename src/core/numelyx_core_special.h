@@ -52,4 +52,10 @@ numelyx_core_numeric_status numelyx_core_digamma(double x, double *result);
 /** Trigamma psi_1(x), for finite x > 0. */
 numelyx_core_numeric_status numelyx_core_trigamma(double x, double *result);
 
+/** Error function erf(x), for finite real x. */
+numelyx_core_numeric_status numelyx_core_erf(double x, double *result);
+
+/** Complementary error function erfc(x), for finite real x. */
+numelyx_core_numeric_status numelyx_core_erfc(double x, double *result);
+
 #endif
