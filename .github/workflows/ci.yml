@@ -2,7 +2,7 @@ name: C Core
 
 on:
   push:
-    branches: [main, migration]
+    branches: [main, migration, refactor/public-build-packaging]
   pull_request:
   workflow_dispatch:
 
@@ -24,6 +24,22 @@ jobs:
         run: cmake --build build --config Debug --parallel 2
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
+
+  shared-build-and-test:
+    name: Shared library (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure shared library
+        run: cmake -S . -B build-shared -DNUMELYX_BUILD_SHARED=ON -DNUMELYX_BUILD_TESTS=ON
+      - name: Build shared library and tests
+        run: cmake --build build-shared --config Debug --parallel 2
+      - name: Test shared library
+        run: ctest --test-dir build-shared -C Debug --output-on-failure
 
   thread-sanitizer:
     name: ThreadSanitizer (Ubuntu / GCC)
