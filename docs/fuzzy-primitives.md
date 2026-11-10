@@ -16,8 +16,8 @@ Triangular and trapezoidal fuzzy-number alpha cuts are computed directly for alp
 
 ## Deferred
 
-Fuzzy-number arithmetic, general membership inversion, Mamdani/Sugeno inference composition, defuzzification, fuzzy relations, and fuzzy optimization remain future work.
+General membership inversion, Mamdani/Sugeno inference composition, defuzzification, fuzzy relations, and fuzzy optimization remain future work. Interval addition, subtraction, multiplication, and division are now available as the arithmetic kernel for alpha-cut extension operations.
 
 ## Validation
 
-Native tests cover membership reference values, operator identities, alpha-cut endpoints/interiors, invalid parameters, non-finite inputs, and output preservation.
+Native tests cover membership reference values, operator identities, alpha-cut endpoints/interiors, interval arithmetic across sign combinations, zero-crossing division rejection, overflow handling, invalid parameters, non-finite inputs, and output preservation.

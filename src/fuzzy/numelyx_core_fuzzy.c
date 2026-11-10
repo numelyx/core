@@ -276,3 +276,140 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_trapezoidal_alpha_cut(
     *upper = (1.0 - alpha) * d + alpha * c;
     return NUMELYX_FUZZY_SUCCESS;
 }
+
+
+static numelyx_core_fuzzy_status validate_intervals(
+    double left_lower, double left_upper,
+    double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+)
+{
+    if (result_lower == NULL || result_upper == NULL ||
+        result_lower == result_upper)
+        return NUMELYX_FUZZY_INVALID_ARGUMENT;
+    if (!isfinite(left_lower) || !isfinite(left_upper) ||
+        !isfinite(right_lower) || !isfinite(right_upper))
+        return NUMELYX_FUZZY_NON_FINITE_INPUT;
+    if (left_lower > left_upper || right_lower > right_upper)
+        return NUMELYX_FUZZY_DOMAIN_ERROR;
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_add(
+    double left_lower, double left_upper, double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+)
+{
+    double lower;
+    double upper;
+    numelyx_core_fuzzy_status status = validate_intervals(
+        left_lower, left_upper, right_lower, right_upper,
+        result_lower, result_upper);
+    if (status != NUMELYX_FUZZY_SUCCESS) return status;
+    lower = left_lower + right_lower;
+    upper = left_upper + right_upper;
+    if (!isfinite(lower) || !isfinite(upper))
+        return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+    *result_lower = lower;
+    *result_upper = upper;
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_subtract(
+    double left_lower, double left_upper, double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+)
+{
+    double lower;
+    double upper;
+    numelyx_core_fuzzy_status status = validate_intervals(
+        left_lower, left_upper, right_lower, right_upper,
+        result_lower, result_upper);
+    if (status != NUMELYX_FUZZY_SUCCESS) return status;
+    lower = left_lower - right_upper;
+    upper = left_upper - right_lower;
+    if (!isfinite(lower) || !isfinite(upper))
+        return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+    *result_lower = lower;
+    *result_upper = upper;
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_multiply(
+    double left_lower, double left_upper, double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+)
+{
+    double products[4];
+    double lower;
+    double upper;
+    size_t index;
+    numelyx_core_fuzzy_status status = validate_intervals(
+        left_lower, left_upper, right_lower, right_upper,
+        result_lower, result_upper);
+    if (status != NUMELYX_FUZZY_SUCCESS) return status;
+
+    products[0] = left_lower * right_lower;
+    products[1] = left_lower * right_upper;
+    products[2] = left_upper * right_lower;
+    products[3] = left_upper * right_upper;
+    lower = products[0];
+    upper = products[0];
+    for (index = 0; index < 4; index++) {
+        if (!isfinite(products[index]))
+            return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+        if (products[index] < lower) lower = products[index];
+        if (products[index] > upper) upper = products[index];
+    }
+    *result_lower = lower;
+    *result_upper = upper;
+    return NUMELYX_FUZZY_SUCCESS;
+}
+
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_divide(
+    double numerator_lower, double numerator_upper,
+    double denominator_lower, double denominator_upper,
+    double *result_lower, double *result_upper
+)
+{
+    double reciprocal_lower;
+    double reciprocal_upper;
+    double lower;
+    double upper;
+    numelyx_core_fuzzy_status status = validate_intervals(
+        numerator_lower, numerator_upper,
+        denominator_lower, denominator_upper,
+        result_lower, result_upper);
+    if (status != NUMELYX_FUZZY_SUCCESS) return status;
+    if (denominator_lower <= 0.0 && denominator_upper >= 0.0)
+        return NUMELYX_FUZZY_DOMAIN_ERROR;
+
+    reciprocal_lower = 1.0 / denominator_upper;
+    reciprocal_upper = 1.0 / denominator_lower;
+    if (reciprocal_lower > reciprocal_upper) {
+        double temporary = reciprocal_lower;
+        reciprocal_lower = reciprocal_upper;
+        reciprocal_upper = temporary;
+    }
+
+    {
+        double products[4] = {
+            numerator_lower * reciprocal_lower,
+            numerator_lower * reciprocal_upper,
+            numerator_upper * reciprocal_lower,
+            numerator_upper * reciprocal_upper
+        };
+        size_t index;
+        lower = products[0];
+        upper = products[0];
+        for (index = 0; index < 4; index++) {
+            if (!isfinite(products[index]))
+                return NUMELYX_FUZZY_NUMERICAL_FAILURE;
+            if (products[index] < lower) lower = products[index];
+            if (products[index] > upper) upper = products[index];
+        }
+    }
+    *result_lower = lower;
+    *result_upper = upper;
+    return NUMELYX_FUZZY_SUCCESS;
+}

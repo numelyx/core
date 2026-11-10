@@ -9,7 +9,8 @@ typedef enum {
     NUMELYX_FUZZY_SUCCESS = 0,
     NUMELYX_FUZZY_INVALID_ARGUMENT,
     NUMELYX_FUZZY_NON_FINITE_INPUT,
-    NUMELYX_FUZZY_DOMAIN_ERROR
+    NUMELYX_FUZZY_DOMAIN_ERROR,
+    NUMELYX_FUZZY_NUMERICAL_FAILURE
 } numelyx_core_fuzzy_status;
 
 numelyx_core_fuzzy_status numelyx_core_fuzzy_triangular_membership(
@@ -57,6 +58,25 @@ numelyx_core_fuzzy_status numelyx_core_fuzzy_triangular_alpha_cut(
 numelyx_core_fuzzy_status numelyx_core_fuzzy_trapezoidal_alpha_cut(
     double a, double b, double c, double d, double alpha,
     double *lower, double *upper
+);
+
+/** Interval arithmetic used by fuzzy alpha-cut extension operations. */
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_add(
+    double left_lower, double left_upper, double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+);
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_subtract(
+    double left_lower, double left_upper, double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+);
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_multiply(
+    double left_lower, double left_upper, double right_lower, double right_upper,
+    double *result_lower, double *result_upper
+);
+numelyx_core_fuzzy_status numelyx_core_fuzzy_interval_divide(
+    double numerator_lower, double numerator_upper,
+    double denominator_lower, double denominator_upper,
+    double *result_lower, double *result_upper
 );
 
 #endif

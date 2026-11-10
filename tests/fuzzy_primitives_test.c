@@ -58,7 +58,25 @@ static void test_alpha_cuts_and_validation(void){
  assert(numelyx_core_fuzzy_gaussian_membership(0,0,0,&lower)==NUMELYX_FUZZY_DOMAIN_ERROR);
  assert(numelyx_core_fuzzy_tnorm_product(NAN,.5,&lower)==NUMELYX_FUZZY_NON_FINITE_INPUT);
 }
+
+static void test_fuzzy_interval_arithmetic(void){
+ double lo=91,hi=92;
+ assert(numelyx_core_fuzzy_interval_add(1,2,3,4,&lo,&hi)==NUMELYX_FUZZY_SUCCESS);
+ close_to(lo,4,1e-15); close_to(hi,6,1e-15);
+ assert(numelyx_core_fuzzy_interval_subtract(1,2,3,4,&lo,&hi)==NUMELYX_FUZZY_SUCCESS);
+ close_to(lo,-3,1e-15); close_to(hi,-1,1e-15);
+ assert(numelyx_core_fuzzy_interval_multiply(-2,3,-4,5,&lo,&hi)==NUMELYX_FUZZY_SUCCESS);
+ close_to(lo,-12,1e-15); close_to(hi,15,1e-15);
+ assert(numelyx_core_fuzzy_interval_divide(1,2,3,4,&lo,&hi)==NUMELYX_FUZZY_SUCCESS);
+ close_to(lo,.25,1e-15); close_to(hi,2.0/3.0,1e-15);
+ lo=91;hi=92;
+ assert(numelyx_core_fuzzy_interval_divide(1,2,-1,1,&lo,&hi)==NUMELYX_FUZZY_DOMAIN_ERROR);
+ assert(lo==91&&hi==92);
+ assert(numelyx_core_fuzzy_interval_add(DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX,&lo,&hi)==NUMELYX_FUZZY_NUMERICAL_FAILURE);
+ assert(lo==91&&hi==92);
+}
+
 int main(void){
- test_membership_functions(); test_fuzzy_operators(); test_alpha_cuts_and_validation();
+ test_membership_functions(); test_fuzzy_operators(); test_alpha_cuts_and_validation(); test_fuzzy_interval_arithmetic();
  puts("Fuzzy primitive tests passed."); return 0;
 }
