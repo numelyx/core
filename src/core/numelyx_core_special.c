@@ -258,6 +258,10 @@ numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_p(
     if (a <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
     status = validate_probability_inverse(probability, result);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (probability > 0.5) {
+        return numelyx_core_inverse_regularized_gamma_q(
+            a, 1.0 - probability, result);
+    }
 
     upper = a > 1.0 ? a : 1.0;
     for (;;) {
@@ -296,6 +300,10 @@ numelyx_core_numeric_status numelyx_core_inverse_regularized_gamma_q(
     if (a <= 0.0) return NUMERUS_NUMERIC_DOMAIN_ERROR;
     status = validate_probability_inverse(probability, result);
     if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+    if (probability > 0.5) {
+        return numelyx_core_inverse_regularized_gamma_p(
+            a, 1.0 - probability, result);
+    }
 
     upper = a > 1.0 ? a : 1.0;
     for (;;) {
