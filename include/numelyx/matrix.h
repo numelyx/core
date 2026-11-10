@@ -173,6 +173,100 @@ NUMELYX_API numelyx_status numelyx_matrix_flatten(
     numelyx_matrix **view
 );
 
+/** Remove one row or column as a lazy view. */
+NUMELYX_API numelyx_status numelyx_matrix_remove_row(
+    numelyx_matrix *parent, size_t row, numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_remove_column(
+    numelyx_matrix *parent, size_t column, numelyx_matrix **view
+);
+
+/** Swap two rows or columns as a lazy view. */
+NUMELYX_API numelyx_status numelyx_matrix_swap_rows(
+    numelyx_matrix *parent, size_t row1, size_t row2, numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_swap_columns(
+    numelyx_matrix *parent, size_t column1, size_t column2, numelyx_matrix **view
+);
+
+/** Create lazy 90-degree clockwise, 180-degree, or counter-clockwise rotations. */
+NUMELYX_API numelyx_status numelyx_matrix_rotate_90_clockwise(
+    numelyx_matrix *parent, numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_rotate_180(
+    numelyx_matrix *parent, numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_rotate_90_counterclockwise(
+    numelyx_matrix *parent, numelyx_matrix **view
+);
+
+/** Join two matrices horizontally or vertically without copying values. */
+NUMELYX_API numelyx_status numelyx_matrix_join_horizontal(
+    numelyx_matrix *left, numelyx_matrix *right, numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_join_vertical(
+    numelyx_matrix *top, numelyx_matrix *bottom, numelyx_matrix **view
+);
+
+/** Add constant or zero padding as a lazy view. */
+NUMELYX_API numelyx_status numelyx_matrix_pad(
+    numelyx_matrix *parent,
+    size_t top, size_t bottom, size_t left, size_t right,
+    double value, numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_zero_extend(
+    numelyx_matrix *parent,
+    size_t top, size_t bottom, size_t left, size_t right,
+    numelyx_matrix **view
+);
+
+/** Repeat a matrix lazily by row and column factors. */
+NUMELYX_API numelyx_status numelyx_matrix_repeat(
+    numelyx_matrix *parent,
+    size_t row_repetitions,
+    size_t column_repetitions,
+    numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_block_diagonal(
+    numelyx_matrix *parent,
+    size_t repetitions,
+    numelyx_matrix **view
+);
+
+/** Assemble a row-major block grid; the pointer array is borrowed during call. */
+NUMELYX_API numelyx_status numelyx_matrix_block_grid(
+    numelyx_matrix *const *blocks,
+    size_t block_row_count,
+    size_t block_column_count,
+    numelyx_matrix **view
+);
+
+/** Extract a diagonal vector or create a square diagonal view from a vector. */
+NUMELYX_API numelyx_status numelyx_matrix_diagonal_extract(
+    numelyx_matrix *parent,
+    ptrdiff_t offset,
+    numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_diagonal_from_vector(
+    numelyx_matrix *vector,
+    ptrdiff_t offset,
+    numelyx_matrix **view
+);
+
+/** Apply full row/column permutations; index arrays are copied. */
+NUMELYX_API numelyx_status numelyx_matrix_permute_rows(
+    numelyx_matrix *parent,
+    const size_t *permutation,
+    size_t count,
+    numelyx_matrix **view
+);
+NUMELYX_API numelyx_status numelyx_matrix_permute_columns(
+    numelyx_matrix *parent,
+    const size_t *permutation,
+    size_t count,
+    numelyx_matrix **view
+);
+
 /** Create a lazy element-wise sum; the result retains both parents. */
 NUMELYX_API numelyx_status numelyx_matrix_add(
     numelyx_matrix *left,
