@@ -3,6 +3,7 @@
  * @brief Allocation-checked generic GMM objective and derivative evaluation.
  */
 #include "numelyx_core_gmm.h"
+#include "numelyx_core_distributions.h"
 #include "numelyx_core_size.h"
 
 #include <math.h>
