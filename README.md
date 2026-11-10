@@ -91,7 +91,7 @@ GNU on Linux. Other compiler/platform configurations skip those tests.
 Shared opaque objects use atomic reference counting. Matrix lazy caches are
 serialized per Matrix, and mutable RNG state is serialized per RNG. See
 [`docs/thread-safety-and-lifetime.md`](docs/thread-safety-and-lifetime.md) for
-ownership requirements and callback restrictions.
+ownership requirements and callback restrictions. The planned public boundary is documented in [`docs/public-api-and-abi.md`](docs/public-api-and-abi.md).
 
 ## Benchmarks
 
@@ -108,7 +108,7 @@ cmake --build build --target matrix_benchmark
 - `src/matrix`: composable Matrix primitives, views, and factorizations.
 - `src/statistics`: RNG, probability, and optimization primitives.
 - `tests`: native C regression tests.
-- `docs`: numerical, subsystem, thread-safety, and lifetime contracts.
+- `docs`: numerical, subsystem, thread-safety, lifetime, and public ABI contracts.
 
 The C symbols retain their upstream `numelyx_core_*` names during the extraction;
 renaming the ABI is a separate compatibility decision.
