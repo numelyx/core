@@ -32,6 +32,25 @@ static numelyx_status map_matrix_status(numelyx_core_matrix_status status)
     }
 }
 
+static numelyx_status create_matrix(
+    numelyx_core_storage_kind kind,
+    size_t rows,
+    size_t columns,
+    const numelyx_core_matrix_data *data,
+    numelyx_matrix **matrix
+)
+{
+    int status;
+
+    if (matrix == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+
+    *matrix = NULL;
+    status = numelyx_core_matrix_create(kind, rows, columns, data, matrix);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
 numelyx_status numelyx_matrix_create_dense(
     size_t rows,
     size_t columns,
@@ -40,27 +59,65 @@ numelyx_status numelyx_matrix_create_dense(
 )
 {
     numelyx_core_matrix_data data = {0};
-    int status;
 
-    if (matrix == NULL) {
-        return NUMELYX_INVALID_ARGUMENT;
-    }
-
-    *matrix = NULL;
     if (values == NULL) {
+        if (matrix != NULL) {
+            *matrix = NULL;
+        }
         return NUMELYX_INVALID_ARGUMENT;
     }
 
     data.values = values;
-    status = numelyx_core_matrix_create(
-        NUMERUS_STORAGE_DENSE,
-        rows,
-        columns,
-        &data,
-        matrix
-    );
+    return create_matrix(NUMERUS_STORAGE_DENSE, rows, columns, &data, matrix);
+}
 
-    return map_matrix_status((numelyx_core_matrix_status) status);
+numelyx_status numelyx_matrix_create_identity(
+    size_t size,
+    numelyx_matrix **matrix
+)
+{
+    return create_matrix(NUMERUS_STORAGE_IDENTITY, size, size, NULL, matrix);
+}
+
+numelyx_status numelyx_matrix_create_zero(
+    size_t rows,
+    size_t columns,
+    numelyx_matrix **matrix
+)
+{
+    return create_matrix(NUMERUS_STORAGE_ZERO, rows, columns, NULL, matrix);
+}
+
+numelyx_status numelyx_matrix_create_constant(
+    size_t rows,
+    size_t columns,
+    double value,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    data.value = value;
+    return create_matrix(NUMERUS_STORAGE_CONSTANT, rows, columns, &data, matrix);
+}
+
+numelyx_status numelyx_matrix_create_diagonal(
+    size_t size,
+    const double *diagonal,
+    numelyx_matrix **matrix
+)
+{
+    numelyx_core_matrix_data data = {0};
+
+    if (diagonal == NULL) {
+        if (matrix != NULL) {
+            *matrix = NULL;
+        }
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+
+    data.values = diagonal;
+    return create_matrix(NUMERUS_STORAGE_DIAGONAL, size, size, &data, matrix);
 }
 
 numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix)
