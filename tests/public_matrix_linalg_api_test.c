@@ -15,6 +15,7 @@ int main(void)
     numelyx_matrix *lower = NULL, *solution = NULL, *triangular = NULL;
     numelyx_matrix *rhs2 = NULL, *tri_solution = NULL;
     size_t rank = 0;
+    numelyx_matrix_solution_kind classification;
     int sign = 0;
     double scalar = 0.0, log_abs = 0.0;
     const double diagonal[] = {2.0, 0.0, 0.0, 3.0};
@@ -110,7 +111,13 @@ int main(void)
         || numelyx_matrix_variance(a, 0, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 1.6875)
         || numelyx_matrix_variance(a, 2, &scalar)
-            != NUMELYX_INVALID_ARGUMENT)
+            != NUMELYX_INVALID_ARGUMENT
+        || numelyx_matrix_standard_deviation(a, 0, &scalar)
+            != NUMELYX_SUCCESS || !close_to(scalar, sqrt(1.6875))
+        || numelyx_matrix_min(a, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 0.0)
+        || numelyx_matrix_max(a, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 3.0))
         goto fail;
 
     numelyx_matrix_release(a); a = NULL;
@@ -121,7 +128,10 @@ int main(void)
         || numelyx_matrix_get(solution, 0, 0, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 1.0)
         || numelyx_matrix_get(solution, 1, 0, &scalar) != NUMELYX_SUCCESS
-        || !close_to(scalar, 2.0))
+        || !close_to(scalar, 2.0)
+        || numelyx_matrix_classify_system(
+            a, b, &classification) != NUMELYX_SUCCESS
+        || classification != NUMELYX_MATRIX_SOLUTION_UNIQUE)
         goto fail;
 
     numelyx_matrix_release(solution); solution = NULL;
