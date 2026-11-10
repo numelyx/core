@@ -23,6 +23,34 @@ NUMELYX_API numelyx_status numelyx_matrix_create_dense(
     numelyx_matrix **matrix
 );
 
+/** Create an identity Matrix without allocating an element buffer. */
+NUMELYX_API numelyx_status numelyx_matrix_create_identity(
+    size_t size,
+    numelyx_matrix **matrix
+);
+
+/** Create an all-zero Matrix without allocating an element buffer. */
+NUMELYX_API numelyx_status numelyx_matrix_create_zero(
+    size_t rows,
+    size_t columns,
+    numelyx_matrix **matrix
+);
+
+/** Create a constant-valued Matrix using one stored scalar. */
+NUMELYX_API numelyx_status numelyx_matrix_create_constant(
+    size_t rows,
+    size_t columns,
+    double value,
+    numelyx_matrix **matrix
+);
+
+/** Create a diagonal Matrix from a copied diagonal-value buffer. */
+NUMELYX_API numelyx_status numelyx_matrix_create_diagonal(
+    size_t size,
+    const double *diagonal,
+    numelyx_matrix **matrix
+);
+
 /** Retain one additional owned reference; the caller must already own one. */
 NUMELYX_API numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix);
 
