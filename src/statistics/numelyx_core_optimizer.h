@@ -94,6 +94,21 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
     numelyx_core_optimizer_result **result
 );
 
+/**
+ * Minimize with limited-memory BFGS. history_size controls the number of
+ * curvature pairs retained; memory is O(parameter_count * history_size).
+ */
+numelyx_core_optimizer_status numelyx_core_optimizer_minimize_lbfgs(
+    numelyx_core_objective_fn objective,
+    numelyx_core_gradient_fn gradient,
+    const void *context,
+    const double *initial_parameters,
+    size_t parameter_count,
+    size_t history_size,
+    const numelyx_core_optimizer_options *options,
+    numelyx_core_optimizer_result **result
+);
+
 /** Retain a result for shared read-only use; caller must already hold a valid reference. */
 numelyx_core_optimizer_status numelyx_core_optimizer_result_retain(
     numelyx_core_optimizer_result *result

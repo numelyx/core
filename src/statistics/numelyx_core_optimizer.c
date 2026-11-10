@@ -377,6 +377,162 @@ static void numelyx_core_optimizer_update_inverse_hessian(
     );
 }
 
+
+static bool optimizer_dot_product(
+    const double *left, const double *right, size_t size, double *result
+)
+{
+    size_t index;
+    double value = 0.0;
+    for (index = 0; index < size; index++) {
+        value += left[index] * right[index];
+        if (!isfinite(value)) return false;
+    }
+    *result = value;
+    return true;
+}
+
+static bool optimizer_compute_lbfgs_direction(
+    const double *gradient,
+    size_t parameter_count,
+    const double *s_history,
+    const double *y_history,
+    const double *rho_history,
+    double *alpha_history,
+    size_t history_count,
+    double *workspace,
+    double *direction,
+    double *directional_derivative
+)
+{
+    size_t index;
+    double gamma = 1.0;
+    double derivative;
+
+    memcpy(workspace, gradient, parameter_count * sizeof(*workspace));
+
+    index = history_count;
+    while (index > 0) {
+        size_t pair = --index;
+        const double *s = s_history + pair * parameter_count;
+        const double *y = y_history + pair * parameter_count;
+        double dot;
+        size_t component;
+
+        if (!optimizer_dot_product(s, workspace, parameter_count, &dot))
+            return false;
+        alpha_history[pair] = rho_history[pair] * dot;
+        if (!isfinite(alpha_history[pair])) return false;
+        for (component = 0; component < parameter_count; component++) {
+            workspace[component] -= alpha_history[pair] * y[component];
+            if (!isfinite(workspace[component])) return false;
+        }
+    }
+
+    if (history_count > 0) {
+        size_t last = history_count - 1;
+        const double *s = s_history + last * parameter_count;
+        const double *y = y_history + last * parameter_count;
+        double sy;
+        double yy;
+        if (optimizer_dot_product(s, y, parameter_count, &sy) &&
+            optimizer_dot_product(y, y, parameter_count, &yy) &&
+            sy > 0.0 && yy > 0.0) {
+            double candidate = sy / yy;
+            if (isfinite(candidate) && candidate > 0.0) gamma = candidate;
+        }
+    }
+
+    for (index = 0; index < parameter_count; index++) {
+        direction[index] = gamma * workspace[index];
+        if (!isfinite(direction[index])) return false;
+    }
+
+    for (index = 0; index < history_count; index++) {
+        const double *s = s_history + index * parameter_count;
+        const double *y = y_history + index * parameter_count;
+        double dot;
+        double beta;
+        size_t component;
+
+        if (!optimizer_dot_product(y, direction, parameter_count, &dot))
+            return false;
+        beta = rho_history[index] * dot;
+        if (!isfinite(beta)) return false;
+        for (component = 0; component < parameter_count; component++) {
+            direction[component] +=
+                s[component] * (alpha_history[index] - beta);
+            if (!isfinite(direction[component])) return false;
+        }
+    }
+
+    derivative = 0.0;
+    for (index = 0; index < parameter_count; index++) {
+        direction[index] = -direction[index];
+        derivative += gradient[index] * direction[index];
+        if (!isfinite(direction[index]) || !isfinite(derivative))
+            return false;
+    }
+    *directional_derivative = derivative;
+    return true;
+}
+
+static void optimizer_update_lbfgs_history(
+    const double *step,
+    const double *gradient_delta,
+    size_t parameter_count,
+    size_t history_size,
+    double *s_history,
+    double *y_history,
+    double *rho_history,
+    size_t *history_count
+)
+{
+    size_t index;
+    double curvature;
+    double step_norm = 0.0;
+    double gradient_norm = 0.0;
+    double threshold;
+
+    if (!optimizer_dot_product(
+            step, gradient_delta, parameter_count, &curvature)) return;
+    for (index = 0; index < parameter_count; index++) {
+        step_norm = hypot(step_norm, step[index]);
+        gradient_norm = hypot(gradient_norm, gradient_delta[index]);
+    }
+    threshold = sqrt(DBL_EPSILON) * step_norm * gradient_norm;
+    if (!isfinite(curvature) || !isfinite(threshold) ||
+        curvature <= threshold || curvature <= 0.0) {
+        return;
+    }
+
+    if (*history_count == history_size) {
+        size_t pair_bytes = (history_size - 1) * parameter_count *
+            sizeof(*s_history);
+        if (pair_bytes > 0) {
+            memmove(s_history, s_history + parameter_count, pair_bytes);
+            memmove(y_history, y_history + parameter_count, pair_bytes);
+        }
+        if (history_size > 1) {
+            memmove(rho_history, rho_history + 1,
+                (history_size - 1) * sizeof(*rho_history));
+        }
+        (*history_count)--;
+    }
+
+    memcpy(
+        s_history + (*history_count) * parameter_count,
+        step, parameter_count * sizeof(*step)
+    );
+    memcpy(
+        y_history + (*history_count) * parameter_count,
+        gradient_delta, parameter_count * sizeof(*gradient_delta)
+    );
+    rho_history[*history_count] = 1.0 / curvature;
+    if (!isfinite(rho_history[*history_count])) return;
+    (*history_count)++;
+}
+
 static void numelyx_core_optimizer_release_workspace(
     double *gradient,
     double *new_gradient,
@@ -386,7 +542,11 @@ static void numelyx_core_optimizer_release_workspace(
     double *gradient_delta,
     double *hessian_gradient,
     double *inverse_hessian,
-    double *next_inverse_hessian
+    double *next_inverse_hessian,
+    double *s_history,
+    double *y_history,
+    double *rho_history,
+    double *alpha_history
 )
 {
     if (gradient != NULL) numelyx_core_optimizer_free(gradient);
@@ -398,6 +558,10 @@ static void numelyx_core_optimizer_release_workspace(
     if (hessian_gradient != NULL) numelyx_core_optimizer_free(hessian_gradient);
     if (inverse_hessian != NULL) numelyx_core_optimizer_free(inverse_hessian);
     if (next_inverse_hessian != NULL) numelyx_core_optimizer_free(next_inverse_hessian);
+    if (s_history != NULL) numelyx_core_optimizer_free(s_history);
+    if (y_history != NULL) numelyx_core_optimizer_free(y_history);
+    if (rho_history != NULL) numelyx_core_optimizer_free(rho_history);
+    if (alpha_history != NULL) numelyx_core_optimizer_free(alpha_history);
 }
 
 numelyx_core_optimizer_status numelyx_core_optimizer_default_options(
@@ -418,13 +582,15 @@ numelyx_core_optimizer_status numelyx_core_optimizer_default_options(
     return NUMERUS_OPTIMIZER_SUCCESS;
 }
 
-numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
+static numelyx_core_optimizer_status optimizer_minimize_impl(
     numelyx_core_objective_fn objective,
     numelyx_core_gradient_fn gradient,
     const void *context,
     const double *initial_parameters,
     size_t parameter_count,
     const numelyx_core_optimizer_options *options,
+    size_t history_size,
+    bool use_lbfgs,
     numelyx_core_optimizer_result **result
 )
 {
@@ -438,9 +604,17 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
     double *hessian_gradient = NULL;
     double *inverse_hessian = NULL;
     double *next_inverse_hessian = NULL;
+    double *s_history = NULL;
+    double *y_history = NULL;
+    double *rho_history = NULL;
+    double *alpha_history = NULL;
+    size_t history_count = 0;
     size_t vector_bytes;
-    size_t matrix_elements;
-    size_t matrix_bytes;
+    size_t matrix_elements = 0;
+    size_t matrix_bytes = 0;
+    size_t history_elements = 0;
+    size_t history_bytes = 0;
+    size_t history_scalar_bytes = 0;
     size_t index;
     double objective_value = 0.0;
     numelyx_core_optimizer_status api_status = NUMERUS_OPTIMIZER_SUCCESS;
@@ -453,7 +627,8 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
     *result = NULL;
 
     if (objective == NULL || initial_parameters == NULL ||
-        parameter_count == 0 || !numelyx_core_optimizer_options_are_valid(options)) {
+        parameter_count == 0 || !numelyx_core_optimizer_options_are_valid(options) ||
+        (use_lbfgs && history_size == 0) || (!use_lbfgs && history_size != 0)) {
         if (options != NULL &&
             (!isfinite(options->gradient_tolerance) ||
              !isfinite(options->minimum_step) ||
@@ -472,11 +647,22 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
     }
 
     if (!numelyx_core_size_multiply(
-            parameter_count, sizeof(*initial_parameters), &vector_bytes) ||
-        !numelyx_core_size_multiply(
-            parameter_count, parameter_count, &matrix_elements) ||
-        !numelyx_core_size_multiply(
-            matrix_elements, sizeof(*inverse_hessian), &matrix_bytes)) {
+            parameter_count, sizeof(*initial_parameters), &vector_bytes)) {
+        return NUMERUS_OPTIMIZER_SIZE_OVERFLOW;
+    }
+    if (use_lbfgs) {
+        if (!numelyx_core_size_multiply(
+                history_size, parameter_count, &history_elements) ||
+            !numelyx_core_size_multiply(
+                history_elements, sizeof(*s_history), &history_bytes) ||
+            !numelyx_core_size_multiply(
+                history_size, sizeof(*rho_history), &history_scalar_bytes)) {
+            return NUMERUS_OPTIMIZER_SIZE_OVERFLOW;
+        }
+    } else if (!numelyx_core_size_multiply(
+                   parameter_count, parameter_count, &matrix_elements) ||
+               !numelyx_core_size_multiply(
+                   matrix_elements, sizeof(*inverse_hessian), &matrix_bytes)) {
         return NUMERUS_OPTIMIZER_SIZE_OVERFLOW;
     }
 
@@ -507,18 +693,29 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
     step_vector = numelyx_core_optimizer_alloc(vector_bytes);
     gradient_delta = numelyx_core_optimizer_alloc(vector_bytes);
     hessian_gradient = numelyx_core_optimizer_alloc(vector_bytes);
-    inverse_hessian = numelyx_core_optimizer_alloc(matrix_bytes);
-    next_inverse_hessian = numelyx_core_optimizer_alloc(matrix_bytes);
+    if (use_lbfgs) {
+        s_history = numelyx_core_optimizer_alloc(history_bytes);
+        y_history = numelyx_core_optimizer_alloc(history_bytes);
+        rho_history = numelyx_core_optimizer_alloc(history_scalar_bytes);
+        alpha_history = numelyx_core_optimizer_alloc(history_scalar_bytes);
+    } else {
+        inverse_hessian = numelyx_core_optimizer_alloc(matrix_bytes);
+        next_inverse_hessian = numelyx_core_optimizer_alloc(matrix_bytes);
+    }
 
     if (gradient_values == NULL || new_gradient == NULL || direction == NULL ||
         trial_parameters == NULL || step_vector == NULL ||
         gradient_delta == NULL || hessian_gradient == NULL ||
-        inverse_hessian == NULL || next_inverse_hessian == NULL) {
+        (use_lbfgs && (s_history == NULL || y_history == NULL ||
+            rho_history == NULL || alpha_history == NULL)) ||
+        (!use_lbfgs && (inverse_hessian == NULL ||
+            next_inverse_hessian == NULL))) {
         api_status = NUMERUS_OPTIMIZER_OUT_OF_MEMORY;
         goto api_failure;
     }
 
-    numelyx_core_optimizer_reset_identity(inverse_hessian, parameter_count);
+    if (!use_lbfgs)
+        numelyx_core_optimizer_reset_identity(inverse_hessian, parameter_count);
 
     {
         objective_evaluation_status evaluation_status =
@@ -580,11 +777,21 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
          * become numerically untrustworthy, reset it and retry with steepest
          * descent; only fail when even that direction is not a descent step.
          */
-        if (!numelyx_core_optimizer_compute_direction(
-                inverse_hessian, gradient_values, parameter_count,
-                direction, &directional_derivative) ||
+        if ((use_lbfgs
+                ? !optimizer_compute_lbfgs_direction(
+                    gradient_values, parameter_count, s_history, y_history,
+                    rho_history, alpha_history, history_count, hessian_gradient,
+                    direction, &directional_derivative)
+                : !numelyx_core_optimizer_compute_direction(
+                    inverse_hessian, gradient_values, parameter_count,
+                    direction, &directional_derivative)) ||
             directional_derivative >= 0.0) {
-            numelyx_core_optimizer_reset_identity(inverse_hessian, parameter_count);
+            if (use_lbfgs) {
+                history_count = 0;
+            } else {
+                numelyx_core_optimizer_reset_identity(
+                    inverse_hessian, parameter_count);
+            }
             if (!numelyx_core_optimizer_compute_steepest_descent(
                     gradient_values, parameter_count, direction,
                     &directional_derivative) ||
@@ -714,10 +921,17 @@ numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
             }
         }
 
-        numelyx_core_optimizer_update_inverse_hessian(
-            inverse_hessian, next_inverse_hessian, step_vector,
-            gradient_delta, hessian_gradient, parameter_count
-        );
+        if (use_lbfgs) {
+            optimizer_update_lbfgs_history(
+                step_vector, gradient_delta, parameter_count, history_size,
+                s_history, y_history, rho_history, &history_count
+            );
+        } else {
+            numelyx_core_optimizer_update_inverse_hessian(
+                inverse_hessian, next_inverse_hessian, step_vector,
+                gradient_delta, hessian_gradient, parameter_count
+            );
+        }
         memcpy(gradient_values, new_gradient, vector_bytes);
     }
 
@@ -730,7 +944,7 @@ publish_result:
     numelyx_core_optimizer_release_workspace(
         gradient_values, new_gradient, direction, trial_parameters,
         step_vector, gradient_delta, hessian_gradient, inverse_hessian,
-        next_inverse_hessian
+        next_inverse_hessian, s_history, y_history, rho_history, alpha_history
     );
     *result = output;
     return NUMERUS_OPTIMIZER_SUCCESS;
@@ -739,10 +953,44 @@ api_failure:
     numelyx_core_optimizer_release_workspace(
         gradient_values, new_gradient, direction, trial_parameters,
         step_vector, gradient_delta, hessian_gradient, inverse_hessian,
-        next_inverse_hessian
+        next_inverse_hessian, s_history, y_history, rho_history, alpha_history
     );
     numelyx_core_optimizer_result_destroy(output);
     return api_status;
+}
+
+
+numelyx_core_optimizer_status numelyx_core_optimizer_minimize(
+    numelyx_core_objective_fn objective,
+    numelyx_core_gradient_fn gradient,
+    const void *context,
+    const double *initial_parameters,
+    size_t parameter_count,
+    const numelyx_core_optimizer_options *options,
+    numelyx_core_optimizer_result **result
+)
+{
+    return optimizer_minimize_impl(
+        objective, gradient, context, initial_parameters, parameter_count,
+        options, 0, false, result
+    );
+}
+
+numelyx_core_optimizer_status numelyx_core_optimizer_minimize_lbfgs(
+    numelyx_core_objective_fn objective,
+    numelyx_core_gradient_fn gradient,
+    const void *context,
+    const double *initial_parameters,
+    size_t parameter_count,
+    size_t history_size,
+    const numelyx_core_optimizer_options *options,
+    numelyx_core_optimizer_result **result
+)
+{
+    return optimizer_minimize_impl(
+        objective, gradient, context, initial_parameters, parameter_count,
+        options, history_size, true, result
+    );
 }
 
 static void optimizer_result_destroy_final(void *object)

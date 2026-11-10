@@ -781,6 +781,137 @@ static void test_minimize_invalid_argument_matrix(void)
     assert(result == NULL);
 }
 
+
+static numelyx_core_optimizer_result *minimize_lbfgs(
+    numelyx_core_objective_fn objective,
+    numelyx_core_gradient_fn gradient,
+    const void *context,
+    const double *initial,
+    size_t count,
+    size_t history_size,
+    numelyx_core_optimizer_options *options
+)
+{
+    numelyx_core_optimizer_result *result = NULL;
+    assert(numelyx_core_optimizer_minimize_lbfgs(
+        objective, gradient, context, initial, count,
+        history_size, options, &result
+    ) == NUMERUS_OPTIMIZER_SUCCESS);
+    assert(result != NULL);
+    return result;
+}
+
+typedef struct {
+    size_t count;
+} high_dimensional_context;
+
+static bool high_dimensional_objective(
+    const double *parameters, size_t count, const void *context, double *value
+)
+{
+    size_t i;
+    double total = 0.0;
+    const high_dimensional_context *data =
+        (const high_dimensional_context *) context;
+    if (count != data->count) return false;
+    for (i = 0; i < count; i++) {
+        double target = (double) (i % 7);
+        double difference = parameters[i] - target;
+        total += 0.5 * difference * difference;
+    }
+    *value = total;
+    return isfinite(total);
+}
+
+static bool high_dimensional_gradient(
+    const double *parameters, size_t count, const void *context, double *gradient
+)
+{
+    size_t i;
+    const high_dimensional_context *data =
+        (const high_dimensional_context *) context;
+    if (count != data->count) return false;
+    for (i = 0; i < count; i++) {
+        gradient[i] = parameters[i] - (double) (i % 7);
+    }
+    return true;
+}
+
+static void test_lbfgs_rosenbrock_and_high_dimension(void)
+{
+    const double initial_rosenbrock[] = {-1.2, 1.0};
+    double initial[4096];
+    numelyx_core_optimizer_options options;
+    numelyx_core_optimizer_result *result;
+    numelyx_core_optimizer_termination termination;
+    high_dimensional_context context = {4096};
+    double objective_value;
+    size_t i;
+
+    assert(numelyx_core_optimizer_default_options(&options) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    options.max_iterations = 5000;
+    options.gradient_tolerance = 1e-7;
+    result = minimize_lbfgs(
+        rosenbrock_objective, rosenbrock_gradient, NULL,
+        initial_rosenbrock, 2, 7, &options
+    );
+    assert(numelyx_core_optimizer_result_get_termination(result, &termination) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    assert(termination == NUMERUS_OPTIMIZER_CONVERGED_GRADIENT);
+    assert(numelyx_core_optimizer_result_get_parameter(result, 0, &objective_value) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    assert(fabs(objective_value - 1.0) < 1e-4);
+    assert(numelyx_core_optimizer_result_get_objective(result, &objective_value) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    assert(objective_value < 1e-8);
+    numelyx_core_optimizer_result_destroy(result);
+
+    for (i = 0; i < context.count; i++) initial[i] = 10.0;
+    result = minimize_lbfgs(
+        high_dimensional_objective, high_dimensional_gradient, &context,
+        initial, context.count, 5, &options
+    );
+    assert(numelyx_core_optimizer_result_get_termination(result, &termination) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    assert(termination == NUMERUS_OPTIMIZER_CONVERGED_GRADIENT);
+    assert(numelyx_core_optimizer_result_get_objective(result, &objective_value) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    assert(objective_value < 1e-16);
+    numelyx_core_optimizer_result_destroy(result);
+}
+
+static void test_lbfgs_validation_and_allocation_cleanup(void)
+{
+    const double initial[] = {1.0, -1.0};
+    quadratic2_context context = {2.0, 3.0, 1.0};
+    numelyx_core_optimizer_options options;
+    numelyx_core_optimizer_result *result = (void *) 1;
+    size_t before = live_allocations;
+
+    assert(numelyx_core_optimizer_default_options(&options) ==
+        NUMERUS_OPTIMIZER_SUCCESS);
+    assert(numelyx_core_optimizer_minimize_lbfgs(
+        quadratic2_objective, quadratic2_gradient, &context,
+        initial, 2, 0, &options, &result
+    ) == NUMERUS_OPTIMIZER_INVALID_ARGUMENT);
+    assert(result == NULL);
+
+    assert(numelyx_core_optimizer_minimize_lbfgs(
+        quadratic2_objective, quadratic2_gradient, &context,
+        initial, 2, (size_t) -1, &options, &result
+    ) == NUMERUS_OPTIMIZER_SIZE_OVERFLOW);
+    assert(result == NULL);
+
+    fail_after_allocations = 4;
+    assert(numelyx_core_optimizer_minimize_lbfgs(
+        quadratic2_objective, quadratic2_gradient, &context,
+        initial, 2, 4, &options, &result
+    ) == NUMERUS_OPTIMIZER_OUT_OF_MEMORY);
+    assert(result == NULL);
+    assert(live_allocations == before);
+}
+
 int main(void)
 {
     test_quadratic_with_analytic_gradient_and_result_fields();
@@ -793,6 +924,8 @@ int main(void)
     test_all_optimizer_option_boundaries();
     test_finite_difference_extreme_boundaries();
     test_minimize_invalid_argument_matrix();
+    test_lbfgs_rosenbrock_and_high_dimension();
+    test_lbfgs_validation_and_allocation_cleanup();
     assert(live_allocations == 0);
     puts("Generic optimizer tests passed.");
     return 0;
