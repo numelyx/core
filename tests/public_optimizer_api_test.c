@@ -38,6 +38,7 @@ int main(void)
     double parameter = 0.0;
     double value = -1.0;
     numelyx_optimizer_options options;
+    numelyx_optimizer_termination termination;
     numelyx_optimizer_result *result = NULL;
 
     if (numelyx_optimizer_default_options(&options) != NUMELYX_SUCCESS) {
@@ -63,7 +64,10 @@ int main(void)
         || !numelyx_optimizer_result_objective_value_valid(result)
         || numelyx_optimizer_result_get_objective(result, &value)
             != NUMELYX_SUCCESS
-        || value > 1e-8) {
+        || value > 1e-8
+        || numelyx_optimizer_result_get_termination(result, &termination)
+            != NUMELYX_SUCCESS
+        || termination != NUMELYX_OPTIMIZER_CONVERGED_GRADIENT) {
         numelyx_optimizer_result_release(result);
         return 3;
     }
