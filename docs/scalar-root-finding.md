@@ -6,7 +6,7 @@ Status: internal bracketed bisection implementation added; validation is ongoing
 
 `numelyx_core_bisect` solves a scalar continuous-root problem on a caller-supplied finite interval. The callback receives an x value, immutable context, and output pointer. It must return true only when it writes a complete function value.
 
-- Endpoints must be finite and strictly ordered.
+- Endpoints must be finite and strictly ordered. Non-finite endpoints or tolerances have a distinct non-finite-input status.
 - Endpoint roots are accepted without iteration.
 - Otherwise, endpoint function values must have opposite signs; sign bits are compared without multiplying values.
 - Every callback value must be finite.
@@ -25,4 +25,4 @@ Native tests cover sqrt(2), endpoint roots, brackets spanning extreme finite val
 
 ## Safeguarded Newton
 
-The safeguarded Newton solver maintains the same sign-changing bracket while attempting a Newton step from the current iterate. A zero derivative, non-finite candidate, or candidate outside the open bracket falls back to the safe midpoint. Function and derivative callbacks are counted separately. Callback failures and non-finite derivatives are reported distinctly and leave the result structure unchanged.
+The safeguarded Newton solver maintains the same sign-changing bracket while attempting a Newton step from the current iterate. A zero derivative, non-finite candidate, or candidate outside the open bracket falls back to the safe midpoint. Function and derivative callbacks are counted separately. Non-finite initial values are distinguished from invalid bracket placement. Callback failures and non-finite derivatives are reported distinctly and leave the result structure unchanged.

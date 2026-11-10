@@ -79,7 +79,7 @@ static void test_endpoint_roots_and_extreme_brackets(void)
 static void test_bisection_failure_contracts(void)
 {
     numelyx_core_bisection_options options;
-    numelyx_core_root_result result = {11.0, 12.0, 13, 14};
+    numelyx_core_root_result result = {11.0, 12.0, 13, 14, 15};
     assert(numelyx_core_bisection_default_options(&options) ==
         NUMELYX_ROOT_SUCCESS);
 
@@ -112,6 +112,15 @@ static void test_bisection_failure_contracts(void)
         NUMELYX_ROOT_INVALID_ARGUMENT);
     assert(numelyx_core_bisection_default_options(NULL) ==
         NUMELYX_ROOT_INVALID_ARGUMENT);
+    assert(numelyx_core_bisect(
+        square_minus_two, NULL, -INFINITY, 2.0, &options, &result) ==
+        NUMELYX_ROOT_NON_FINITE_INPUT);
+    assert(result.root == 11.0);
+    options.absolute_tolerance = NAN;
+    assert(numelyx_core_bisect(
+        square_minus_two, NULL, 0.0, 2.0, &options, &result) ==
+        NUMELYX_ROOT_NON_FINITE_INPUT);
+    assert(result.root == 11.0);
 }
 
 
@@ -186,6 +195,10 @@ static void test_safeguarded_newton_failure_contracts(void)
         square_minus_two, square_derivative, NULL,
         0.0, 2.0, 3.0, &options, &result) ==
         NUMELYX_ROOT_INVALID_ARGUMENT);
+    assert(numelyx_core_safeguarded_newton(
+        square_minus_two, square_derivative, NULL,
+        0.0, 2.0, NAN, &options, &result) ==
+        NUMELYX_ROOT_NON_FINITE_INPUT);
 }
 
 int main(void)

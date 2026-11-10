@@ -7,16 +7,30 @@
 #include <float.h>
 #include <math.h>
 
-static bool valid_options(const numelyx_core_bisection_options *options)
+static numelyx_core_root_status validate_request(
+    numelyx_core_scalar_function_fn function,
+    double lower,
+    double upper,
+    const numelyx_core_bisection_options *options,
+    const numelyx_core_root_result *result
+)
 {
-    return options != NULL &&
-        options->max_iterations > 0 &&
-        isfinite(options->absolute_tolerance) &&
-        isfinite(options->relative_tolerance) &&
-        options->absolute_tolerance >= 0.0 &&
-        options->relative_tolerance >= 0.0 &&
-        (options->absolute_tolerance > 0.0 ||
-         options->relative_tolerance > 0.0);
+    if (function == NULL || result == NULL || options == NULL ||
+        options->max_iterations == 0 || !(lower < upper)) {
+        return NUMELYX_ROOT_INVALID_ARGUMENT;
+    }
+    if (!isfinite(lower) || !isfinite(upper) ||
+        !isfinite(options->absolute_tolerance) ||
+        !isfinite(options->relative_tolerance)) {
+        return NUMELYX_ROOT_NON_FINITE_INPUT;
+    }
+    if (options->absolute_tolerance < 0.0 ||
+        options->relative_tolerance < 0.0 ||
+        (options->absolute_tolerance == 0.0 &&
+         options->relative_tolerance == 0.0)) {
+        return NUMELYX_ROOT_INVALID_ARGUMENT;
+    }
+    return NUMELYX_ROOT_SUCCESS;
 }
 
 static double safe_midpoint(double lower, double upper)
@@ -64,10 +78,10 @@ numelyx_core_root_status numelyx_core_bisect(
     size_t evaluations = 0;
     size_t iteration;
 
-    if (function == NULL || result == NULL || !valid_options(options) ||
-        !isfinite(lower) || !isfinite(upper) || !(lower < upper)) {
-        return NUMELYX_ROOT_INVALID_ARGUMENT;
-    }
+    numelyx_core_root_status validation = validate_request(
+        function, lower, upper, options, result
+    );
+    if (validation != NUMELYX_ROOT_SUCCESS) return validation;
 
     if (!function(lower, context, &lower_value)) {
         return NUMELYX_ROOT_CALLBACK_FAILED;
@@ -93,6 +107,7 @@ numelyx_core_root_status numelyx_core_bisect(
         result->function_value = upper_value;
         result->iterations = 0;
         result->function_evaluations = evaluations;
+        result->derivative_evaluations = 0;
         return NUMELYX_ROOT_SUCCESS;
     }
 
@@ -176,12 +191,13 @@ numelyx_core_root_status numelyx_core_safeguarded_newton(
     size_t derivative_evaluations = 0;
     size_t iteration;
 
-    if (function == NULL || derivative == NULL || result == NULL ||
-        !valid_options(options) || !isfinite(lower) || !isfinite(upper) ||
-        !isfinite(initial) || !(lower < upper) ||
-        !(initial > lower && initial < upper)) {
+    numelyx_core_root_status validation;
+    if (derivative == NULL) return NUMELYX_ROOT_INVALID_ARGUMENT;
+    validation = validate_request(function, lower, upper, options, result);
+    if (validation != NUMELYX_ROOT_SUCCESS) return validation;
+    if (!isfinite(initial)) return NUMELYX_ROOT_NON_FINITE_INPUT;
+    if (!(initial > lower && initial < upper))
         return NUMELYX_ROOT_INVALID_ARGUMENT;
-    }
 
     if (!function(lower, context, &lower_value))
         return NUMELYX_ROOT_CALLBACK_FAILED;
