@@ -68,6 +68,9 @@ The first supported surface should be intentionally small:
   uniform/normal sampling, and index sampling with an explicit Core deallocator.
 - BFGS optimizer options, objective/gradient callbacks, minimization, immutable
   result ownership, and result inspection through an opaque handle.
+- Multivariate Gaussian log density and sampling using the existing Matrix and
+  RNG handles; density uses Cholesky/log-determinant operations rather than
+  explicit covariance inversion.
 
 Do not export every internal helper simply because it exists. The API should
 expose composable numerical primitives rather than model-specific workflows.
