@@ -38,7 +38,7 @@ The following reusable internal primitives have been added. They are not yet a c
 - Stable log-domain scalar operations, including log1mexp and log-difference-exp.
 - Regularized incomplete gamma P/Q, their log tails, regularized incomplete beta and its log tails, plus bracketed inverse gamma/beta functions.
 - Positive-argument digamma/trigamma and erf/erfc/inverse-erf/normal-quantile support.
-- Scalar Normal, Student-t, chi-square, Gamma, Beta, and F distributions with density/log-density, CDF/survival, log tails, and quantiles.
+- Scalar Normal, Student-t, chi-square, Gamma, Beta, F, Uniform, Logistic, Weibull, and Lognormal distributions with density/log-density, CDF/survival, log tails, and quantiles.
 - Discrete Poisson and Binomial distributions with PMF/log-PMF, CDF/survival, log tails, and integer quantiles. Counts are capped at 2^53−1 where exact conversion to the double-precision special-function layer is required.
 - Atomic affine Box-Muller sampling against a caller-owned RNG stream.
 - Dense BFGS and O(nm)-memory L-BFGS, plus safeguarded scalar bisection/Newton root solvers.

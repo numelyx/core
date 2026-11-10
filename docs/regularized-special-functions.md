@@ -7,6 +7,7 @@ Status: initial internal C implementation added; numerical validation is ongoing
 The internal special-function layer currently provides:
 - Regularized lower incomplete gamma, P(a,x), and its directly evaluated log tail.
 - Regularized upper incomplete gamma, Q(a,x), and its directly evaluated log tail.
+- Direct log-P evaluation in the small lower-tail region, avoiding probability underflow.
 - Regularized incomplete beta, I_x(a,b).
 - Inverses of P(a,x), Q(a,x), and I_x(a,b), solved with monotone bracketing and bisection.
 - Digamma and trigamma for positive finite real arguments, using recurrence and asymptotic Bernoulli expansions.
