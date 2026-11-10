@@ -443,7 +443,7 @@ static void test_regularized_beta_log_tails(void)
 
     assert(numelyx_core_regularized_beta_log_upper(
         0.5, 0.5, 1.0 - 1e-12, &value) == NUMERUS_NUMERIC_SUCCESS);
-    assert(isfinite(value) && value < -20.0);
+    close_to(value, -14.2670932632535623, 3e-12);
 
     assert(numelyx_core_regularized_beta_log_lower(
         2.0, 3.0, 0.0, &value) == NUMERUS_NUMERIC_SUCCESS);
