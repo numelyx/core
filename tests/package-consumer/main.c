@@ -2,6 +2,9 @@
 
 int main(void)
 {
+    const double values[] = {2.0, 4.0, 6.0, 8.0};
+    double element = 0.0;
+    numelyx_matrix *matrix = NULL;
     numelyx_core_rng *rng = NULL;
 
     if (numelyx_core_version_major() != UINT32_C(0)
@@ -11,9 +14,19 @@ int main(void)
         return 1;
     }
 
+    if (numelyx_matrix_create_dense(2, 2, values, &matrix) != NUMELYX_SUCCESS) {
+        return 2;
+    }
+    if (numelyx_matrix_get(matrix, 1, 0, &element) != NUMELYX_SUCCESS
+        || element != 6.0) {
+        numelyx_matrix_release(matrix);
+        return 3;
+    }
+    numelyx_matrix_release(matrix);
+
     if (numelyx_core_rng_create(UINT64_C(42), UINT64_C(54), &rng)
         != NUMERUS_RNG_SUCCESS) {
-        return 2;
+        return 4;
     }
 
     numelyx_core_rng_destroy(rng);
