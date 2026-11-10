@@ -3,6 +3,7 @@
 #include "numelyx_core_matrix_core.h"
 #include "numelyx_core_matrix_types.h"
 #include "numelyx_core_matrix_views.h"
+#include "numelyx_core_matrix_operations.h"
 
 static numelyx_status map_matrix_status(numelyx_core_matrix_status status)
 {
@@ -161,6 +162,101 @@ numelyx_status numelyx_matrix_slice(
         column_count,
         view
     );
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_add(
+    numelyx_matrix *left,
+    numelyx_matrix *right,
+    numelyx_matrix **result
+)
+{
+    int status;
+
+    if (result == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *result = NULL;
+    status = numelyx_core_matrix_create_add(left, right, result);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_subtract(
+    numelyx_matrix *left,
+    numelyx_matrix *right,
+    numelyx_matrix **result
+)
+{
+    int status;
+
+    if (result == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *result = NULL;
+    status = numelyx_core_matrix_create_subtract(left, right, result);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_hadamard_product(
+    numelyx_matrix *left,
+    numelyx_matrix *right,
+    numelyx_matrix **result
+)
+{
+    int status;
+
+    if (result == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *result = NULL;
+    status = numelyx_core_matrix_create_hadamard_product(left, right, result);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_multiply(
+    const numelyx_matrix *left,
+    const numelyx_matrix *right,
+    numelyx_matrix **result
+)
+{
+    int status;
+
+    if (result == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *result = NULL;
+    status = numelyx_core_matrix_multiply(left, right, result);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_scale(
+    numelyx_matrix *source,
+    double scalar,
+    numelyx_matrix **result
+)
+{
+    int status;
+
+    if (result == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *result = NULL;
+    status = numelyx_core_matrix_create_scale(source, scalar, result);
+    return map_matrix_status((numelyx_core_matrix_status) status);
+}
+
+numelyx_status numelyx_matrix_materialize(
+    const numelyx_matrix *source,
+    numelyx_matrix **result
+)
+{
+    int status;
+
+    if (result == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *result = NULL;
+    status = numelyx_core_matrix_materialize(source, result);
     return map_matrix_status((numelyx_core_matrix_status) status);
 }
 
