@@ -1056,6 +1056,162 @@ numelyx_status numelyx_matrix_trace(
     return map_matrix_status(numelyx_core_matrix_trace(matrix, trace));
 }
 
+
+numelyx_status numelyx_matrix_symmetric_eigen(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **eigenvalues,
+    numelyx_matrix **eigenvectors
+)
+{
+    if (eigenvalues == NULL || eigenvectors == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *eigenvalues = NULL;
+    *eigenvectors = NULL;
+    if (eigenvalues == eigenvectors) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    return map_matrix_status(numelyx_core_matrix_symmetric_eigen(
+        matrix, eigenvalues, eigenvectors));
+}
+
+numelyx_status numelyx_matrix_ldlt_decompose(
+    const numelyx_matrix *matrix,
+    numelyx_matrix **lower,
+    numelyx_matrix **diagonal
+)
+{
+    if (lower == NULL || diagonal == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    *lower = NULL;
+    *diagonal = NULL;
+    if (lower == diagonal) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    return map_matrix_status(numelyx_core_matrix_ldlt_decompose(
+        matrix, lower, diagonal));
+}
+
+numelyx_status numelyx_matrix_spectral_norm(
+    const numelyx_matrix *matrix,
+    double *norm
+)
+{
+    return map_matrix_status(numelyx_core_matrix_spectral_norm(matrix, norm));
+}
+
+numelyx_status numelyx_matrix_condition_estimate_one(
+    const numelyx_matrix *matrix,
+    double *condition_estimate
+)
+{
+    return map_matrix_status(numelyx_core_matrix_condition_estimate_one(
+        matrix, condition_estimate));
+}
+
+numelyx_status numelyx_matrix_classify_definiteness(
+    const numelyx_matrix *matrix,
+    int *positive_definite,
+    int *positive_semidefinite
+)
+{
+    return map_matrix_status(numelyx_core_matrix_classify_definiteness(
+        matrix, positive_definite, positive_semidefinite));
+}
+
+numelyx_status numelyx_matrix_classify_system(
+    const numelyx_matrix *matrix,
+    const numelyx_matrix *right_hand_side,
+    numelyx_matrix_solution_kind *classification
+)
+{
+    numelyx_core_matrix_solution_kind core_classification;
+    numelyx_core_matrix_status status;
+
+    if (classification == NULL) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    status = numelyx_core_matrix_classify_system(
+        matrix, right_hand_side, &core_classification);
+    if (status != NUMERUS_MATRIX_SUCCESS) {
+        return map_matrix_status(status);
+    }
+
+    switch (core_classification) {
+        case NUMERUS_MATRIX_SOLUTION_UNIQUE:
+            *classification = NUMELYX_MATRIX_SOLUTION_UNIQUE;
+            break;
+        case NUMERUS_MATRIX_SOLUTION_INFINITE:
+            *classification = NUMELYX_MATRIX_SOLUTION_INFINITE;
+            break;
+        case NUMERUS_MATRIX_SOLUTION_INCONSISTENT:
+            *classification = NUMELYX_MATRIX_SOLUTION_INCONSISTENT;
+            break;
+        default:
+            return NUMELYX_NUMERICAL_ERROR;
+    }
+    return NUMELYX_SUCCESS;
+}
+
+numelyx_status numelyx_matrix_sum(
+    const numelyx_matrix *matrix,
+    double *sum
+)
+{
+    return map_matrix_status(numelyx_core_matrix_sum(matrix, sum));
+}
+
+numelyx_status numelyx_matrix_mean(
+    const numelyx_matrix *matrix,
+    double *mean
+)
+{
+    return map_matrix_status(numelyx_core_matrix_mean(matrix, mean));
+}
+
+numelyx_status numelyx_matrix_variance(
+    const numelyx_matrix *matrix,
+    int sample,
+    double *variance
+)
+{
+    if (sample != 0 && sample != 1) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    return map_matrix_status(numelyx_core_matrix_variance(
+        matrix, sample != 0, variance));
+}
+
+numelyx_status numelyx_matrix_standard_deviation(
+    const numelyx_matrix *matrix,
+    int sample,
+    double *standard_deviation
+)
+{
+    if (sample != 0 && sample != 1) {
+        return NUMELYX_INVALID_ARGUMENT;
+    }
+    return map_matrix_status(numelyx_core_matrix_standard_deviation(
+        matrix, sample != 0, standard_deviation));
+}
+
+numelyx_status numelyx_matrix_min(
+    const numelyx_matrix *matrix,
+    double *minimum
+)
+{
+    return map_matrix_status(numelyx_core_matrix_min(matrix, minimum));
+}
+
+numelyx_status numelyx_matrix_max(
+    const numelyx_matrix *matrix,
+    double *maximum
+)
+{
+    return map_matrix_status(numelyx_core_matrix_max(matrix, maximum));
+}
+
 numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix)
 {
     return map_matrix_status(numelyx_core_matrix_retain(matrix));
