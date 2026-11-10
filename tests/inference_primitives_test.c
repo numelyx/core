@@ -46,6 +46,12 @@ static void test_inference_validation(void){
   ==NUMELYX_INFERENCE_NUMERICAL_FAILURE);
  assert(variance==9);
  {
+  const double asymmetric[]={1,1,0,1};
+  assert(numelyx_core_delta_method_variance(gradient,asymmetric,2,&variance)
+   ==NUMELYX_INFERENCE_INVALID_ARGUMENT);
+  assert(variance==9);
+ }
+ {
   const double one_estimate[]={1};
   const double two_nulls[]={0,0};
   const double repeated_restrictions[]={1,2};

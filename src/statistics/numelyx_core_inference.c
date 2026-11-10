@@ -31,6 +31,7 @@ numelyx_core_inference_status numelyx_core_delta_method_variance(
     double sum = 0.0;
     double correction = 0.0;
     double absolute_sum = 0.0;
+    double covariance_scale = 0.0;
 
     if (gradient == NULL || covariance == NULL || variance == NULL ||
         parameter_count == 0)
@@ -40,13 +41,22 @@ numelyx_core_inference_status numelyx_core_delta_method_variance(
         return NUMELYX_INFERENCE_SIZE_OVERFLOW;
 
     for (i = 0; i < parameter_count; i++) {
-        double row = 0.0;
         if (!isfinite(gradient[i]))
             return NUMELYX_INFERENCE_NON_FINITE_INPUT;
+    }
+    for (i = 0; i < matrix_elements; i++) {
+        if (!isfinite(covariance[i]))
+            return NUMELYX_INFERENCE_NON_FINITE_INPUT;
+        if (fabs(covariance[i]) > covariance_scale)
+            covariance_scale = fabs(covariance[i]);
+    }
+    for (i = 0; i < parameter_count; i++) {
+        double row = 0.0;
         for (j = 0; j < parameter_count; j++) {
             double value = covariance[i * parameter_count + j];
-            if (!isfinite(value))
-                return NUMELYX_INFERENCE_NON_FINITE_INPUT;
+            if (fabs(value - covariance[j * parameter_count + i]) >
+                1e-10 * fmax(1.0, covariance_scale))
+                return NUMELYX_INFERENCE_INVALID_ARGUMENT;
             row += value * gradient[j];
             if (!isfinite(row))
                 return NUMELYX_INFERENCE_NUMERICAL_FAILURE;
