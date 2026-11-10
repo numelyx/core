@@ -48,6 +48,8 @@ The inverse gamma routines bracket the nonnegative root by expanding the upper e
 
 ## Validation
 
+Independent high-precision reference vectors are embedded as constants in the native tests (generated offline with arbitrary-precision arithmetic; no runtime dependency is introduced). Coverage includes small shape parameters, central regions, large shapes, a gamma upper tail near 1e-20, monotonicity, and the digamma derivative identity psi\u2032(x)=trigamma(x).
+
 Native tests cover:
 - Closed-form references for gamma shape 1 and shape 1/2.
 - A polynomial reference value for I_0.2(2,3).
