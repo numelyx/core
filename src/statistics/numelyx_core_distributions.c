@@ -1607,13 +1607,21 @@ static void uniform_log_tails(
         *log_cdf = 0.0;
         *log_survival = -INFINITY;
     } else {
-        double coordinate_scale = fmax(fabs(lower), fabs(upper));
-        double scaled_lower = lower / coordinate_scale;
-        double scaled_upper = upper / coordinate_scale;
-        double scaled_x = x / coordinate_scale;
-        double width = scaled_upper - scaled_lower;
-        double cdf = (scaled_x - scaled_lower) / width;
-        double survival = (scaled_upper - scaled_x) / width;
+        double width = upper - lower;
+        double cdf;
+        double survival;
+        if (isfinite(width)) {
+            cdf = (x - lower) / width;
+            survival = (upper - x) / width;
+        } else {
+            double coordinate_scale = fmax(fabs(lower), fabs(upper));
+            double scaled_lower = lower / coordinate_scale;
+            double scaled_upper = upper / coordinate_scale;
+            double scaled_x = x / coordinate_scale;
+            double scaled_width = scaled_upper - scaled_lower;
+            cdf = (scaled_x - scaled_lower) / scaled_width;
+            survival = (scaled_upper - scaled_x) / scaled_width;
+        }
         *log_cdf = log(fmin(1.0, fmax(0.0, cdf)));
         *log_survival = log(fmin(1.0, fmax(0.0, survival)));
     }
