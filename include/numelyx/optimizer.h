@@ -54,8 +54,9 @@ NUMELYX_API numelyx_status numelyx_optimizer_default_options(
 
 /**
  * Minimize an unconstrained smooth objective using BFGS with Armijo
- * backtracking. A NULL gradient selects central finite differences.
- * The callback context is borrowed for the duration of this call only.
+ * backtracking. Initialize options with numelyx_optimizer_default_options()
+ * before modifying or passing them. A NULL gradient selects central finite
+ * differences. The callback context is borrowed for the duration of this call only.
  * A result is returned for valid requests even when convergence is not reached.
  */
 NUMELYX_API numelyx_status numelyx_optimizer_minimize(
