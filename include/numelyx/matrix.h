@@ -73,6 +73,47 @@ NUMELYX_API numelyx_status numelyx_matrix_slice(
     numelyx_matrix **view
 );
 
+/** Create a lazy element-wise sum; the result retains both parents. */
+NUMELYX_API numelyx_status numelyx_matrix_add(
+    numelyx_matrix *left,
+    numelyx_matrix *right,
+    numelyx_matrix **result
+);
+
+/** Create a lazy element-wise difference; the result retains both parents. */
+NUMELYX_API numelyx_status numelyx_matrix_subtract(
+    numelyx_matrix *left,
+    numelyx_matrix *right,
+    numelyx_matrix **result
+);
+
+/** Create a lazy Hadamard (element-wise) product. */
+NUMELYX_API numelyx_status numelyx_matrix_hadamard_product(
+    numelyx_matrix *left,
+    numelyx_matrix *right,
+    numelyx_matrix **result
+);
+
+/** Multiply left × right into an independent dense Matrix. */
+NUMELYX_API numelyx_status numelyx_matrix_multiply(
+    const numelyx_matrix *left,
+    const numelyx_matrix *right,
+    numelyx_matrix **result
+);
+
+/** Create a lazy scalar multiplication view. */
+NUMELYX_API numelyx_status numelyx_matrix_scale(
+    numelyx_matrix *source,
+    double scalar,
+    numelyx_matrix **result
+);
+
+/** Materialize any Matrix/view into independent dense storage. */
+NUMELYX_API numelyx_status numelyx_matrix_materialize(
+    const numelyx_matrix *source,
+    numelyx_matrix **result
+);
+
 /** Retain one additional owned reference; the caller must already own one. */
 NUMELYX_API numelyx_status numelyx_matrix_retain(numelyx_matrix *matrix);
 
