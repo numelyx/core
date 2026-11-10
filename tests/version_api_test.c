@@ -15,13 +15,13 @@
 
 int main(void)
 {
-    if (numelyx_core_version_major() != UINT32_C(NUMELYX_EXPECTED_VERSION_MAJOR)) {
+    if (numelyx_core_version_major() != (uint32_t) NUMELYX_EXPECTED_VERSION_MAJOR) {
         return 1;
     }
-    if (numelyx_core_version_minor() != UINT32_C(NUMELYX_EXPECTED_VERSION_MINOR)) {
+    if (numelyx_core_version_minor() != (uint32_t) NUMELYX_EXPECTED_VERSION_MINOR) {
         return 2;
     }
-    if (numelyx_core_version_patch() != UINT32_C(NUMELYX_EXPECTED_VERSION_PATCH)) {
+    if (numelyx_core_version_patch() != (uint32_t) NUMELYX_EXPECTED_VERSION_PATCH) {
         return 3;
     }
     if (numelyx_core_abi_version() != UINT32_C(0)) {
