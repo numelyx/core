@@ -23,6 +23,35 @@ static numelyx_status map_optimizer_status(numelyx_core_optimizer_status status)
     }
 }
 
+static numelyx_optimizer_termination map_termination(
+    numelyx_core_optimizer_termination termination
+)
+{
+    switch (termination) {
+        case NUMERUS_OPTIMIZER_CONVERGED_GRADIENT:
+            return NUMELYX_OPTIMIZER_CONVERGED_GRADIENT;
+        case NUMERUS_OPTIMIZER_ITERATION_LIMIT:
+            return NUMELYX_OPTIMIZER_ITERATION_LIMIT;
+        case NUMERUS_OPTIMIZER_STEP_TOO_SMALL:
+            return NUMELYX_OPTIMIZER_STEP_TOO_SMALL;
+        case NUMERUS_OPTIMIZER_LINE_SEARCH_FAILED:
+            return NUMELYX_OPTIMIZER_LINE_SEARCH_FAILED;
+        case NUMERUS_OPTIMIZER_OBJECTIVE_CALLBACK_FAILED:
+            return NUMELYX_OPTIMIZER_OBJECTIVE_CALLBACK_FAILED;
+        case NUMERUS_OPTIMIZER_GRADIENT_CALLBACK_FAILED:
+            return NUMELYX_OPTIMIZER_GRADIENT_CALLBACK_FAILED;
+        case NUMERUS_OPTIMIZER_GRADIENT_EVALUATION_FAILED:
+            return NUMELYX_OPTIMIZER_GRADIENT_EVALUATION_FAILED;
+        case NUMERUS_OPTIMIZER_NON_FINITE_OBJECTIVE:
+            return NUMELYX_OPTIMIZER_NON_FINITE_OBJECTIVE;
+        case NUMERUS_OPTIMIZER_NON_FINITE_GRADIENT:
+            return NUMELYX_OPTIMIZER_NON_FINITE_GRADIENT;
+        case NUMERUS_OPTIMIZER_NUMERICAL_BREAKDOWN:
+        default:
+            return NUMELYX_OPTIMIZER_NUMERICAL_BREAKDOWN;
+    }
+}
+
 static void copy_options_to_core(
     const numelyx_optimizer_options *source,
     numelyx_core_optimizer_options *destination
@@ -168,7 +197,7 @@ numelyx_status numelyx_optimizer_result_get_termination(
         return map_optimizer_status(status);
     }
 
-    *termination = (numelyx_optimizer_termination) core_termination;
+    *termination = map_termination(core_termination);
     return NUMELYX_SUCCESS;
 }
 
