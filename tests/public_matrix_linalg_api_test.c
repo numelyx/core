@@ -10,30 +10,23 @@ static int close_to(double actual, double expected)
 
 int main(void)
 {
-    numelyx_matrix *a = NULL;
-    numelyx_matrix *b = NULL;
-    numelyx_matrix *q = NULL;
-    numelyx_matrix *r = NULL;
-    numelyx_matrix *u = NULL;
-    numelyx_matrix *s = NULL;
-    numelyx_matrix *vt = NULL;
-    numelyx_matrix *pinv = NULL;
-    numelyx_matrix *lower = NULL;
-    numelyx_matrix *solution = NULL;
-    numelyx_matrix *triangular = NULL;
+    numelyx_matrix *a = NULL, *b = NULL, *q = NULL, *r = NULL;
+    numelyx_matrix *u = NULL, *s = NULL, *vt = NULL, *pinv = NULL;
+    numelyx_matrix *lower = NULL, *solution = NULL, *triangular = NULL;
+    numelyx_matrix *rhs2 = NULL, *tri_solution = NULL;
     size_t rank = 0;
     int sign = 0;
-    double scalar = 0.0;
+    double scalar = 0.0, log_abs = 0.0;
     const double diagonal[] = {2.0, 0.0, 0.0, 3.0};
     const double design[] = {1.0, 0.0, 1.0, 1.0, 1.0, 2.0};
     const double response[] = {1.0, 3.0, 5.0};
     const double weights[] = {1.0, 2.0, 1.0};
     const double spd[] = {4.0, 2.0, 2.0, 3.0};
-    const double tri[] = {2.0, 1.0, 0.0, 3.0};
-    double log_abs = 0.0;
+    const double tri[] = {2.0, 0.0, 1.0, 3.0};
+    const double rhs_values[] = {2.0, 4.0};
 
     if (numelyx_matrix_create_dense(2, 2, diagonal, &a) != NUMELYX_SUCCESS)
-        return 1;
+        goto fail;
     if (numelyx_matrix_log_determinant(a, &sign, &log_abs) != NUMELYX_SUCCESS
         || sign != 1 || !close_to(log_abs, log(6.0)))
         goto fail;
@@ -76,6 +69,7 @@ int main(void)
         goto fail;
 
     numelyx_matrix_release(a); a = NULL;
+    numelyx_matrix_release(b); b = NULL;
     if (numelyx_matrix_create_dense(3, 2, design, &a) != NUMELYX_SUCCESS
         || numelyx_matrix_create_dense(3, 1, response, &b) != NUMELYX_SUCCESS
         || numelyx_matrix_least_squares(a, b, &solution) != NUMELYX_SUCCESS
@@ -95,9 +89,15 @@ int main(void)
         goto fail;
 
     if (numelyx_matrix_create_dense(2, 2, tri, &triangular) != NUMELYX_SUCCESS
+        || numelyx_matrix_create_dense(2, 1, rhs_values, &rhs2)
+            != NUMELYX_SUCCESS
         || numelyx_matrix_solve_triangular(
-            triangular, b, 1, 0, &q) == NUMELYX_SUCCESS)
-        goto fail; /* RHS has the wrong row count. */
+            triangular, rhs2, 1, 0, &tri_solution) != NUMELYX_SUCCESS
+        || numelyx_matrix_get(tri_solution, 0, 0, &scalar)
+            != NUMELYX_SUCCESS || !close_to(scalar, 1.0)
+        || numelyx_matrix_get(tri_solution, 1, 0, &scalar)
+            != NUMELYX_SUCCESS || !close_to(scalar, 1.0))
+        goto fail;
 
     numelyx_matrix_release(a);
     numelyx_matrix_release(b);
@@ -110,6 +110,8 @@ int main(void)
     numelyx_matrix_release(lower);
     numelyx_matrix_release(solution);
     numelyx_matrix_release(triangular);
+    numelyx_matrix_release(rhs2);
+    numelyx_matrix_release(tri_solution);
     return 0;
 
 fail:
@@ -124,5 +126,7 @@ fail:
     numelyx_matrix_release(lower);
     numelyx_matrix_release(solution);
     numelyx_matrix_release(triangular);
-    return 2;
+    numelyx_matrix_release(rhs2);
+    numelyx_matrix_release(tri_solution);
+    return 1;
 }
