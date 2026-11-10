@@ -163,10 +163,18 @@ int main(void)
         || numelyx_matrix_rows(vt) != 2
         || numelyx_matrix_get(u, 0, 0, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 1.0)
+        || numelyx_matrix_get(u, 0, 1, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 0.0)
         || numelyx_matrix_get(u, 1, 0, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 0.0)
+        || numelyx_matrix_get(u, 1, 1, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 1.0)
         || numelyx_matrix_get(vt, 0, 0, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 2.0)
+        || numelyx_matrix_get(vt, 0, 1, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 0.0)
+        || numelyx_matrix_get(vt, 1, 0, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 0.0)
         || numelyx_matrix_get(vt, 1, 1, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 3.0))
         goto fail;
