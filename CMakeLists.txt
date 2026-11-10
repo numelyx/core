@@ -28,8 +28,9 @@ endif()
 add_library(numelyx_core ${NUMELYX_LIBRARY_KIND} ${NUMELYX_CORE_SOURCES})
 add_library(Numelyx::Core ALIAS numelyx_core)
 
-# Shared builds must be usable by downstream language bindings. Keep symbols
-# visible for now; a curated public ABI/export header is a separate API task.
+# Shared builds must be usable by downstream language bindings. The explicit
+# export macro covers the supported version API; detail symbols remain visible
+# during the transition to the curated public API.
 set_target_properties(numelyx_core PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     WINDOWS_EXPORT_ALL_SYMBOLS ON
@@ -122,7 +123,7 @@ file(GLOB_RECURSE NUMELYX_DETAIL_HEADERS CONFIGURE_DEPENDS
 set(NUMELYX_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
 file(MAKE_DIRECTORY "${NUMELYX_GENERATED_INCLUDE_DIR}/numelyx")
 set(NUMELYX_UMBRELLA_HEADER
-    "/* Generated umbrella header. The detail API is currently unstable. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n"
+    "/* Generated umbrella header. The detail API is currently unstable. */\n#ifndef NUMELYX_NUMELYX_H\n#define NUMELYX_NUMELYX_H\n#include <numelyx/version.h>\n"
 )
 foreach(header IN LISTS NUMELYX_DETAIL_HEADERS)
     file(RELATIVE_PATH header_relative "${CMAKE_CURRENT_SOURCE_DIR}/src" "${header}")
