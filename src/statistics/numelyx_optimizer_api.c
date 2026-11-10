@@ -83,6 +83,8 @@ numelyx_status numelyx_optimizer_default_options(
         return map_optimizer_status(status);
     }
 
+    options->struct_size = (uint32_t) sizeof(*options);
+    options->version = NUMELYX_OPTIMIZER_OPTIONS_VERSION_1;
     options->max_iterations = core_options.max_iterations;
     options->max_line_search_iterations = core_options.max_line_search_iterations;
     options->gradient_tolerance = core_options.gradient_tolerance;
@@ -113,7 +115,9 @@ numelyx_status numelyx_optimizer_minimize(
     }
     *result = NULL;
 
-    if (options == NULL) {
+    if (options == NULL
+        || options->struct_size < sizeof(*options)
+        || options->version != NUMELYX_OPTIMIZER_OPTIONS_VERSION_1) {
         return NUMELYX_INVALID_ARGUMENT;
     }
     copy_options_to_core(options, &core_options);
