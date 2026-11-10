@@ -49,6 +49,7 @@ Before declaring the C ABI stable, the implementation must provide:
 - ABI-breaking changes require an ABI version change and an explicit release
   decision.
 - Static and shared builds must expose the same source-level public API.
+- Shared builds use hidden-by-default symbol visibility and export only declarations marked `NUMELYX_API`. Native regression tests link a separate, non-installed static support target; installed-package tests exercise the shared artifact. Linux CI checks that a representative private Core symbol is absent from the dynamic symbol table.
 - The Core library must not depend on PHP, Zend Engine, HTTP, JSON, or a server
   transport. Those belong in adapters and SDKs.
 
