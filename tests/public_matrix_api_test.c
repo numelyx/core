@@ -82,6 +82,66 @@ int main(void)
     }
 
     {
+        const double left_values[] = {1.0, 2.0, 3.0, 4.0};
+        const double right_values[] = {5.0, 6.0, 7.0, 8.0};
+        numelyx_matrix *left = NULL;
+        numelyx_matrix *right = NULL;
+        numelyx_matrix *sum = NULL;
+        numelyx_matrix *product = NULL;
+        numelyx_matrix *hadamard = NULL;
+        numelyx_matrix *scaled = NULL;
+        numelyx_matrix *materialized = NULL;
+
+        if (numelyx_matrix_create_dense(2, 2, left_values, &left)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_create_dense(2, 2, right_values, &right)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_add(left, right, &sum) != NUMELYX_SUCCESS
+            || numelyx_matrix_multiply(left, right, &product) != NUMELYX_SUCCESS
+            || numelyx_matrix_hadamard_product(left, right, &hadamard)
+                != NUMELYX_SUCCESS
+            || numelyx_matrix_scale(left, -2.0, &scaled) != NUMELYX_SUCCESS
+            || numelyx_matrix_materialize(sum, &materialized) != NUMELYX_SUCCESS) {
+            numelyx_matrix_release(materialized);
+            numelyx_matrix_release(scaled);
+            numelyx_matrix_release(hadamard);
+            numelyx_matrix_release(product);
+            numelyx_matrix_release(sum);
+            numelyx_matrix_release(right);
+            numelyx_matrix_release(left);
+            return 15;
+        }
+
+        if (numelyx_matrix_get(sum, 1, 1, &value) != NUMELYX_SUCCESS
+                || value != 12.0
+            || numelyx_matrix_get(product, 1, 0, &value) != NUMELYX_SUCCESS
+                || value != 43.0
+            || numelyx_matrix_get(hadamard, 1, 1, &value) != NUMELYX_SUCCESS
+                || value != 32.0
+            || numelyx_matrix_get(scaled, 0, 1, &value) != NUMELYX_SUCCESS
+                || value != -4.0
+            || numelyx_matrix_get(materialized, 0, 1, &value) != NUMELYX_SUCCESS
+                || value != 8.0) {
+            numelyx_matrix_release(materialized);
+            numelyx_matrix_release(scaled);
+            numelyx_matrix_release(hadamard);
+            numelyx_matrix_release(product);
+            numelyx_matrix_release(sum);
+            numelyx_matrix_release(right);
+            numelyx_matrix_release(left);
+            return 16;
+        }
+
+        numelyx_matrix_release(materialized);
+        numelyx_matrix_release(scaled);
+        numelyx_matrix_release(hadamard);
+        numelyx_matrix_release(product);
+        numelyx_matrix_release(sum);
+        numelyx_matrix_release(right);
+        numelyx_matrix_release(left);
+    }
+
+    {
         numelyx_matrix *structured = NULL;
 
         if (numelyx_matrix_create_identity(3, &structured) != NUMELYX_SUCCESS
