@@ -112,6 +112,12 @@ int main(void)
             return 15;
         }
 
+        /* Lazy results own their parents; eager multiplication does not. */
+        numelyx_matrix_release(left);
+        left = NULL;
+        numelyx_matrix_release(right);
+        right = NULL;
+
         if (numelyx_matrix_get(sum, 1, 1, &value) != NUMELYX_SUCCESS
                 || value != 12.0
             || numelyx_matrix_get(product, 1, 0, &value) != NUMELYX_SUCCESS
