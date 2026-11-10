@@ -18,6 +18,7 @@ static numelyx_status map_optimizer_status(numelyx_core_optimizer_status status)
         case NUMERUS_OPTIMIZER_OUT_OF_BOUNDS:
             return NUMELYX_OUT_OF_BOUNDS;
         case NUMERUS_OPTIMIZER_NO_OBJECTIVE_VALUE:
+            return NUMELYX_NO_OBJECTIVE_VALUE;
         default:
             return NUMELYX_NUMERICAL_ERROR;
     }
