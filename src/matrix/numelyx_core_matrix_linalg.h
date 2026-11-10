@@ -465,7 +465,7 @@ numelyx_core_matrix_status numelyx_core_matrix_max(
 );
 
 /**
- * Compute population or sample variance using a two-pass accumulation.
+ * Compute population or sample variance.
  * Sample mode requires at least two elements; input values must be finite.
  * The output is unchanged on failure.
  */
