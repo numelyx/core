@@ -179,10 +179,16 @@ int main(void)
         || !close_to(scalar, 1.25)
         || numelyx_matrix_variance(a, 0, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 1.6875)
+        || numelyx_matrix_variance(a, 1, &scalar) != NUMELYX_SUCCESS
+        || !close_to(scalar, 2.25)
         || numelyx_matrix_variance(a, 2, &scalar)
             != NUMELYX_INVALID_ARGUMENT
         || numelyx_matrix_standard_deviation(a, 0, &scalar)
             != NUMELYX_SUCCESS || !close_to(scalar, sqrt(1.6875))
+        || numelyx_matrix_standard_deviation(a, 1, &scalar)
+            != NUMELYX_SUCCESS || !close_to(scalar, 1.5)
+        || numelyx_matrix_standard_deviation(a, 2, &scalar)
+            != NUMELYX_INVALID_ARGUMENT
         || numelyx_matrix_min(a, &scalar) != NUMELYX_SUCCESS
         || !close_to(scalar, 0.0)
         || numelyx_matrix_max(a, &scalar) != NUMELYX_SUCCESS
@@ -241,6 +247,7 @@ int main(void)
     return 0;
 
 fail:
+    numelyx_matrix_release(extra);
     numelyx_matrix_release(basis);
     numelyx_matrix_release(a);
     numelyx_matrix_release(b);
