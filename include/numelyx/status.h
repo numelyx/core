@@ -5,7 +5,7 @@
 
 NUMELYX_BEGIN_DECLS
 
-/** Stable names for errors exposed by the supported C API. */
+/** Public names for errors exposed by the supported C API. */
 typedef enum {
     NUMELYX_SUCCESS = 0,
     NUMELYX_INVALID_ARGUMENT,
