@@ -748,3 +748,56 @@ numelyx_core_numeric_status numelyx_core_regularized_beta_log_upper(
     *result = log_upper;
     return NUMERUS_NUMERIC_SUCCESS;
 }
+
+static bool gamma_p_series_log(double a, double x, double *log_value)
+{
+    size_t iteration;
+    double sum = 1.0 / a;
+    double delta = sum;
+    double log_scale;
+
+    if (x == 0.0) {
+        *log_value = -INFINITY;
+        return true;
+    }
+    for (iteration = 1; iteration <= NUMELYX_SPECIAL_MAX_ITERATIONS; iteration++) {
+        delta *= x / (a + (double) iteration);
+        sum += delta;
+        if (!isfinite(sum) || !isfinite(delta)) return false;
+        if (fabs(delta) <= fabs(sum) * NUMELYX_SPECIAL_EPSILON) {
+            log_scale = a * log(x) - x - lgamma(a + 1.0);
+            *log_value = log_scale + log(sum);
+            return !isnan(*log_value) && *log_value <= 0.0;
+        }
+    }
+    return false;
+}
+
+numelyx_core_numeric_status numelyx_core_regularized_gamma_log_p(
+    double a, double x, double *result
+)
+{
+    double log_value;
+    numelyx_core_numeric_status status = validate_gamma(a, x, result);
+    if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+
+    if (x == 0.0) {
+        log_value = -INFINITY;
+    } else if (x < a + 1.0) {
+        if (!gamma_p_series_log(a, x, &log_value))
+            return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    } else {
+        double log_q;
+        status = numelyx_core_regularized_gamma_log_q(a, x, &log_q);
+        if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        if (log_q == -INFINITY) log_value = 0.0;
+        else {
+            status = numelyx_core_numeric_log1mexp(log_q, &log_value);
+            if (status != NUMERUS_NUMERIC_SUCCESS) return status;
+        }
+    }
+    if (isnan(log_value) || log_value > 0.0)
+        return NUMERUS_NUMERIC_NUMERICAL_FAILURE;
+    *result = log_value;
+    return NUMERUS_NUMERIC_SUCCESS;
+}

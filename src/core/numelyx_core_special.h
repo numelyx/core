@@ -84,4 +84,9 @@ numelyx_core_numeric_status numelyx_core_regularized_beta_log_upper(
     double a, double b, double x, double *result
 );
 
+/** Log of regularized lower incomplete gamma P(a,x), retaining tiny tails. */
+numelyx_core_numeric_status numelyx_core_regularized_gamma_log_p(
+    double a, double x, double *result
+);
+
 #endif

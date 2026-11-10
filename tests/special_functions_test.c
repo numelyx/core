@@ -453,6 +453,18 @@ static void test_regularized_beta_log_tails(void)
     assert(value == -INFINITY);
 }
 
+
+static void test_regularized_gamma_log_lower_tail(void)
+{
+    double value;
+    assert(numelyx_core_regularized_gamma_log_p(
+        0.5, 1e-20, &value) == NUMERUS_NUMERIC_SUCCESS);
+    close_to(value, log(2.0 / sqrt(acos(-1.0))) - 23.025850929940457, 2e-12);
+    assert(numelyx_core_regularized_gamma_log_p(
+        0.5, 800.0, &value) == NUMERUS_NUMERIC_SUCCESS);
+    assert(value == 0.0);
+}
+
 int main(void)
 {
     test_regularized_gamma_reference_values();
@@ -465,6 +477,7 @@ int main(void)
     test_inverse_special_function_validation();
     test_inverse_special_function_closed_forms();
     test_regularized_beta_log_tails();
+    test_regularized_gamma_log_lower_tail();
     test_digamma_and_trigamma_reference_values();
     test_digamma_trigamma_validation_and_identities();
     test_high_precision_gamma_reference_vectors();
