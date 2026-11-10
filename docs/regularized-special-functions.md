@@ -8,6 +8,7 @@ The internal special-function layer currently provides:
 - Regularized lower incomplete gamma, P(a,x).
 - Regularized upper incomplete gamma, Q(a,x).
 - Regularized incomplete beta, I_x(a,b).
+- Inverses of P(a,x), Q(a,x), and I_x(a,b), solved with monotone bracketing and bisection.
 
 These are internal numerical primitives. They are not yet part of the installed public C ABI or language-binding API.
 
@@ -24,6 +25,10 @@ This branch selection computes the small tail directly rather than subtracting i
 The regularized incomplete beta uses a modified Lentz continued fraction and the standard symmetry transformation around (a+1)/(a+b+2). The exponential prefactor is assembled in the log domain using lgamma, log, and log1p; it is not formed as a product of potentially underflowing intermediate factors.
 
 At x=0 and x=1, exact endpoint values are returned.
+
+## Inverse functions
+
+The inverse gamma routines bracket the nonnegative root by expanding the upper endpoint, then bisect while evaluating the requested tail directly (the Q inverse does not convert its target to 1-p). The inverse beta routine bisects on [0,1] and reflects upper-tail probabilities through I_x(a,b)=1-I_{1-x}(b,a). The algorithms stop when the floating-point midpoint can no longer refine the bracket. These are robust baseline inverses; safeguarded Newton acceleration and high-precision tail sweeps remain future work.
 
 ## Contracts
 
@@ -44,6 +49,8 @@ Native tests cover:
 - Gamma lower/upper tail complementarity.
 - Small-x and far-upper-tail gamma values.
 - Beta symmetry and exact endpoints.
+- Round trips for inverse gamma P/Q and inverse beta over lower, central, and upper probabilities.
+- Inverse probability-domain validation and output preservation.
 - Invalid domains, non-finite inputs, and output preservation.
 
 These tests are regression coverage, not a substitute for broad high-precision reference sweeps. Before exposing these functions publicly, add independently generated high-precision vectors across logarithmically spaced shape and argument ranges, monotonicity tests, derivative identities, and stress tests for extreme finite parameters.
