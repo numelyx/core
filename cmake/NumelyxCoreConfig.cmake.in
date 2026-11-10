@@ -5,12 +5,13 @@ find_dependency(Threads)
 
 include("${CMAKE_CURRENT_LIST_DIR}/NumelyxCoreTargets.cmake")
 
-# Map consumer configurations to an installed configuration when the
-# package contains only one configuration.
+# A single-configuration installation exports one concrete configuration.
+# Map every consumer configuration, including an empty CMAKE_BUILD_TYPE
+# (NOCONFIG), to that installed configuration.
 get_target_property(_numelyx_imported_configs Numelyx::Core IMPORTED_CONFIGURATIONS)
 if(_numelyx_imported_configs)
     list(GET _numelyx_imported_configs 0 _numelyx_available_config)
-    foreach(_numelyx_consumer_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+    foreach(_numelyx_consumer_config NOCONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
         set_property(TARGET Numelyx::Core PROPERTY
             MAP_IMPORTED_CONFIG_${_numelyx_consumer_config}
             "${_numelyx_available_config}"
@@ -18,49 +19,7 @@ if(_numelyx_imported_configs)
     endforeach()
 endif()
 
-# Single-config exports may expose only IMPORTED_LOCATION_NOCONFIG. When a
-# consumer leaves CMAKE_BUILD_TYPE empty, CMake requires the unqualified
-# IMPORTED_LOCATION (and IMPORTED_IMPLIB on platforms that use import libs).
-# Populate those generic properties even if IMPORTED_CONFIGURATIONS is unset.
-get_target_property(_numelyx_generic_location Numelyx::Core IMPORTED_LOCATION)
-if(NOT _numelyx_generic_location)
-    get_target_property(_numelyx_config_location Numelyx::Core IMPORTED_LOCATION_NOCONFIG)
-    if(NOT _numelyx_config_location AND _numelyx_imported_configs)
-        get_target_property(
-            _numelyx_config_location
-            Numelyx::Core
-            "IMPORTED_LOCATION_${_numelyx_available_config}"
-        )
-    endif()
-    if(_numelyx_config_location)
-        set_property(TARGET Numelyx::Core PROPERTY
-            IMPORTED_LOCATION "${_numelyx_config_location}"
-        )
-    endif()
-endif()
-
-get_target_property(_numelyx_generic_implib Numelyx::Core IMPORTED_IMPLIB)
-if(NOT _numelyx_generic_implib)
-    get_target_property(_numelyx_config_implib Numelyx::Core IMPORTED_IMPLIB_NOCONFIG)
-    if(NOT _numelyx_config_implib AND _numelyx_imported_configs)
-        get_target_property(
-            _numelyx_config_implib
-            Numelyx::Core
-            "IMPORTED_IMPLIB_${_numelyx_available_config}"
-        )
-    endif()
-    if(_numelyx_config_implib)
-        set_property(TARGET Numelyx::Core PROPERTY
-            IMPORTED_IMPLIB "${_numelyx_config_implib}"
-        )
-    endif()
-endif()
-
 unset(_numelyx_imported_configs)
 unset(_numelyx_available_config)
-unset(_numelyx_generic_location)
-unset(_numelyx_config_location)
-unset(_numelyx_generic_implib)
-unset(_numelyx_config_implib)
 
 check_required_components(NumelyxCore)
